@@ -1,28 +1,35 @@
-# Build static files
-# Node Bullseye has npm
-FROM node:20.10.0-bullseye-slim AS build
+FROM python:bullseye AS build
 
-# Install packages, build and keep only prod packages
+# Disable cache dir, disable upgrade message, create .venv in project dir
+ARG PIP_NO_CACHE_DIR=off \
+    PIP_DISABLE_PIP_VERSION_CHECK=on \
+    POETRY_VIRTUALENVS_IN_PROJECT=1
+
+# Install poetry, then dependencies
 WORKDIR /app
-COPY *.json ./
+COPY pyproject.toml poetry.lock ./
+RUN pip install poetry==1.6.1 && \
+    poetry install --no-root -vvv --without dev --sync
+
+# Deploy
+FROM python:slim-bullseye AS deploy
+
+# Output to stdout/stderr, don't create .pyc files, etc.
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PATH="/app/.venv/bin:$PATH" \
+    PORT=3000
+
+# Packages
+RUN apt update && \
+    apt install -y --no-install-recommends curl libpq-dev
+
+# Dependencies, config and app
+COPY --from=build /app/.venv /app/.venv
+COPY logger.conf ./
 COPY ./src ./src
-RUN npm ci --ignore-scripts --no-update-notifier --omit=dev && \
-    npm run build
 
-# Deploy container
-# Distroless has node, but not npm
-FROM gcr.io/distroless/nodejs20-debian11:nonroot
-ENV NODE_ENV production
-
-# Copy over app
-WORKDIR /app
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/dist ./dist
-
-# Ports, health check and non-root user
-EXPOSE 3000
-HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost/:3000/api || exit 1
-USER app
-
-# Start up command with 50MB of heap size, each application needs to determine what is the best value. DONT use default as it is 4GB.
-CMD ["--max-old-space-size=50", "/app/dist/main"]
+# Start with non-privileged user
+HEALTHCHECK --interval=300s --timeout=10s CMD curl -f http://localhost:${PORT}
+USER 1001
+CMD uvicorn src.main:app --host 0.0.0.0 --port ${PORT} --workers 1 --server-header --date-header --limit-concurrency 1000 --log-config ./logger.conf
