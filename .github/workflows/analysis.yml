@@ -3,11 +3,10 @@ name: Analysis
 on:
   push:
     branches: [main]
-  merge_group:
   pull_request:
     types: [opened, reopened, synchronize, ready_for_review]
   schedule:
-    - cron: "0 11 * * 0" # 3 AM PST = 12 PM UDT, runs sundays
+    - cron: "0 12 * * 0" # 4 AM PST = 12 PM UDT, runs sundays
   workflow_dispatch:
 
 concurrency:
@@ -15,30 +14,66 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  codeql:
+  CodeQL:
     name: CodeQL
     if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-22.04
-    timeout-minutes: 5
+    strategy:
+      matrix:
+        language: [python]
+        include:
+          - language: go
+            working-directory: backend-go
+            build: |
+              sed -i '/^toolchain .*$/d' go.mod
+              go install github.com/swaggo/swag/cmd/swag@latest
+              CGO_ENABLED=0 GOOS=linux go build -v
+          - language: "java"
+            working-directory: backend-java
+            build: ./mvnw package -DskipTests
+          - language: "python"
     steps:
       - uses: actions/checkout@v4
       - uses: github/codeql-action/init@v2
         with:
-          languages: javascript
+          languages: ${{ matrix.language }}
+
+      - name: Autobuild
+        if: ${{ ! matrix.build }}
+        uses: github/codeql-action/autobuild@v2
+
+      - uses: actions/setup-java@v3
+        if: ${{ matrix.build && matrix.language == 'java' }}
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - uses: actions/cache@v3
+        if: ${{ matrix.build && matrix.language == 'java' }}
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Build
+        if: ${{ matrix.build }}
+        run: ${{ matrix.build }}
+        working-directory: ${{ matrix.working-directory }}
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
         with:
-          category: "/language:javascript"
+          category: "/language:${{matrix.language}}"
 
   # https://github.com/marketplace/actions/aqua-security-trivy
   trivy:
     name: Trivy Security Scan
     if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-22.04
-    timeout-minutes: 1
     steps:
       - uses: actions/checkout@v4
+
       - name: Run Trivy vulnerability scanner in repo mode
         uses: aquasecurity/trivy-action@0.14.0
         with:
@@ -54,15 +89,19 @@ jobs:
         with:
           sarif_file: "trivy-results.sarif"
 
-  tests:
-    name: Tests
+  java:
+    name: Java
     if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-22.04
-    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: backend-java
     services:
       postgres:
         image: postgres
         env:
+          POSTGRES_DB: postgres
+          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         options: >-
           --health-cmd pg_isready
@@ -71,32 +110,70 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-    strategy:
-      matrix:
-        dir: [backend, frontend]
-        include:
-          - dir: backend
-            sonar_projectKey: quickstart-openshift_backend
-            token: SONAR_TOKEN_BACKEND
-            triggers: ('backend/')
-          - dir: frontend
-            sonar_projectKey: quickstart-openshift_frontend
-            token: SONAR_TOKEN_FRONTEND
-            triggers: ('frontend/')
     steps:
-      - uses: bcgov-nr/action-test-and-analyse@v1.1.0
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v3
         with:
-          commands: |
-            npm ci
-            npm run test:cov
-          dir: ${{ matrix.dir }}
-          node_version: "20"
-          sonar_args: >
-            -Dsonar.exclusions=**/coverage/**,**/node_modules/**,**/*spec.ts
-            -Dsonar.organization=bcgov-sonarcloud
-            -Dsonar.projectKey=${{ matrix.sonar_projectKey }}
-            -Dsonar.sources=src
-            -Dsonar.tests.inclusions=**/*spec.ts
-            -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
-          sonar_token: ${{ secrets[matrix.token] }}
-          triggers: ${{ matrix.triggers }}
+          distribution: "temurin"
+          java-version: "17"
+      - name: Cache local Maven repository
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Run unit tests
+        run: mvn -f pom.xml clean package
+
+  python:
+    name: Python
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: backend-py
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: cache poetry install
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: poetry-${{ hashFiles('**/pyproject.toml') }}
+
+      - uses: snok/install-poetry@v1.3.4
+        with:
+          version: 1.2.2
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+
+      - id: cache-deps
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: pydeps-${{ hashFiles('**/poetry.lock') }}
+
+      - run: poetry install --no-interaction --no-root
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+
+      - run: poetry run pytest
