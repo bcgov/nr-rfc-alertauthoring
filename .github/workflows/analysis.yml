@@ -22,15 +22,6 @@ jobs:
       matrix:
         language: [python]
         include:
-          - language: go
-            working-directory: backend-go
-            build: |
-              sed -i '/^toolchain .*$/d' go.mod
-              go install github.com/swaggo/swag/cmd/swag@latest
-              CGO_ENABLED=0 GOOS=linux go build -v
-          - language: "java"
-            working-directory: backend-java
-            build: ./mvnw package -DskipTests
           - language: "python"
     steps:
       - uses: actions/checkout@v4
@@ -41,20 +32,6 @@ jobs:
       - name: Autobuild
         if: ${{ ! matrix.build }}
         uses: github/codeql-action/autobuild@v2
-
-      - uses: actions/setup-java@v3
-        if: ${{ matrix.build && matrix.language == 'java' }}
-        with:
-          distribution: "temurin"
-          java-version: "17"
-
-      - uses: actions/cache@v3
-        if: ${{ matrix.build && matrix.language == 'java' }}
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
 
       - name: Build
         if: ${{ matrix.build }}
@@ -89,43 +66,6 @@ jobs:
         with:
           sarif_file: "trivy-results.sarif"
 
-  java:
-    name: Java
-    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
-    runs-on: ubuntu-22.04
-    defaults:
-      run:
-        working-directory: backend-java
-    services:
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_DB: postgres
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v3
-        with:
-          distribution: "temurin"
-          java-version: "17"
-      - name: Cache local Maven repository
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
-      - name: Run unit tests
-        run: mvn -f pom.xml clean package
 
   python:
     name: Python
@@ -133,7 +73,7 @@ jobs:
     runs-on: ubuntu-22.04
     defaults:
       run:
-        working-directory: backend-py
+        working-directory: backend
     services:
       postgres:
         image: postgres
