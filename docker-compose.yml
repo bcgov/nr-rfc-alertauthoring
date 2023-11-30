@@ -74,19 +74,19 @@ services:
       database:
         condition: service_healthy
 
-  backend-py-model-generator:
-    profiles: ["python", "all"]
-    image: python:3.11-slim-buster # DO NOT change, as it breaks the module.
-    container_name: backend-py-model-generator
-    environment:
-      <<: *postgres-vars
-    entrypoint: /app/generate-models.sh
-    volumes: 
-      - "./backend/src/v1/models:/app/models"
-      - "./backend/generate-models.sh:/app/generate-models.sh"
-    depends_on:
-      migrations-py:
-        condition: service_completed_successfully
+  # backend-py-model-generator:
+  #   profiles: ["python", "all"]
+  #   image: python:3.11-slim-buster # DO NOT change, as it breaks the module.
+  #   container_name: backend-py-model-generator
+  #   environment:
+  #     <<: *postgres-vars
+  #   entrypoint: /app/generate-models.sh
+  #   volumes: 
+  #     - "./backend/src/v1/models:/app/models"
+  #     - "./backend/generate-models.sh:/app/generate-models.sh"
+  #   depends_on:
+  #     migrations-py:
+  #       condition: service_completed_successfully
 
   backend-py:
     profiles: ["python", "all"]
@@ -100,8 +100,8 @@ services:
       <<: [*postgres-vars, *python-vars]
     ports: ["3003:3000"]
     depends_on:
-      backend-py-model-generator:
-        condition: service_started
+      migrations-py:
+        condition: service_completed_successfully
 
   backend-py-test:
     profiles: ["python", "all"]

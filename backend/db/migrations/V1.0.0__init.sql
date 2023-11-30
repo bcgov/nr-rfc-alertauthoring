@@ -11,7 +11,7 @@ CREATE SEQUENCE IF NOT EXISTS "user_addresses_id_seq"
     NO MINVALUE
     NO MAXVALUE;
 
-CREATE TABLE "users"
+CREATE TABLE "user"
 (
     id    INTEGER PRIMARY KEY DEFAULT nextval('user_id_seq'),
     name  VARCHAR(50) NOT NULL,
@@ -25,5 +25,5 @@ CREATE TABLE "user_addresses"
     city     VARCHAR(50) NOT NULL,
     state    VARCHAR(50) NOT NULL,
     zip_code VARCHAR(10) NOT NULL,
-    user_id  INTEGER     NOT NULL REFERENCES "users" (id) ON DELETE CASCADE
+    user_id  INTEGER     NOT NULL REFERENCES "user" (id) ON DELETE CASCADE
 );

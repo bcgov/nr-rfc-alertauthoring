@@ -1,4 +1,4 @@
-INSERT INTO py_api.USERS (NAME, EMAIL)
+INSERT INTO py_api.USER (NAME, EMAIL)
 VALUES ('John', 'John.ipsum@test.com'),
        ('Jane', 'Jane.ipsum@test.com'),
        ('Jack', 'Jack.ipsum@test.com'),
