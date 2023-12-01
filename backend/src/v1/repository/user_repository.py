@@ -2,7 +2,7 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 from ..structs.user import UserBase, User as UserUpdate
-from ..models.entities import User
+from ..models.model import User
 from ..repository.repository import BaseRepository
 
 

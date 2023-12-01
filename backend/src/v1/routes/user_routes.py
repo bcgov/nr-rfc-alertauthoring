@@ -6,12 +6,14 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from src.db import session
-from src.v1.models import entities
+from src.v1.models import model
 from src.v1.repository.user_repository import userRepository
 from src.v1.structs.user import UserBase, User
 
-router = APIRouter()
+import logging
 
+router = APIRouter()
+LOGGER = logging.getLogger(__name__)
 
 @router.get("/", response_model=List[User])
 def read_users(
@@ -24,6 +26,7 @@ def read_users(
     """
     # create User array from database objects by iterating over.
     users = userRepository.get_multi(db, skip=skip, limit=limit)
+    LOGGER.info("users: {users}")
     return [User(user_id=user.id, email=user.email, name=user.name) for user in users]
 
 
@@ -36,7 +39,7 @@ def create_user(
     """
     Create new user.
     """
-    db_obj = entities.User(
+    db_obj = model.User(
         email=user_in.email,
         name=user_in.name,
     )

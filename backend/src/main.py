@@ -45,7 +45,7 @@ async def root():
 
 
 app.include_router(user_router,
-                   prefix=api_prefix_v1 + '/user',
+                   prefix=api_prefix_v1 + '/users',
                    tags=["User CRUD"])
 
 
