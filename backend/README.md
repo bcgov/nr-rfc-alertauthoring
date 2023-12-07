@@ -16,11 +16,21 @@
 - [Docker Compose](https://docs.docker.com/compose/install/)
 
 ### Local Development
-- Run the `docker-compose -f .\docker-compose.py.yml up` command to start the entire stack.
-- The database changes are applied automatically by flyway
+
+#### Local Dev with Docker
+
+- Run the `docker compose -f .\docker-compose.py.yml up` command to start the entire stack.
+- The database changes are applied automatically by alembic
 - The models are generated into `backend-py/src/v1/models/model.py` .
-- Devs are encouraged to see the `backend-py/src/v1/models/model.py` file and update the models in entities.py. The reason of manual process behind is the sqlacodegen is still lacking support for  SQLAlchemy 2.x.
 - The API is Documentation available at http://localhost:3003/docs
+
+#### Local Dev - poetry
+
+* create the env `cd backend; poetry install`
+* activate the env `source $(poetry env info --path)/bin/activate`
+* start uvicorn 
+
+```uvicorn src.main:app --host 0.0.0.0 --port 3000 --workers 1 --server-header --date-header --limit-concurrency 100 --reload --log-config ./logger.conf```
 
 ### Unit Testing
 - Run `docker-compose up -d backend-py-test` command to run the unit tests from the root directory.

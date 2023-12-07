@@ -35,7 +35,6 @@ x-python-vars: &python-vars
   PYTHONUNBUFFERED: 1
   PYTHONPATH: /application/app/src
 
-
 services:
   database:
     image: postgres:15
@@ -46,33 +45,17 @@ services:
       test: ["CMD", "pg_isready", "-U", *POSTGRES_USER]
     ports: ["5432:5432"]
 
-  # migrations:
-  #   image: flyway/flyway:9-alpine
-  #   container_name: migrations
-  #   command: info migrate info
-  #   volumes: ["./migrations/sql:/flyway/sql:ro"]
-  #   environment:
-  #     FLYWAY_URL: jdbc:postgresql://database:5432/postgres
-  #     FLYWAY_USER: *POSTGRES_USER
-  #     FLYWAY_PASSWORD: *POSTGRES_PASSWORD
-  #     FLYWAY_BASELINE_ON_MIGRATE: true
-  #     FLYWAY_DEFAULT_SCHEMA: USERS
-  #   depends_on:
-  #     database:
-  #       condition: service_healthy
-
-  migrations-py:
-    profiles: ["python", "all"]
-    image: flyway/flyway:9-alpine
-    container_name: migrations-py
-    command: info migrate info
-    volumes: ["./backend/db/migrations:/flyway/sql:ro"]
+  migrations:
+    entrypoint: /app/venv/bin/python -m alembic upgrade head
+    build:
+      context: .
+      dockerfile: migrations/Dockerfile
     environment:
-      <<: *flyway-vars
-      FLYWAY_DEFAULT_SCHEMA: py_api
+      <<: *postgres-vars
     depends_on:
       database:
         condition: service_healthy
+
 
   # backend-py-model-generator:
   #   profiles: ["python", "all"]
@@ -100,7 +83,7 @@ services:
       <<: [*postgres-vars, *python-vars]
     ports: ["3003:3000"]
     depends_on:
-      migrations-py:
+      migrations:
         condition: service_completed_successfully
 
   backend-py-test:
@@ -115,21 +98,6 @@ services:
       backend-py:
         condition: service_healthy
 
-  # backend:
-  #   container_name: backend
-  #   entrypoint: sh -c "npm i && npm run start:dev"
-  #   environment:
-  #     <<: *postgres-vars
-  #     NODE_ENV: development
-  #   image: node:20-bullseye
-  #   ports: ["3001:3000"]
-  #   volumes: ["./backend:/app", "/app/node_modules"]
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:3000/api"]
-  #   working_dir: "/app"
-  #   depends_on:
-  #     migrations:
-  #       condition: service_started
 
   # frontend:
   #   container_name: frontend

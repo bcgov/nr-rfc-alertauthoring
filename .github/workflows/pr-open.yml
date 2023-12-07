@@ -102,6 +102,25 @@ jobs:
           tag_fallback: latest
           triggers: ('${{ matrix.package }}/')
 
+  build-custom:
+    name: Build Custom
+    needs: [vars]
+    runs-on: ubuntu-22.04
+    permissions:
+      packages: write
+    timeout-minutes: 10
+    steps:
+      - uses: bcgov-nr/action-builder-ghcr@v2.0.0
+        with:
+          keep_versions: 10
+          package: migrations-alembic
+          tag: ${{ needs.vars.outputs.tag }}
+          tag_fallback: latest
+          triggers: ('backend/alembic/versions')
+          build_file: migrations/Dockerfile
+          build_context: .
+
+
   # https://github.com/bcgov-nr/action-deployer-openshift
   deploys:
     name: Deploys
