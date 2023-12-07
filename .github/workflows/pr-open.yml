@@ -103,7 +103,7 @@ jobs:
           triggers: ('${{ matrix.package }}/')
 
   build-custom:
-    name: Build Custom
+    name: Build Migrations
     needs: [vars]
     runs-on: ubuntu-22.04
     permissions:
@@ -113,7 +113,7 @@ jobs:
       - uses: bcgov-nr/action-builder-ghcr@v2.0.0
         with:
           keep_versions: 10
-          package: migrations-alembic
+          package: alembicmigrations
           tag: ${{ needs.vars.outputs.tag }}
           tag_fallback: latest
           triggers: ('backend/alembic/versions')
