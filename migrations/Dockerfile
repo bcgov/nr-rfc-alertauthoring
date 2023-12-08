@@ -8,7 +8,7 @@ ARG PIP_NO_CACHE_DIR=off \
 # Install poetry, then dependencies, include dev dependencies for migrations
 # as alembic is a dev dependency
 WORKDIR /app
-RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev && \
+RUN apk update && apk add --no-cache postgresql-dev gcc python3-dev musl-dev && \
     python3 -m venv venv && \
     . venv/bin/activate && \
     pip install alembic sqlalchemy psycopg2-binary pydantic pydantic[email] pydantic-settings
@@ -28,7 +28,7 @@ ENV PYTHONUNBUFFERED=1 \
 
 # # Packages
 RUN apk update && \
-    apk add libpq-dev
+    apk add --no-cache libpq-dev 
 
 USER 1001
 CMD /app/venv/bin/python -m alembic upgrade head

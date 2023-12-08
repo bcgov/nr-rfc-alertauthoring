@@ -72,21 +72,19 @@ backend:
     - name: database-migrations
       registry: '{{ .Values.global.registry }}'
       repository: '{{ .Values.global.repository }}' # example, it includes registry and repository
-      image: migrations
+      image: alembicmigrations
       tag: '{{ .Values.global.tag }}'
       env:
         fromGlobalSecret:
-          - name: FLYWAY_PASSWORD
-            key: databasePassword
-          - name: FLYWAY_URL
-            key: databaseJDBCURLNoCreds
-          - name: FLYWAY_USER
+          - name: POSTGRES_PASSWORD
+            key: password
+          - name: POSTGRES_USER
             key: databaseUser
+          - name: POSTGRES_DATABASE
+            key: databaseName
         fromValues:
-          - name: FLYWAY_BASELINE_ON_MIGRATE
-            value: "true"
-          - name: FLYWAY_DEFAULT_SCHEMA
-            value: "py_api"
+          - name: POSTGRES_HOST
+            value: '{{ .Release.Name }}-{{.Values.global.databaseAlias}}'
       resources:
         limits:
           cpu: 500m
