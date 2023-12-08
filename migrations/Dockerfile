@@ -31,4 +31,5 @@ RUN apk update && \
     apk add --no-cache libpq-dev 
 
 USER 1001
+HEALTHCHECK CMD [ "alembic", "show", "head" ]
 ENTRYPOINT /app/venv/bin/python -m alembic upgrade head
