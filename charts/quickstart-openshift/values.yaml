@@ -37,6 +37,8 @@ backend:
         fromValues:
           - name: POSTGRES_HOST
             value: '{{ .Release.Name }}-{{.Values.global.databaseAlias}}'
+          - name: POSTGRES_PORT
+            value: 5432
       ports:
         - name: http
           containerPort: 3000

@@ -11,7 +11,7 @@ class Settings():
     POSTGRES_SERVER: str = os.getenv("POSTGRES_HOST", "127.0.0.1:5432")
     POSTGRES_USER: str = os.getenv("POSTGRES_USER", "postgres")
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "postgres")
-    POSTGRES_DB: str = os.getenv("POSTGRES_DB", "postgres")
+    POSTGRES_DB: str = os.getenv("POSTGRES_DATABASE", "postgres")
     # SQLALCHEMY_DATABASE_URI: PostgresDsn.build(
     #     scheme="postgresql",
     #     username=os.getenv("POSTGRES_USER", "postgres"),
@@ -24,7 +24,7 @@ class Settings():
         username=os.getenv("POSTGRES_USER", "postgres"),
         password=os.getenv("POSTGRES_PASSWORD", "postgres"),
         host=os.getenv("POSTGRES_HOST", "127.0.0.1"),
-        path=os.getenv('POSTGRES_DB', 'postgres'),
+        path=os.getenv('POSTGRES_DATABASE', 'postgres'),
         port=int(os.getenv("POSTGRES_PORT", 5432)),
     )
     DEFAULT_SCHEMA: str = 'py_api'
