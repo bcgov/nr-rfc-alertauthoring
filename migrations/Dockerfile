@@ -31,4 +31,4 @@ RUN apk update && \
     apk add --no-cache libpq-dev 
 
 USER 1001
-CMD /app/venv/bin/python -m alembic upgrade head
+ENTRYPOINT /app/venv/bin/python -m alembic upgrade head

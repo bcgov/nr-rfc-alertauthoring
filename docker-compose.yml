@@ -46,7 +46,7 @@ services:
     ports: ["5432:5432"]
 
   migrations:
-    entrypoint: /app/venv/bin/python -m alembic upgrade head
+    #entrypoint: /app/venv/bin/python -m alembic upgrade head
     build:
       context: .
       dockerfile: migrations/Dockerfile
