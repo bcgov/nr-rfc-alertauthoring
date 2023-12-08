@@ -9,11 +9,31 @@ x-var:
   - &POSTGRES_DATABASE
     postgres
 
+x-flyway-vars: &flyway-vars
+  FLYWAY_URL: jdbc:postgresql://database:5432/postgres
+  FLYWAY_USER: *POSTGRES_USER
+  FLYWAY_PASSWORD: *POSTGRES_PASSWORD
+  FLYWAY_BASELINE_ON_MIGRATE: "true"
+
 x-postgres-vars: &postgres-vars
   POSTGRES_HOST: database
   POSTGRES_USER: *POSTGRES_USER
   POSTGRES_PASSWORD: *POSTGRES_PASSWORD
   POSTGRES_DATABASE: *POSTGRES_DATABASE
+
+x-python-vars: &python-vars
+  PIP_NO_CACHE_DIR: "off"
+  PIP_DISABLE_PIP_VERSION_CHECK: "on"
+  PIP_DEFAULT_TIMEOUT: 100
+  POETRY_VERSION: 1.2.2
+  POETRY_HOME: /opt/poetry
+  POETRY_VIRTUALENVS_IN_PROJECT: "true"
+  POETRY_NO_INTERACTION: "1"
+  PYSETUP_PATH: /application
+  VENV_PATH: /application/.venv
+  PYTHONDONTWRITEBYTECODE: 1
+  PYTHONUNBUFFERED: 1
+  PYTHONPATH: /application/app/src
 
 services:
   database:
@@ -26,66 +46,89 @@ services:
     ports: ["5432:5432"]
 
   migrations:
-    image: flyway/flyway:9-alpine
-    container_name: migrations
-    command: info migrate info
-    volumes: ["./migrations/sql:/flyway/sql:ro"]
+    #entrypoint: /app/venv/bin/python -m alembic upgrade head
+    build:
+      context: .
+      dockerfile: migrations/Dockerfile
     environment:
-      FLYWAY_URL: jdbc:postgresql://database:5432/postgres
-      FLYWAY_USER: *POSTGRES_USER
-      FLYWAY_PASSWORD: *POSTGRES_PASSWORD
-      FLYWAY_BASELINE_ON_MIGRATE: true
-      FLYWAY_DEFAULT_SCHEMA: USERS
+      <<: *postgres-vars
     depends_on:
       database:
         condition: service_healthy
 
-  backend:
-    container_name: backend
-    entrypoint: sh -c "npm i && npm run start:dev"
-    environment:
-      <<: *postgres-vars
-      NODE_ENV: development
-    image: node:20-bullseye
-    ports: ["3001:3000"]
-    volumes: ["./backend:/app", "/app/node_modules"]
+
+  # backend-py-model-generator:
+  #   profiles: ["python", "all"]
+  #   image: python:3.11-slim-buster # DO NOT change, as it breaks the module.
+  #   container_name: backend-py-model-generator
+  #   environment:
+  #     <<: *postgres-vars
+  #   entrypoint: /app/generate-models.sh
+  #   volumes: 
+  #     - "./backend/src/v1/models:/app/models"
+  #     - "./backend/generate-models.sh:/app/generate-models.sh"
+  #   depends_on:
+  #     migrations-py:
+  #       condition: service_completed_successfully
+
+  backend-py:
+    profiles: ["python", "all"]
+    image: python:3.12
+    container_name: backend-py
+    entrypoint: /application/start-local.sh
+    volumes: ["./backend:/application", "/application/.venv"]
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api"]
-    working_dir: "/app"
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+    environment:
+      <<: [*postgres-vars, *python-vars]
+    ports: ["3003:3000"]
     depends_on:
       migrations:
-        condition: service_started
+        condition: service_completed_successfully
 
-  frontend:
-    container_name: frontend
-    entrypoint: sh -c "npm ci && npm run dev"
+  backend-py-test:
+    profiles: ["python", "all"]
+    image: python:3.12
+    container_name: backend-py-test
+    entrypoint: /application/run-unit-tests.sh
+    volumes: ["./backend:/application", "/application/.venv"]
     environment:
-      NODE_ENV: development
-      PORT: 3000
-      BACKEND_URL: http://backend:3000
-    image: node:20-bullseye
-    ports: ["3000:3000"]
-    volumes: ["./frontend:/app", "/app/node_modules"]
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
-    working_dir: "/app"
+      <<: [*postgres-vars, *python-vars]
     depends_on:
-      backend:
+      backend-py:
         condition: service_healthy
 
-  caddy:
-    container_name: caddy
-    profiles: ["caddy"]
-    build: ./frontend
-    environment:
-      NODE_ENV: development
-      PORT: 3000
-      BACKEND_URL: http://backend:3000
-      LOG_LEVEL: info
-    ports: ["3005:3000"]
-    volumes: ["./frontend/Caddyfile:/etc/caddy/Caddyfile"]
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
-    depends_on:
-      backend:
-        condition: service_healthy
+
+  # frontend:
+  #   container_name: frontend
+  #   entrypoint: sh -c "npm ci && npm run dev"
+  #   environment:
+  #     NODE_ENV: development
+  #     PORT: 3000
+  #     BACKEND_URL: http://backend:3000
+  #   image: node:20-bullseye
+  #   ports: ["3000:3000"]
+  #   volumes: ["./frontend:/app", "/app/node_modules"]
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:3000"]
+  #   working_dir: "/app"
+  #   depends_on:
+  #     backend:
+  #       condition: service_healthy
+
+  # caddy:
+  #   container_name: caddy
+  #   profiles: ["caddy"]
+  #   build: ./frontend
+  #   environment:
+  #     NODE_ENV: development
+  #     PORT: 3000
+  #     BACKEND_URL: http://backend:3000
+  #     LOG_LEVEL: info
+  #   ports: ["3005:3000"]
+  #   volumes: ["./frontend/Caddyfile:/etc/caddy/Caddyfile"]
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:3000"]
+  #   depends_on:
+  #     backend:
+  #       condition: service_healthy

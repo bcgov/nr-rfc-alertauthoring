@@ -37,6 +37,8 @@ backend:
         fromValues:
           - name: POSTGRES_HOST
             value: '{{ .Release.Name }}-{{.Values.global.databaseAlias}}'
+          - name: POSTGRES_PORT
+            value: "5432"
       ports:
         - name: http
           containerPort: 3000
@@ -50,7 +52,7 @@ backend:
           memory: 150Mi
       readinessProbe:
         httpGet:
-          path: /api
+          path: /
           port: 3000
           scheme: HTTP
         initialDelaySeconds: 5
@@ -62,7 +64,7 @@ backend:
         successThreshold: 1
         failureThreshold: 3
         httpGet:
-          path: /api
+          path: /
           port: 3000
           scheme: HTTP
         initialDelaySeconds: 15
@@ -72,21 +74,19 @@ backend:
     - name: database-migrations
       registry: '{{ .Values.global.registry }}'
       repository: '{{ .Values.global.repository }}' # example, it includes registry and repository
-      image: migrations
+      image: alembicmigrations
       tag: '{{ .Values.global.tag }}'
       env:
         fromGlobalSecret:
-          - name: FLYWAY_PASSWORD
-            key: databasePassword
-          - name: FLYWAY_URL
-            key: databaseJDBCURLNoCreds
-          - name: FLYWAY_USER
+          - name: POSTGRES_PASSWORD
+            key: password
+          - name: POSTGRES_USER
             key: databaseUser
+          - name: POSTGRES_DATABASE
+            key: databaseName
         fromValues:
-          - name: FLYWAY_BASELINE_ON_MIGRATE
-            value: "true"
-          - name: FLYWAY_DEFAULT_SCHEMA
-            value: "USERS"
+          - name: POSTGRES_HOST
+            value: '{{ .Release.Name }}-{{.Values.global.databaseAlias}}'
       resources:
         limits:
           cpu: 500m
@@ -146,6 +146,11 @@ backend:
         port: 80
         targetPort: 3000 # the container port where the application is listening on
         protocol: TCP
+  route:
+    enabled: true
+    host: "{{ .Release.Name }}-backend.{{ .Values.global.domain }}"
+    targetPort: http # look at line#164 refer to the name.
+
   nodeSelector: { }
   tolerations: [ ]
   affinity: { }
@@ -262,37 +267,6 @@ frontend:
     host: "{{ .Release.Name }}-frontend.{{ .Values.global.domain }}"
     targetPort: http # look at line#164 refer to the name.
 
-crunchy: # enable it for TEST and PROD, for PR based pipelines simply use single postgres
-  enabled: false
-
-  crunchyImage: artifacts.developer.gov.bc.ca/bcgov-docker-local/crunchy-postgres-gis:ubi8-15.2-3.3-0
-
-  postgresVersion: 15
-  postGISVersion: '3.3'
-  imagePullPolicy: Always
-  instances:
-    name: ha # high availability
-    replicas: 1 # 2 or 3 for high availability in TEST and PROD.
-    metadata:
-      annotations:
-        prometheus.io/scrape: 'true'
-        prometheus.io/port: '9187'
-    dataVolumeClaimSpec:
-      storage: 120Mi
-      storageClassName: netapp-block-standard
-    requests:
-      cpu: 25m
-      memory: 256Mi
-    limits:
-      cpu: 100m
-      memory: 512Mi
-    replicaCertCopy:
-      requests:
-        cpu: 1m
-        memory: 32Mi
-      limits:
-        cpu: 50m
-        memory: 64Mi
 
   pgBackRest:
     enabled: false
@@ -388,11 +362,11 @@ bitnami-pg:
       enabled: false
     podSecurityContext:
       enabled: false
-    initdb:
-      scripts: # remove the below script, if POSTGIS is not required.
-        postgis.sh: |
-          #!/bin/sh
-          PGPASSWORD=$POSTGRES_PASSWORD psql -U postgres -d postgres -c "CREATE EXTENSION postgis;"
+    #initdb:
+      #scripts: # remove the below script, if POSTGIS is not required.
+      #  postgis.sh: |
+      #   #!/bin/sh
+      #    PGPASSWORD=$POSTGRES_PASSWORD psql -U postgres -d postgres -c "CREATE EXTENSION postgis;"
     resources:
       requests:
         cpu: 50m

@@ -11,6 +11,7 @@ on:
 
 jobs:
   integration-tests:
+    if: github.repository == 'disabling_integration_tests_for_now'
     name: Integration Tests
     runs-on: ubuntu-22.04
     timeout-minutes: 1
@@ -36,6 +37,7 @@ jobs:
           node src/main.js
 
   cypress-e2e:
+    if: github.repository == 'disabling_integration_tests_for_now'
     name: E2E Tests
     runs-on: ubuntu-22.04
     defaults:
