@@ -1,10 +1,9 @@
-from alembic import op
 #import sqlalchemy as sa
 #from sqlalchemy import orm
-
 import logging
-
 from typing import Union
+
+from alembic import op
 
 LOGGER = logging.getLogger(__name__)
 

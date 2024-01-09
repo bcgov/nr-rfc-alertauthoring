@@ -3,8 +3,11 @@ import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .v1.routes.user_routes import router as user_router
+
 from .core.config import Configuration
+
+#from .v1.routes.user_routes import router as user_router
+from .v1.routes.basin_routes import router as basin_router
 
 api_prefix_v1 = "/api/v1"
 logging.getLogger("uvicorn").handlers.clear()  # removes duplicated logs
@@ -44,9 +47,9 @@ async def root():
     return {"message": "Route verification endpoints"}
 
 
-app.include_router(user_router,
-                   prefix=api_prefix_v1 + '/users',
-                   tags=["User CRUD"])
+app.include_router(basin_router,
+                   prefix=api_prefix_v1 + '/basins',
+                   tags=["Basin CRUD"])
 
 
 # Define the filter

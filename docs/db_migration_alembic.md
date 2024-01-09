@@ -48,6 +48,12 @@ alembic downgrade <version to revert to>
 alembic downgrade -1
 ```
 
+## Create a blank empty migration
+
+```
+alembic revision -m "migration message"
+```
+
 # Docker Stuff
 
 The 
