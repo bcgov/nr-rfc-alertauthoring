@@ -11,7 +11,7 @@ WORKDIR /app
 RUN apk update && apk add --no-cache postgresql-dev gcc python3-dev musl-dev && \
     python3 -m venv venv && \
     . venv/bin/activate && \
-    pip install alembic sqlalchemy psycopg2-binary pydantic pydantic[email] pydantic-settings
+    pip install sqlmodel alembic sqlalchemy psycopg2-binary pydantic pydantic[email] pydantic-settings
 
 
 # # Run Migration
@@ -24,7 +24,8 @@ COPY ./backend/alembic /app/alembic
 COPY ./backend/alembic.ini /app/alembic.ini
 
 ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
+    PYTHONDONTWRITEBYTECODE=1 \
+    PATH="/app/venv/bin:$PATH"
 
 # # Packages
 RUN apk update && \
@@ -32,4 +33,4 @@ RUN apk update && \
 
 USER 1001
 HEALTHCHECK CMD [ "alembic", "show", "head" ]
-ENTRYPOINT /app/venv/bin/python -m alembic upgrade head
+ENTRYPOINT alembic upgrade head

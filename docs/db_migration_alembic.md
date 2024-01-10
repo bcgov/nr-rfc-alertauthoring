@@ -60,6 +60,8 @@ The
 
 ## Build
 
-`docker build -t alembic_migrations -f migrations/Migrations.Dockerfile .`
+`docker build -t alembic_migrations -f migrations/Dockerfile .`
 
 ## Run the container
+
+`docker run -it --entrypoint /bin/sh alembic_migrations`

@@ -78,7 +78,7 @@ services:
     entrypoint: /application/start-local.sh
     volumes: ["./backend:/application", "/application/.venv"]
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      test: ["CMD", "curl", "-f", "http://localhost:3003"]
     environment:
       <<: [*postgres-vars, *python-vars]
     ports: ["3003:3000"]
