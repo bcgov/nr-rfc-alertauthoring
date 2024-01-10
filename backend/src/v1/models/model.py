@@ -19,13 +19,10 @@ class BasinBase(SQLModel):
     basin_name: str = Field(nullable=False)
 
 class BasinsRead(BasinBase):
-    id: int
+    id: Optional[int] = Field(default=None, primary_key=True)
 
 class Basins(BasinsRead, table=True):
     __table_args__ = {'schema':default_schema}
-    #__tablename__ = 'basins'
-    id: Optional[int] = Field(default=None, primary_key=True)
-    basin_name: str = Field(nullable=False)
 
     subbasins_id: Optional[int] = Field(default=None, foreign_key=f"{default_schema}.subbasins.id")
     subbasins: Optional[Subbasins] = Relationship(back_populates="basins")
