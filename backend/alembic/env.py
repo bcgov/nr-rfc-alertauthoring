@@ -1,19 +1,15 @@
+import logging
 from logging.config import fileConfig
 
-from sqlalchemy import create_engine, pool
-from sqlalchemy.schema import CreateSchema
-
-
-# import app.config
-# import app.models.model
-# import src.core.config
-import src.v1.models.model
 import src.core.config as app_config
-
 from alembic import context
 from alembic.script import ScriptDirectory
+from sqlalchemy import create_engine, pool
+from sqlalchemy.schema import CreateSchema
+from sqlmodel import SQLModel  # NEW
+from src.v1.models.model import *  # NEW make *
 
-import logging
+# from ...src.v1.models.model import metadata
 
 config = context.config
 if config.config_file_name is not None:
@@ -39,7 +35,7 @@ LOGGER.debug("test test test")
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = None
+target_metadata = SQLModel.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -104,12 +100,13 @@ def run_migrations_offline() -> None:
     script output.
 
     """
+    include_schemas=True
     LOGGER.debug("running migrations offline")
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
         literal_binds=True,
-        target_metadata=src.v1.models.model.metadata,
+        target_metadata=target_metadata,
         version_table='alembic_version',
         version_table_schema=app_config.Configuration.DEFAULT_SCHEMA,
         process_revision_directives=process_revision_directives
@@ -126,6 +123,7 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    include_schemas=True
     url = get_url()
     LOGGER.debug(f"using url: {url}")
     connectable = create_engine(url)
@@ -134,8 +132,8 @@ def run_migrations_online() -> None:
 
         context.configure(
             connection=connection,
-            target_metadata=src.v1.models.model.metadata,
             version_table='alembic_version',
+            target_metadata=target_metadata,
             version_table_schema=app_config.Configuration.DEFAULT_SCHEMA,
             process_revision_directives=process_revision_directives
         )

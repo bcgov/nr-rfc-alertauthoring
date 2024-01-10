@@ -1,1 +1,1 @@
-from .model import User, UserAddress
+# from .model import User, UserAddress

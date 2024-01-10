@@ -1,67 +1,28 @@
 # coding: utf-8
-from sqlalchemy import \
-    Boolean, Column, DateTime, ForeignKey, Integer, String, text, Identity, \
-    PrimaryKeyConstraint, UniqueConstraint
-from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
+from typing import List, Optional
 
-Base = declarative_base()
-metadata = Base.metadata
+from sqlmodel import Field, Relationship, SQLModel
 
+from ...core.config import Settings
 
-default_schema = 'py_api'
-
-class User(Base):
-    __tablename__ = 'user'
+default_schema = Settings.DEFAULT_SCHEMA
+ 
+class Subbasins(SQLModel, table=True):
+    # __tablename__ = 'subbasins'
     __table_args__ = {'schema':default_schema}
-    # __table_args__ = (
-    #     PrimaryKeyConstraint("id", name="user_id_pk"),
-    # )
-
-    id = Column(
-        Integer,
-        Identity(
-            start=1,
-            increment=1,
-            minvalue=1,
-            maxvalue=1000000,
-            cycle=False,
-            cache=1,
-        ),
-        primary_key=True
-    )
-    name = Column(String(50), nullable=False)
-    email = Column(String(50), nullable=False, unique=True)
-    address = relationship("UserAddress", back_populates="user")
+    id: Optional[int] = Field(default=None, primary_key=True)
+    sub_basin_name: str = Field(nullable=False)
+    basins: List['Basins'] = Relationship(back_populates="subbasins")
 
 
-# CountyCode = Column('CountyCode', String, ForeignKey('tblCounty.CountyCode'))
+class BasinBase(SQLModel):
+    basin_name: str = Field(nullable=False)
 
+class BasinsRead(BasinBase):
+    id: Optional[int] = Field(default=None, primary_key=True)
 
-class UserAddress(Base):
-    __tablename__ = 'user_addresses'
+class Basins(BasinsRead, table=True):
     __table_args__ = {'schema':default_schema}
-    # __table_args__ = (
-    #     PrimaryKeyConstraint("id", name="useraddress_pk"),
-    # )
 
-    id = Column(
-        Integer,
-        Identity(
-            start=1,
-            increment=1,
-            minvalue=1,
-            maxvalue=1000000,
-            cycle=False,
-            cache=1,
-        ),
-        primary_key=True
-    )
-    street = Column(String(50), nullable=False)
-    city = Column(String(50), nullable=False)
-    state = Column(String(50), nullable=False)
-    zip_code = Column(String(10), nullable=False)
-    user_id = Column(ForeignKey(User.id, ondelete='CASCADE'), nullable=False)
-
-    user = relationship('User', back_populates='address')
-    
+    subbasins_id: Optional[int] = Field(default=None, foreign_key=f"{default_schema}.subbasins.id")
+    subbasins: Optional[Subbasins] = Relationship(back_populates="basins")
