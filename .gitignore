@@ -128,3 +128,5 @@ charts/quickstart-openshift/charts/component/
 
 backend/alembic/versions_old/**
 backend/src/v1/repository_delete/**
+frontend-old/**
+
