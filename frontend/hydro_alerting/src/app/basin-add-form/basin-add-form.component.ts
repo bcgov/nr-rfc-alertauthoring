@@ -26,6 +26,7 @@ export class BasinAddFormComponent {
   }
 
   onSubmit(newBasin: any) {
+    console.log("new basin to submit: " + newBasin)
     this.addBasin.emit(newBasin);
     this.basinForm.reset();
   }

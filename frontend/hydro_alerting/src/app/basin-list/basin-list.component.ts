@@ -1,20 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BasinItemComponent } from '../basin-item/basin-item.component';
+import { BasinAddFormComponent } from '../basin-add-form/basin-add-form.component';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-basin-list',
   standalone: true,
-  imports: [CommonModule, BasinItemComponent, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, BasinItemComponent, BasinAddFormComponent, FormsModule, ReactiveFormsModule],
   // the square brackets around [basin] tell angular that basin is an input 
   // property
   template: `
     <h2> Basins <Label><h2>
-      <form [formGroup]="basinForm" (ngSubmit)="onSubmit(basinForm.value)">
-        <input type="text" placeholder="Add Basin" formControlName="name"/>
-        <button type="submit">Add</button>
-      </form>
+      <app-basin-add-form (addBasin)="onAddHabit($event)"></app-basin-add-form>
       <ul>
         <app-basin-item
           *ngFor="let basin of basins"
@@ -55,12 +53,12 @@ export class BasinListComponent implements OnInit {
     });
    }
 
-   onSubmit(basinData: any) {
+   onAddHabit(basinData: any) {
     console.log('Your basin has been submitted', basinData);
     const basin_id = this.basins.length + 1;
     basinData.id = basin_id;
     this.basins.push(basinData);
-    this.basinForm.reset();
+    // this.basinForm.reset();
    }
 
   ngOnInit(): void {
