@@ -55,9 +55,9 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
-          "options": {
-            "proxyConfig": "src/proxy.conf.json"
-          },
+          // "options": {
+          //   "proxyConfig": "src/proxy.conf.json"
+          // },
           "configurations": {
             "production": {
               "buildTarget": "hydro_alerting:build:production"
