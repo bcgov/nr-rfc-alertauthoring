@@ -23,7 +23,8 @@
 	rewrite @spa_router {http.matchers.file.relative}
 	# Proxy requests to API service
 	reverse_proxy /api/* {$BACKEND_URL} {
-		header_up Host {http.reverse_proxy.upstream.hostport}
+		# header_up Host {http.reverse_proxy.upstream.hostport}
+		header_up Host {http.reverse_proxy.upstream.host}
 		header_up X-Real-IP {remote_host}
 		header_up X-Forwarded-For {remote_host}
 	}
