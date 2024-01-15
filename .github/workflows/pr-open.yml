@@ -110,6 +110,8 @@ jobs:
           tag: ${{ needs.vars.outputs.tag }}
           tag_fallback: latest
           triggers: ('${{ matrix.package }}/')
+          build_file: ${{ matrix.build_file }}
+          build_context: ${{ matrix.build_context }}
       
 
   build-custom:
