@@ -12,8 +12,15 @@ import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
       <button type="submit">Add</button>
     </form>
   `,
-  // styleUrl: './basin-add-form.component.css'
-  styles: []
+  styles: [
+    `
+      button {
+        background-color: blue;
+        color: white;
+        border-radius: 5px;
+        font-size: 16px;
+      }`
+  ]
 })
 export class BasinAddFormComponent {
   basinForm:  any;
@@ -26,7 +33,7 @@ export class BasinAddFormComponent {
   }
 
   onSubmit(newBasin: any) {
-    console.log("new basin to submit: " + newBasin)
+    console.log("new basin to submit: " + JSON.stringify(newBasin));
     this.addBasin.emit(newBasin);
     this.basinForm.reset();
   }

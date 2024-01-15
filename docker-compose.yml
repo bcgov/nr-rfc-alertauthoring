@@ -9,11 +9,6 @@ x-var:
   - &POSTGRES_DATABASE
     postgres
 
-x-flyway-vars: &flyway-vars
-  FLYWAY_URL: jdbc:postgresql://database:5432/postgres
-  FLYWAY_USER: *POSTGRES_USER
-  FLYWAY_PASSWORD: *POSTGRES_PASSWORD
-  FLYWAY_BASELINE_ON_MIGRATE: "true"
 
 x-postgres-vars: &postgres-vars
   POSTGRES_HOST: database
@@ -56,21 +51,6 @@ services:
       database:
         condition: service_healthy
 
-
-  # backend-py-model-generator:
-  #   profiles: ["python", "all"]
-  #   image: python:3.11-slim-buster # DO NOT change, as it breaks the module.
-  #   container_name: backend-py-model-generator
-  #   environment:
-  #     <<: *postgres-vars
-  #   entrypoint: /app/generate-models.sh
-  #   volumes: 
-  #     - "./backend/src/v1/models:/app/models"
-  #     - "./backend/generate-models.sh:/app/generate-models.sh"
-  #   depends_on:
-  #     migrations-py:
-  #       condition: service_completed_successfully
-
   backend-py:
     profiles: ["python", "all"]
     image: python:3.12
@@ -98,37 +78,43 @@ services:
       backend-py:
         condition: service_healthy
 
+  frontend:
+    container_name: frontend
+    # entrypoint: sh -c "npm ci && npm run dev"
+    #entrypoint: sh -c "npm ci && npm run build"
 
-  # frontend:
-  #   container_name: frontend
-  #   entrypoint: sh -c "npm ci && npm run dev"
-  #   environment:
-  #     NODE_ENV: development
-  #     PORT: 3000
-  #     BACKEND_URL: http://backend:3000
-  #   image: node:20-bullseye
-  #   ports: ["3000:3000"]
-  #   volumes: ["./frontend:/app", "/app/node_modules"]
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:3000"]
-  #   working_dir: "/app"
-  #   depends_on:
-  #     backend:
-  #       condition: service_healthy
+    # build: 
+    #   context: ./frontend/hydro_alerting
+    #   dockerfile: Dockerfile
+    entrypoint: sh -c "npm ci && npm run start"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      BACKEND_URL: http://backend-py:3000
+    image: node:20-bullseye
+    ports: ["4200:4200"]
+    volumes: ["./frontend/hydro_alerting:/app", "/app/node_modules"]
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:3000"]
+    working_dir: "/app"
+    # depends_on:
+    #   backend-py:
+    #     condition: service_healthy
 
-  # caddy:
-  #   container_name: caddy
-  #   profiles: ["caddy"]
-  #   build: ./frontend
-  #   environment:
-  #     NODE_ENV: development
-  #     PORT: 3000
-  #     BACKEND_URL: http://backend:3000
-  #     LOG_LEVEL: info
-  #   ports: ["3005:3000"]
-  #   volumes: ["./frontend/Caddyfile:/etc/caddy/Caddyfile"]
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:3000"]
-  #   depends_on:
-  #     backend:
-  #       condition: service_healthy
+  caddy:
+    container_name: caddy
+    profiles: ["caddy"]
+    build: ./frontend
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      BACKEND_URL: http://backend:3000
+      # frontend/hydro_alerting
+      LOG_LEVEL: info
+    ports: ["3005:3000"]
+    volumes: ["./frontend/hydro_alerting/Caddyfile:/etc/caddy/Caddyfile"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+    depends_on:
+      backend-py:
+        condition: service_healthy

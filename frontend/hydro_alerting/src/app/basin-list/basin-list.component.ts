@@ -3,6 +3,10 @@ import { CommonModule } from '@angular/common';
 import { BasinItemComponent } from '../basin-item/basin-item.component';
 import { BasinAddFormComponent } from '../basin-add-form/basin-add-form.component';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { Observable } from 'rxjs';
+import {map} from 'rxjs/operators';
+import { BasinService } from '../basin.service';
+import { Basin } from '../basin';
 
 @Component({
   selector: 'app-basin-list',
@@ -12,10 +16,10 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angul
   // property
   template: `
     <h2> Basins <Label><h2>
-      <app-basin-add-form (addBasin)="onAddHabit($event)"></app-basin-add-form>
+      <app-basin-add-form (addBasin)="onAddBasin($event)"></app-basin-add-form>
       <ul>
         <app-basin-item
-          *ngFor="let basin of basins"
+          *ngFor="let basin of basins | async"
           [basin]="basin"
         ></app-basin-item>
       </ul>
@@ -25,44 +29,36 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angul
 
 export class BasinListComponent implements OnInit {
   // basinForm = new FormGroup({});
-  basinForm: FormGroup;
+  // basinForm: FormGroup;
+  // the ! tells the typscript that this property will have a property at runtime
+  basins!: Observable<Basin[]>;
 
+  constructor(private basinService: BasinService) {
+    // this.basins = this.basinService.getBasins();
+    // this.basins = [];
+  }
 
-  basins = [
-    {
-      id: 1,
-      name: 'basin 1'
-    },
-    {
-      id: 2,
-      name: 'basin 2'
-    },
-    {
-      id: 3,
-      name: 'basin 33'
-    },
-    {
-      id: 4,
-      name: 'silly basin'
-    }
-  ];
-
-  constructor(private formBuilder: FormBuilder) {
-    this.basinForm = this.formBuilder.group({
-      name: '',
-    });
-   }
-
-   onAddHabit(basinData: any) {
-    console.log('Your basin has been submitted', basinData);
-    const basin_id = this.basins.length + 1;
-    basinData.id = basin_id;
-    this.basins.push(basinData);
-    // this.basinForm.reset();
-   }
+  onAddBasin(basinData: any) {
+    console.log("added new basin: " + JSON.stringify(basinData));
+    this.basinService.addBasin(basinData);
+  }
 
   ngOnInit(): void {
-    console.log("basins: " + JSON.stringify(this.basins));
+    // this.basinService.getBasins().subscribe(basins => {
+    //   this.basins = basins;
+    // });
+
+    // this.basins = this.basinService.getBasins();
+
+    this.basins = this.basinService.getBasins().pipe(map((basins) => {
+      return basins.map((basin) => {
+        basin.streak = basin.id <= 2 ? true : false;
+        console.log('basin after streak added: ' + JSON.stringify(basin));
+        return basin;
+      })
+    }));
+
+    //console.log("basins: " + JSON.stringify(this.basins));
   }
 
 }

@@ -1,14 +1,20 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
+import { Basin } from '../basin';
 
 @Component({
   selector: 'app-basin-item',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './basin-item.component.html',
-  styleUrl: './basin-item.component.css'
+  template: `
+    <li [style.color]="basin.streak ? 'red': 'black' ">
+    <!-- <li> -->
+      {{ basin.basin_name }}
+    </li>
+  `,
+  styles: []
 })
+
 export class BasinItemComponent {
-  @Input() basin: any;
+  @Input() basin!: Basin;
 }
