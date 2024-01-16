@@ -35,10 +35,10 @@
 		# header_up X-Real-IP {remote_host}
 		# header_up X-Forwarded-For {remote_host}
 		header_down Access-Control-Allow-Origin *
-		transport http {
-			tls
-			tls_insecure_skip_verify
-		}
+		# transport https {
+		# 	tls
+		# 	tls_insecure_skip_verify
+		# }
 
 	}
 	header {
