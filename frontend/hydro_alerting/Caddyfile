@@ -29,22 +29,22 @@
 		header_up X-Forwarded-For {remote_host}
 		header_down Access-Control-Allow-Origin "*"
 	}
-	header {
-		X-Frame-Options "SAMEORIGIN"
-		X-XSS-Protection "1;mode=block"
-		Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate"
-		X-Content-Type-Options "nosniff"
-		Strict-Transport-Security "max-age=31536000"
-		Content-Security-Policy 
-			"default-src 'self' https://spt.apps.gov.bc.ca data:;
-			connect-src 'self' ${BACKEND_URL};
-			script-src 'self'  'unsafe-eval' https://www2.gov.bc.ca ;
-			style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://use.fontawesome.com;
-			font-src 'self' https://fonts.gstatic.com;
-			img-src 'self' data: https://fonts.googleapis.com http://www.w3.org https://*.gov.bc.ca"
-		Referrer-Policy "same-origin"
-		Feature-Policy "fullscreen 'self'; camera 'none'; microphone 'none'"
-	}
+	# header {
+	# 	X-Frame-Options "SAMEORIGIN"
+	# 	X-XSS-Protection "1;mode=block"
+	# 	Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate"
+	# 	X-Content-Type-Options "nosniff"
+	# 	Strict-Transport-Security "max-age=31536000"
+	# 	Content-Security-Policy 
+	# 		"default-src 'self' https://spt.apps.gov.bc.ca data:;
+	# 		connect-src 'self' ${BACKEND_URL};
+	# 		script-src 'self'  'unsafe-eval' https://www2.gov.bc.ca ;
+	# 		style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://use.fontawesome.com;
+	# 		font-src 'self' https://fonts.gstatic.com;
+	# 		img-src 'self' data: https://fonts.googleapis.com http://www.w3.org https://*.gov.bc.ca"
+	# 	Referrer-Policy "same-origin"
+	# 	Feature-Policy "fullscreen 'self'; camera 'none'; microphone 'none'"
+	# }
 }
 :3001 {
 	handle /health {
