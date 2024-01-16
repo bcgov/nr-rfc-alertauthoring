@@ -27,6 +27,7 @@
 		header_up Host {http.reverse_proxy.upstream.host}
 		header_up X-Real-IP {remote_host}
 		header_up X-Forwarded-For {remote_host}
+		header_down Access-Control-Allow-Origin "*"
 	}
 	header {
 		X-Frame-Options "SAMEORIGIN"
