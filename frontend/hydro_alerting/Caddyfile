@@ -1,8 +1,9 @@
-{
-	auto_https off
-	admin off
-}
+# {
+# 	auto_https off
+# 	admin off
+# }
 :3000 {
+	
 	log {
 		output stdout
 		format console {
@@ -11,7 +12,9 @@
 		}
 		level {$LOG_LEVEL}
 	}
-	root * /srv
+	# root * /srv
+	root * .
+
 	encode zstd gzip
 	file_server
 	@spa_router {
@@ -20,30 +23,91 @@
 			try_files {path} /index.html
 		}
 	}
+
+
 	rewrite @spa_router {http.matchers.file.relative}
+
+
 	# Proxy requests to API service
 	reverse_proxy /api/* {$BACKEND_URL} {
-		# header_up Host {http.reverse_proxy.upstream.hostport}
-		header_up Host {http.reverse_proxy.upstream.host}
-		header_up X-Real-IP {remote_host}
-		header_up X-Forwarded-For {remote_host}
-		header_down Access-Control-Allow-Origin "*"
+		# header_up Host {http.reverse_proxy.upstream.host}
+		header_up Host {upstream_hostport}
+		# header_up X-Real-IP {remote_host}
+		# header_up X-Forwarded-For {remote_host}
+		header_down Access-Control-Allow-Origin *
+		transport http {
+			tls
+			tls_insecure_skip_verify
+		}
+
 	}
+	header {
+		# X-Frame-Options "SAMEORIGIN"
+		X-XSS-Protection "1;mode=block"
+		Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate"
+		X-Content-Type-Options "nosniff"
+		Strict-Transport-Security "max-age=31536000"
+		# 			connect-src 'self' {$BACKEND_URL};
+
+		Content-Security-Policy "
+			default-src 'self' https://spt.apps.gov.bc.ca data:;
+    		connect-src 'self' http://nr-rfc-alertauthoring-8-backend.apps.silver.devops.gov.bc.ca http://nr-rfc-alertauthoring-8-backend.apps.silver.devops.gov.bc.ca:443 https://nr-rfc-alertauthoring-8-backend.apps.silver.devops.gov.bc.ca https://nr-rfc-alertauthoring-8-backend.apps.silver.devops.gov.bc.ca:443;
+			script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www2.gov.bc.ca ;
+			style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://use.fontawesome.com;
+			font-src 'self' https://fonts.gstatic.com;
+		    img-src 'self' data: https://fonts.googleapis.com http://www.w3.org https://*.gov.bc.ca"
+		Referrer-Policy "same-origin"
+		Feature-Policy "fullscreen 'self'; camera 'none'; microphone 'none'"
+		Access-Control-Allow-Origin *
+        Access-Control-Allow-Credentials true
+        Access-Control-Allow-Methods *
+        Access-Control-Allow-Headers *
+        defer
+
+	}
+	
+
+
+
+
+
+	# rewrite @spa_router {http.matchers.file.relative}
+	# # Proxy requests to API service
+	# reverse_proxy /api/* {$BACKEND_URL} {
+	# 	# header_up Host {http.reverse_proxy.upstream.hostport}
+	# 	header_up Host {http.reverse_proxy.upstream.host}
+	# 	header_up X-Real-IP {remote_host}
+	# 	header_up X-Forwarded-For {remote_host}
+	# 	header_down Access-Control-Allow-Origin "*"
+	# 	header_up Access-Control-Allow-Origin "*"
+
+	# }
 	# header {
+
+    #     Access-Control-Allow-Origin *
+    #     Access-Control-Allow-Credentials true
+    #     Access-Control-Allow-Methods *
+    #     Access-Control-Allow-Headers *
+
+
 	# 	X-Frame-Options "SAMEORIGIN"
 	# 	X-XSS-Protection "1;mode=block"
 	# 	Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate"
 	# 	X-Content-Type-Options "nosniff"
 	# 	Strict-Transport-Security "max-age=31536000"
-	# 	Content-Security-Policy 
-	# 		"default-src 'self' https://spt.apps.gov.bc.ca data:;
-	# 		connect-src 'self' ${BACKEND_URL};
-	# 		script-src 'self'  'unsafe-eval' https://www2.gov.bc.ca ;
-	# 		style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://use.fontawesome.com;
-	# 		font-src 'self' https://fonts.gstatic.com;
-	# 		img-src 'self' data: https://fonts.googleapis.com http://www.w3.org https://*.gov.bc.ca"
+	# 	#connect-src 'self' ${BACKEND_URL};
+	# 	# Access-Control-Allow-Origin "*"
+	# 	# Content-Security-Policy 
+	# 	# 	"default-src 'self' https://spt.apps.gov.bc.ca data:;
+	# 	# 	script-src 'self'  'unsafe-eval' https://www2.gov.bc.ca ;
+	# 	# 	style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://use.fontawesome.com;
+	# 	# 	font-src 'self' https://fonts.gstatic.com;
+	# 	# 	img-src 'self' data: https://fonts.googleapis.com http://www.w3.org https://*.gov.bc.ca"
 	# 	Referrer-Policy "same-origin"
 	# 	Feature-Policy "fullscreen 'self'; camera 'none'; microphone 'none'"
+
+	# 	defer
+
 	# }
 }
 :3001 {
