@@ -12,7 +12,7 @@
 		level {$LOG_LEVEL}
 	}
 	root * /srv
-	# root * .
+	# root * ./dist/browser
 
 	encode zstd gzip
 	file_server
@@ -68,12 +68,11 @@
 		    img-src 'self' data: https://fonts.googleapis.com http://www.w3.org https://*.gov.bc.ca"
 		Referrer-Policy "same-origin"
 		Feature-Policy "fullscreen 'self'; camera 'none'; microphone 'none'"
-		Access-Control-Allow-Origin *
+		Access-Control-Allow-Origin *.apps.silver.devops.gov.bc.ca
         Access-Control-Allow-Credentials true
         Access-Control-Allow-Methods *
         Access-Control-Allow-Headers *
         defer
-
 	}
 }
 :3001 {
@@ -81,6 +80,3 @@
 		respond "OK"
 	}
 }
-# nr-rfc-alertauthoring-8-backend.apps.silver.devops.gov.bc.ca {
-# 	redir https://{host}{uri} permanent
-# }
