@@ -47,10 +47,21 @@
 		X-Content-Type-Options "nosniff"
 		Strict-Transport-Security "max-age=31536000"
 		# 			connect-src 'self' {$BACKEND_URL};
+		# example csp
+		# Content-Security-Policy "
+		# 	connect-src 'self' https://*.gov.bc.ca http://*.gov.bc.ca;
+		# 	form-action 'self';
+		# 	img-src 'self' https://server.arcgisonline.com data: https://services.arcgisonline.com data: https://maps.gov.bc.ca;default-src 'self';
+		# 	base-uri 'self';
+		# 	block-all-mixed-content;font-src 'self' https: data:;
+		# 	frame-ancestors 'self';object-src 'none';
+		# 	script-src 'self';
+		# 	style-src 'self' https: 'unsafe-inline';
+		# 	upgrade-insecure-requests;"
 
 		Content-Security-Policy "
 			default-src 'self' https://spt.apps.gov.bc.ca data:;
-    		connect-src 'self' http://nr-rfc-alertauthoring-*-backend.apps.silver.devops.gov.bc.ca http://nr-rfc-alertauthoring-*-backend.apps.silver.devops.gov.bc.ca:443 https://nr-rfc-alertauthoring-*-backend.apps.silver.devops.gov.bc.ca https://nr-rfc-alertauthoring-*-backend.apps.silver.devops.gov.bc.ca:443;
+    		connect-src 'self' *.apps.silver.devops.gov.bc.ca;
 			script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www2.gov.bc.ca ;
 			style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://use.fontawesome.com;
 			font-src 'self' https://fonts.gstatic.com;
