@@ -187,7 +187,7 @@ frontend:
         fromValues:
           - name: BACKEND_URL
             # value: "http://{{ .Release.Name }}-backend"
-            value: "http://{{ .Release.Name }}-backend.apps.silver.devops.gov.bc.ca"
+            value: "https://{{ .Release.Name }}-backend.apps.silver.devops.gov.bc.ca"
           - name: LOG_LEVEL
             value: "info"
         fromLocalConfigmap: # just for example purpose.
