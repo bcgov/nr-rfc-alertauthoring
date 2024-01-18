@@ -92,6 +92,15 @@ jobs:
     strategy:
       matrix:
         package: [backend, frontend]
+        include:
+          - package: backend
+            triggers: ('backend/')
+            build_file: ./backend/Dockerfile
+            build_context: ./backend
+          - package: frontend
+            triggers: ('frontend/hydro_alerting/')
+            build_file: ./frontend/hydro_alerting/Dockerfile
+            build_context: ./frontend/hydro_alerting
     timeout-minutes: 10
     steps:
       - uses: bcgov-nr/action-builder-ghcr@v2.0.1
@@ -101,6 +110,9 @@ jobs:
           tag: ${{ needs.vars.outputs.tag }}
           tag_fallback: latest
           triggers: ('${{ matrix.package }}/')
+          build_file: ${{ matrix.build_file }}
+          build_context: ${{ matrix.build_context }}
+      
 
   build-custom:
     name: Build Migrations

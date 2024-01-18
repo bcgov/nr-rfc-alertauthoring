@@ -29,9 +29,15 @@ app = FastAPI(title=OpenAPIInfo["title"],
               openapi_tags=tags_metadata, )
 origins: list[str] = [
     "http://localhost*",
+    "https://nr-rfc-alertauthoring-*-frontend.apps.silver.devops.gov.bc.ca",
+
 ]
+
+origins_regex: str = '^https*\:\/\/nr-rfc-alertauthoring\-(\d)*\-frontend\.apps\.silver\.devops\.gov\.bc\.ca$'
+
 app.add_middleware(
     CORSMiddleware,
+    allow_origin_regex=origins_regex,
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
