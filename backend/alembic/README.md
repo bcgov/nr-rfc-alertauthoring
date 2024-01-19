@@ -1,6 +1,6 @@
 
 # Alembic / migration specific docs
 
-[see docs](../docs/local_dev.md)
+[see docs](../../docs/local_dev.md)
 
 
