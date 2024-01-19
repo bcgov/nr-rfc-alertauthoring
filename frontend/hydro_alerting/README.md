@@ -2,7 +2,19 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.0.3.
 
-## Development server
+## Local Development
+
+Start the backend from the repo root directory:
+
+`docker compose up backend-py`
+
+Navigate to frontend directory
+
+`cd frontend/hydro_alerting`
+
+Run the local development server
+
+`npm run start-local`
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
 
