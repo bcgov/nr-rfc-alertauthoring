@@ -1,4 +1,4 @@
-import { Routes, RouterModule  } from '@angular/router';
+import { Routes } from '@angular/router';
 import { BasinListComponent } from './basin-list/basin-list.component';
 import { AlertListComponent } from './alert-list/alert-list.component';
 import { HomeComponent } from './home/home.component';
@@ -10,5 +10,5 @@ export const routes: Routes = [
     { path: 'alertlist', component: AlertListComponent },
     { path: 'basins', component: BasinListComponent },
     { path: 'unauthorized', component: UnauthorizedComponent},
-    { path: '', redirectTo: 'home'},
+    { path: '', redirectTo: '/home', pathMatch: 'full'},
 ];
