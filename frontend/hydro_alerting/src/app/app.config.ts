@@ -30,3 +30,4 @@ export const appConfig: ApplicationConfig = {
 
   ]
 };
+// https://dev.loginproxy.gov.bc.ca/auth/realms/standard/.well-known/openid-configuration
