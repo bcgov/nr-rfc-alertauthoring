@@ -1,13 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-// import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
-// import { ReactiveFormsModule } from '@angular/forms';
 import { RouterOutlet } from '@angular/router';
-
-// import { Observable } from 'rxjs';
 import { OAuthService } from 'angular-oauth2-oidc';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
+// import { Observable } from 'rxjs';
+// import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+// import { ReactiveFormsModule } from '@angular/forms';
 
 
 
@@ -48,6 +47,7 @@ export class AppComponent  {
     this.oauthService.logOut();
   }
 
+  // example of passing the access token to the backend
   getHelloText() {
     this.httpClient.get<{ message: string }>('http://localhost:3003', {
       headers: {
