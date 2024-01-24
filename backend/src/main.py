@@ -29,6 +29,7 @@ app = FastAPI(title=OpenAPIInfo["title"],
               openapi_tags=tags_metadata, )
 origins: list[str] = [
     "http://localhost*",
+    "http://localhost:4200",
     "https://nr-rfc-alertauthoring-*-frontend.apps.silver.devops.gov.bc.ca",
 
 ]

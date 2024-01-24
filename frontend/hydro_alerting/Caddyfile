@@ -58,10 +58,17 @@
 		# 	script-src 'self';
 		# 	style-src 'self' https: 'unsafe-inline';
 		# 	upgrade-insecure-requests;"
-
+        # https://dev.loginproxy.gov.bc.ca
 		Content-Security-Policy "
-			default-src 'self' https://spt.apps.gov.bc.ca data:;
-    		connect-src 'self' https://*.apps.silver.devops.gov.bc.ca http://*.apps.silver.gov.bc.ca;
+			default-src 'self'
+			    https://dev.loginproxy.gov.bc.ca
+				data:;
+			frame-src 'self'
+			    https://dev.loginproxy.gov.bc.ca;
+    		connect-src 'self' 
+			    https://dev.loginproxy.gov.bc.ca
+			    https://*.apps.silver.devops.gov.bc.ca 
+				http://*.apps.silver.gov.bc.ca;
 			script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www2.gov.bc.ca ;
 			style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://use.fontawesome.com;
 			font-src 'self' https://fonts.gstatic.com;

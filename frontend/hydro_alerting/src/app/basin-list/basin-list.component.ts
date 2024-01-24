@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule,  } from '@angular/common';
+import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { BasinItemComponent } from '../basin-item/basin-item.component';
 import { BasinAddFormComponent } from '../basin-add-form/basin-add-form.component';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -11,7 +12,13 @@ import { Basin } from '../basin';
 @Component({
   selector: 'app-basin-list',
   standalone: true,
-  imports: [CommonModule, BasinItemComponent, BasinAddFormComponent, FormsModule, ReactiveFormsModule],
+  imports: [
+    CommonModule, 
+    BasinItemComponent, 
+    BasinAddFormComponent, 
+    FormsModule, 
+    ReactiveFormsModule,
+    RouterOutlet, RouterLink, RouterLinkActive],
   // the square brackets around [basin] tell angular that basin is an input 
   // property
   template: `
