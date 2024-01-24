@@ -63,7 +63,7 @@
 			default-src 'self'
 			    https://dev.loginproxy.gov.bc.ca
 				data:;
-			frame-src
+			frame-src 'self'
 			    https://dev.loginproxy.gov.bc.ca;
     		connect-src 'self' 
 			    https://dev.loginproxy.gov.bc.ca
