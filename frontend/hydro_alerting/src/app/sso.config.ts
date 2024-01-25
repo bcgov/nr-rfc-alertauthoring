@@ -9,7 +9,7 @@ export const authCodeFlowConfig: AuthConfig = {
     responseType: 'code',
     // scope: 'openid profile email offline_access',
     scope: 'openid profile email offline_access',
-    showDebugInformation: true,
+    showDebugInformation: false,
     requireHttps: false,
     oidc: true,
     disablePKCE: false,
