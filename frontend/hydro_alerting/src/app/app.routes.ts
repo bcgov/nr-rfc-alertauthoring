@@ -7,9 +7,9 @@ import {LoginComponent} from './login/login.component';
 
 export const routes: Routes = [
     // { path: '', component: AlertListComponent },
-    { path: 'home', component: HomeComponent},
+    // { path: 'home', component: HomeComponent},
     { path: 'alertlist', component: AlertListComponent },
     { path: 'basins', component: BasinListComponent },
     { path: 'login', component: LoginComponent},
-    { path: '', redirectTo: 'home', pathMatch: 'full' },
+    { path: '', redirectTo: 'alertlist', pathMatch: 'full' },
 ];
