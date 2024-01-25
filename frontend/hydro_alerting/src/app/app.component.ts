@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
-import { OAuthService } from 'angular-oauth2-oidc';
+import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import {NavbarComponent} from './navbar/navbar.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
@@ -27,9 +27,9 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
     <!-- <h1>{{title}}</h1> -->
     <br><br>
     <router-outlet></router-outlet>
-    <div>
+    <!-- <div>
       <button (click)="logout()">LOGOUT</button>
-    </div>
+    </div> -->
   `,
     // styleUrl: './app.component.css'
     styles: ['h1 { color: blue; }'],
@@ -39,22 +39,23 @@ export class AppComponent  implements OnInit{
   title = 'Hydrological Alert Authoring System (HAAS)';
   isAuthenticated = false;
 
-  constructor(private oauthService: OAuthService, private httpClient: HttpClient) { }
+  constructor(private oidcSecurityService: OidcSecurityService) { }
 
   logout() {
-    this.oauthService.logOut();
+    this.oidcSecurityService.logoff();
   }
 
   // example of passing the access token to the backend
-  getHelloText() {
-    this.httpClient.get<{ message: string }>('http://localhost:3003', {
-      headers: {
-        'Authorization': `Bearer ${this.oauthService.getAccessToken()}`
-      }
-    }).subscribe(result => {
-      this.title = result.message;
-    });
-  }
+  // getHelloText() {
+  //   this.httpClient.get<{ message: string }>('http://localhost:3003', {
+  //     headers: {
+  //       'Authorization': `Bearer ${this.oauthService.getAccessToken()}`
+  //     }
+  //   }).subscribe(result => {
+  //     this.title = result.message;
+  //   });
+  // }
+
 
   ngOnInit(): void {}
 

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import {  RouterLink, RouterOutlet } from '@angular/router';
-import { OAuthService, OAuthErrorEvent } from 'angular-oauth2-oidc';
+import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
@@ -15,42 +15,50 @@ import { HttpClient } from '@angular/common/http';
 export class NavbarComponent implements OnInit {
   // todo: circle back here and make this a link to the original title for the app from the app.component.ts
   title = "Hydrological Alert Authoring System (HAAS)"
-  loggedIn = false;
+  authenticated = false;
   login_logout_text = 'login';
 
-  constructor(private oauthService: OAuthService, private httpClient: HttpClient) { }
+  constructor(private oidcSecurityService: OidcSecurityService) { }
 
 
   ngOnInit(): void {
-    // this.oauthService.events.subscribe(event => {
-    //   if (event instanceof OAuthErrorEvent) {
-    //     console.error(`event error recieved  ${event}`);
-    //   } else {
-    //     console.warn(`event recieved  ${JSON.stringify(event)}`);
-    //   }
-    // });
-    // if (this.oauthService.hasValidAccessToken()) {
-    //   this.loggedIn = true;
-    //   this.login_logout_text = "logout";
-    // }
-    this.login_logout()
-        
+    this.oidcSecurityService
+    .checkAuth()
+    .subscribe(({ isAuthenticated, userData, accessToken }) => {
+      this.authenticated = isAuthenticated;
+      console.log('app authenticated', isAuthenticated);
+      console.log(`Current access token is '${accessToken}'`);
+      if (isAuthenticated) {
+        this.login_logout_text="logout";
+      }
+    });
+    // this.login_logout();
   }
 
 
   login_logout() {
     console.log("login_logout() called");
-    if (this.oauthService.hasValidAccessToken()) {
-      this.oauthService.logOut();
-      this.login_logout_text="logout";
-      this.loggedIn = false;
-      console.log("has valid token");
+    if (this.authenticated) {
+      this.oidcSecurityService.logoff().subscribe((result) => {
+        console.log(result);
+        this.login_logout_text="login";
+    });
+      // this.oidcSecurityService.logoff();
+      // this.login_logout_text="logout";
+      // console.log("has valid token");
     } else {
-      // this.oauthService.loadDiscoveryDocumentAndLogin();
-      this.login_logout_text="login";
-      this.loggedIn = true;
-
+      this.oidcSecurityService.authorize();
+      this.login_logout_text="logout";
     }
+    // if (this.oauthService.hasValidAccessToken()) {
+    //   this.oauthService.logOut();
+    //   this.login_logout_text="logout";
+    //   this.loggedIn = false;
+    //   console.log("has valid token");
+    // } else {
+    //   // this.oauthService.loadDiscoveryDocumentAndLogin();
+    //   this.login_logout_text="login";
+    //   this.loggedIn = true;
+    // }
   }
-
 }

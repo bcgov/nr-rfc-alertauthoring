@@ -1,18 +1,18 @@
-import { AuthConfig } from 'angular-oauth2-oidc';
+// import { AuthConfig } from 'angular-oauth2-oidc';
+import {OpenIdConfiguration, LogLevel } from 'angular-auth-oidc-client';
 
-export const authCodeFlowConfig: AuthConfig = {
-    issuer: 'https://dev.loginproxy.gov.bc.ca/auth/realms/standard',
-    tokenEndpoint: 'https://dev.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/token',
+export const authCodeFlowConfig: OpenIdConfiguration = {
+    authority: 'https://dev.loginproxy.gov.bc.ca/auth/realms/standard',
     // redirectUri: window.location.origin + '/index.html',
-    redirectUri: window.location.origin,
+    redirectUrl: window.location.origin,
+    postLogoutRedirectUri: window.location.origin,
+
     clientId: 'hydrological-alerting-5261',
     responseType: 'code',
     // scope: 'openid profile email offline_access',
     scope: 'openid profile email offline_access',
-    showDebugInformation: false,
-    requireHttps: false,
-    oidc: true,
-    disablePKCE: false,
-    sessionChecksEnabled: true,
-  }
+    silentRenew: true,
+    useRefreshToken: true,
+    logLevel: LogLevel.Debug,
+}
   
