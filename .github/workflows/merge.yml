@@ -21,8 +21,6 @@ jobs:
     timeout-minutes: 1
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: main
       # Outputs semver as steps.id.outputs.tag
       - name: Conventional Changelog Update
         uses: TriPSs/conventional-changelog-action@v4
@@ -40,7 +38,7 @@ jobs:
         run: |
           git status
           git tag ${{ steps.changelog.outputs.tag }}
-          git push origin --tag --force
+          git push origin refs/tags/${{ steps.changelog.outputs.tag }}
 
       # Get last merged (or current) PR number
       - name: Get PR Number
