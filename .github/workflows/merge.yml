@@ -1,16 +1,15 @@
 name: Merge
 
 on:
-  pull_request:
-  # workflow_run:
-  #   workflows: [PR Closed]
-  #   types: [completed]
-  # workflow_dispatch:
-  #   inputs:
-  #     pr_no:
-  #       description: "PR-numbered container set to deploy"
-  #       type: number
-  #       required: true
+  workflow_run:
+    workflows: [PR Closed]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr_no:
+        description: "PR-numbered container set to deploy"
+        type: number
+        required: true
 
 jobs:
   vars:
@@ -21,8 +20,6 @@ jobs:
     timeout-minutes: 1
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: main
       # Outputs semver as steps.changelog.outputs.tag
       - name: Conventional Changelog Update
         uses: TriPSs/conventional-changelog-action@v4
@@ -36,10 +33,9 @@ jobs:
           skip-version-file: "true"
 
       # Create and push semver tag
+      - uses: actions/checkout@v4
       - name: Create Tags
         run: |
-          git status
-          git tag --list
           git tag ${{ steps.changelog.outputs.tag }}
           git push origin --tag --force
 
@@ -48,31 +44,31 @@ jobs:
         id: pr
         uses: bcgov-nr/action-get-pr@v0.0.1
 
-  # deploy-prod:
-  #   name: Deploy (prod)
-  #   needs: [vars]
-  #   uses: ./.github/workflows/.deploy.yml
-  #   secrets: inherit
-  #   with:
-  #     directory: charts/quickstart-openshift
-  #     environment: prod
-  #     tag: ${{ needs.vars.outputs.pr }}
-  #     release: prod
+  deploy-prod:
+    name: Deploy (prod)
+    needs: [vars]
+    uses: ./.github/workflows/.deploy.yml
+    secrets: inherit
+    with:
+      directory: charts/quickstart-openshift
+      environment: prod
+      tag: ${{ needs.vars.outputs.pr }}
+      release: prod
 
-  # promote:
-  #   name: Promote Images
-  #   needs: [deploy-prod, vars]
-  #   runs-on: ubuntu-22.04
-  #   permissions:
-  #     packages: write
-  #   strategy:
-  #     matrix:
-  #       package: [migrations, backend, frontend]
-  #   timeout-minutes: 1
-  #   steps:
-  #     - uses: shrink/actions-docker-registry-tag@v3
-  #       with:
-  #         registry: ghcr.io
-  #         repository: ${{ github.repository }}/${{ matrix.package }}
-  #         target: ${{ needs.vars.outputs.pr }}
-  #         tags: prod
+  promote:
+    name: Promote Images
+    needs: [deploy-prod, vars]
+    runs-on: ubuntu-22.04
+    permissions:
+      packages: write
+    strategy:
+      matrix:
+        package: [migrations, backend, frontend]
+    timeout-minutes: 1
+    steps:
+      - uses: shrink/actions-docker-registry-tag@v3
+        with:
+          registry: ghcr.io
+          repository: ${{ github.repository }}/${{ matrix.package }}
+          target: ${{ needs.vars.outputs.pr }}
+          tags: prod
