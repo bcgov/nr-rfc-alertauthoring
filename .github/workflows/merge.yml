@@ -44,7 +44,7 @@ jobs:
           git status
           git tag --list
           git tag ${{ steps.changelog.outputs.tag }}
-          git push tag --force
+          git push origin --tag --force
           # git push origin refs/tags/${{ steps.changelog.outputs.tag }} --force
 
       # Get last merged (or current) PR number
