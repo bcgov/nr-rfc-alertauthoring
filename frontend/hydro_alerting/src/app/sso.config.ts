@@ -9,9 +9,9 @@ export const authCodeFlowConfig: OpenIdConfiguration = {
 
     clientId: 'hydrological-alerting-5261',
     responseType: 'code',
-    // scope: 'openid profile email offline_access',
-    scope: 'openid profile email offline_access',
-    silentRenew: true,
+    // offline_access - don't use
+    scope: 'openid profile email',
+    // silentRenew: true,
     useRefreshToken: true,
     logLevel: LogLevel.Debug,
 }

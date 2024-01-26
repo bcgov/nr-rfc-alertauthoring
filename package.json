@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "@auth0/auth0-angular": "^2.2.3"
+    "@auth0/auth0-angular": "^2.2.3",
+    "flexbox": "^0.0.3"
   }
 }
