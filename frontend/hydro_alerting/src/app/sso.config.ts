@@ -15,4 +15,3 @@ export const authCodeFlowConfig: OpenIdConfiguration = {
     useRefreshToken: true,
     logLevel: LogLevel.Debug,
 }
-  
