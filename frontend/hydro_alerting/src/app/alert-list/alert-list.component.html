@@ -1,2 +1,34 @@
+<h1> Active Alerts </h1>
+<div class="container">
+    <div class="row">
+        <!-- <div class="col-md-12"> -->
+        <!-- <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col">Alert Id</th>
+            <th scope="col">Alert Description</th>
+            <th scope="col">Alert Start Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let alert of alerts">
+            <button mat-raised-button color="primary" (click)="view()">View Alert</button>
+            <td>{{ alert.alert_id }}</td>
+            <td>{{ alert.alert_description }}</td>
+            <td>{{ alert.start_time }}</td>
+          </tr>
+        </tbody>
+      </table> -->
 
-<p>alert-list works!</p>
+        <table mat-table [dataSource]="alerts" class="mat-elevation-z8">
+            <!-- Position Column -->
+            <ng-container matColumnDef="alert_id">
+                <th mat-header-cell *matHeaderCellDef> No. </th>
+                <td mat-cell *matCellDef="let alert"> {{alert.alert_id}} </td>
+            </ng-container>
+
+        </table>
+
+
+        <!-- </div> -->
+    </div>
