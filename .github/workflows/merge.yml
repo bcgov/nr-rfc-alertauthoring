@@ -1,15 +1,16 @@
 name: Merge
 
 on:
-  workflow_run:
-    workflows: [PR Closed]
-    types: [completed]
-  workflow_dispatch:
-    inputs:
-      pr_no:
-        description: "PR-numbered container set to deploy"
-        type: number
-        required: true
+  pull_request:
+  # workflow_run:
+  #   workflows: [PR Closed]
+  #   types: [completed]
+  # workflow_dispatch:
+  #   inputs:
+  #     pr_no:
+  #       description: "PR-numbered container set to deploy"
+  #       type: number
+  #       required: true
 
 jobs:
   vars:
@@ -20,6 +21,8 @@ jobs:
     timeout-minutes: 1
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
       # Outputs semver as steps.id.outputs.tag
       - name: Conventional Changelog Update
         uses: TriPSs/conventional-changelog-action@v4
