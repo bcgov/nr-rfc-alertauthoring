@@ -36,6 +36,9 @@ jobs:
           skip-version-file: "true"
 
       # Create and push semver tag
+      - uses: actions/checkout@v4
+        with:
+          ref: main
       - name: Create Tags
         run: |
           git status
