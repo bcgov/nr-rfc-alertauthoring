@@ -64,10 +64,6 @@ export class AppComponent  implements OnInit{
     return this.title;
   }
 
-  ngOnInit(): void {}
 
-  get_title() {
-    return this.title;
-  }
 
 }
