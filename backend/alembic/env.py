@@ -4,12 +4,19 @@ from logging.config import fileConfig
 import src.core.config as app_config
 from alembic import context
 from alembic.script import ScriptDirectory
-from sqlalchemy import create_engine, pool
+from sqlalchemy import MetaData, create_engine, pool
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.schema import CreateSchema
 from sqlmodel import SQLModel  # NEW
-from src.v1.models.model import *  # NEW make *
+from src.v1.models.model import *
 
-# from ...src.v1.models.model import metadata
+# (  # NEW make *
+#     Alert_Areas,
+#     Alert_Levels,
+#     Alerts,
+#     Basins,
+#     Subbasins,
+# )
 
 config = context.config
 if config.config_file_name is not None:
@@ -35,7 +42,16 @@ LOGGER.debug("test test test")
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
+# target_metadata = SQLModel.metadata
 target_metadata = SQLModel.metadata
+# target_metadata = MetaData()
+
+# for datum in target_metadata_sql_model:
+#     for table in datum.tables.values():
+#         print(f'table: {table}')
+#         table.to_metadata(target_metadata)
+
+print("target_metadata: ", target_metadata)
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -126,12 +142,15 @@ def run_migrations_online() -> None:
     include_schemas=True
     url = get_url()
     LOGGER.debug(f"using url: {url}")
-    connectable = create_engine(url)
+    connectable = create_engine(url, execution_options={"schema_translate_map": {"tenant_schema": app_config.Configuration.DEFAULT_SCHEMA}})
 
     with connectable.connect() as connection:
-
+        # connection(execution_options={"schema_translate_map": {"tenant_schema": app_config.Configuration.DEFAULT_SCHEMA}})
+        
         context.configure(
+            include_schemas=True,
             connection=connection,
+            compare_type=True,
             version_table='alembic_version',
             target_metadata=target_metadata,
             version_table_schema=app_config.Configuration.DEFAULT_SCHEMA,
@@ -151,3 +170,8 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
+
+
+
+
+
