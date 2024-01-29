@@ -2,9 +2,10 @@
 ### Features
 - [x] FastAPI
 - [x] SQLAlchemy
+- [x] SQLModel
 - [x] Poetry
 - [x] Prospector
-- [x] Flyway
+- [x] Alembic
 - [x] Docker
 - [x] Docker Compose
 - [x] GitHub Actions
@@ -17,14 +18,29 @@
 
 ### Local Development
 
+[Alembic Docs](../docs/db_migration_alembic.md)
+
 #### Local Dev with Docker
 
-- Run the `docker compose -f .\docker-compose.py.yml up` command to start the entire stack.
+* Wasn't able to get the frontend working in the docker compose so startup is 
+  now a two step process
+
+##### Backend Start
+
+- Run the `docker compose up backend-py` command to start the backend stack.
 - The database changes are applied automatically by alembic
-- The models are generated into `backend-py/src/v1/models/model.py` .
+- The source of the migrations are the SQLModels `backend/src/V1/models/model.py`
+- Alembic versioned migration files are at `backend/alembic/versions`
 - The API is Documentation available at http://localhost:3003/docs
 
-#### Local Dev - poetry
+##### Frontend Start
+
+ - Navigate to the frontend directory `cd frontend/hydro_alerting`
+ - Start the server with   `npm run start-local`
+ - Establishes the proxy to the backend on the cli, vs deployed where it is handled by caddy
+ - App URL is `http://localhost:4200`
+
+#### Local Backend Dev - poetry
 
 * create the env `cd backend; poetry install`
 * activate the env `source $(poetry env info --path)/bin/activate`
