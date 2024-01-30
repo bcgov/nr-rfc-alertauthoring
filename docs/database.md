@@ -7,6 +7,7 @@ Current database structure / data model used to store alert related information
 erDiagram
     ALERTS {
         int alert_id PK
+        string alert_description 
         string alert_meteorological_conditions
         string alert_hydrological_conditions
         string alert_status
@@ -23,7 +24,6 @@ erDiagram
         int alert_id FK
         int basin_id FK
         int alert_level_id FK
-        int cap_event_id FK
     }
     BASINS {
         int basin_id PK
