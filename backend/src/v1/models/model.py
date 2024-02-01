@@ -51,6 +51,7 @@ class BasinsRead(BasinBase):
     :type BasinBase: _type_
     """
 
+    # junction_id: Optional["Alert_Areas"]
     basin_id: Optional[int] = Field(default=None, primary_key=True)
 
 
@@ -164,7 +165,12 @@ class Basins(BasinsRead, table=True):
     )
 
 
-class Alert_Levels(SQLModel, table=True):
+class Alert_Levels_Read(SQLModel):
+    alert_level_id: int
+    alert_level: str
+
+
+class Alert_Levels(Alert_Levels_Read, table=True):
     """
     Contains the allowed values for alert levels
 
@@ -173,12 +179,12 @@ class Alert_Levels(SQLModel, table=True):
     """
 
     __table_args__ = {"schema": default_schema}
+    alert_level_id: int = Field(default=None, primary_key=True)
+    alert_level: str = Field(nullable=False)
+
     # __tablename__ = f"{default_schema}.alert_levels"
 
     # metadata = meta
-
-    alert_level_id: int = Field(default=None, primary_key=True)
-    alert_level: str = Field(nullable=False)
 
     alerts: List[Alerts] = Relationship(
         back_populates="alert_levels",
@@ -244,3 +250,5 @@ class Cap_Event_Areas(SQLModel, table=True):
 
     cap_event_area_id: int = Field(default=None, primary_key=True)
     basin_id: int = Field(default=None, foreign_key=f"{default_schema}.basins.basin_id")
+
+
