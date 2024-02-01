@@ -1,8 +1,8 @@
-"""add alerting tables
+"""create alert tables
 
 Revision ID: V5
 Revises: V4
-Create Date: 2024-01-31 12:26:36.262826
+Create Date: 2024-02-01 13:28:40.806607
 
 """
 from typing import Sequence, Union
@@ -65,6 +65,7 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['alert_level_id'], ['py_api.alert_levels.alert_level_id'], ),
     sa.ForeignKeyConstraint(['basin_id'], ['py_api.basins.basin_id'], ),
     sa.PrimaryKeyConstraint('alert_id', 'basin_id', 'alert_level_id'),
+    sa.UniqueConstraint('alert_id', 'basin_id', 'alert_level_id'),
     schema='py_api'
     )
     # ### end Alembic commands ###

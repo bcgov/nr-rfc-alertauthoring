@@ -2,6 +2,8 @@
 import datetime
 from typing import List, Optional
 
+from sqlalchemy import UniqueConstraint
+
 # from sqlalchemy import MetaData
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -95,7 +97,11 @@ class Alert_Areas(SQLModel, table=True):
     :type SQLModel: _type_
     """
 
-    __table_args__ = {"schema": default_schema}
+    __table_args__ = (
+        UniqueConstraint("alert_id", "basin_id", "alert_level_id"),
+        {"schema": default_schema},
+    )
+
     # __tablename__ = f"{default_schema}.alert_areas"
 
     # metadata = meta
@@ -112,6 +118,12 @@ class Alert_Areas(SQLModel, table=True):
         foreign_key=f"{default_schema}.alert_levels.alert_level_id",
         primary_key=True,
     )
+    basin: "Basins" = Relationship(back_populates="basin_links")
+    alert_level: "Alert_Levels" = Relationship(back_populates="alert_level_links")
+    alert: "Alerts" = Relationship(back_populates="alert_links")
+
+
+# class AlertBasinLevels(Alert_Areas):
 
 
 class Alerts(AlertsRead, table=True):
@@ -126,18 +138,8 @@ class Alerts(AlertsRead, table=True):
     """
 
     __table_args__ = {"schema": default_schema}
-    # __tablename__ = f"{default_schema}.alerts"
-    # alert_areas: List["Alert_Areas"] = Relationship(back_populates="Alert_Areas")
 
-    basins: List["Basins"] = Relationship(
-        back_populates="alerts",
-        link_model=Alert_Areas,
-        # sa_relationship_kwargs={"viewonly": True},
-    )
-
-    alert_levels: List["Alert_Levels"] = Relationship(
-        back_populates="alerts", link_model=Alert_Areas
-    )
+    alert_links: List["Alert_Areas"] = Relationship(back_populates="alert")
 
 
 class Basins(BasinsRead, table=True):
@@ -158,11 +160,7 @@ class Basins(BasinsRead, table=True):
     )
     subbasins: Optional[Subbasins] = Relationship(back_populates="basins")
 
-    alerts: List[Alerts] = Relationship(
-        back_populates="basins",
-        link_model=Alert_Areas,
-        # sa_relationship_kwargs={"viewonly": True},
-    )
+    basin_links: List[Alert_Areas] = Relationship(back_populates="basin")
 
 
 class Alert_Levels_Read(SQLModel):
@@ -182,17 +180,7 @@ class Alert_Levels(Alert_Levels_Read, table=True):
     alert_level_id: int = Field(default=None, primary_key=True)
     alert_level: str = Field(nullable=False)
 
-    # __tablename__ = f"{default_schema}.alert_levels"
-
-    # metadata = meta
-
-    alerts: List[Alerts] = Relationship(
-        back_populates="alert_levels",
-        link_model=Alert_Areas,
-        # sa_relationship_kwargs={
-        #     secondary=
-        # }
-    )
+    alert_level_links: List[Alert_Areas] = Relationship(back_populates="alert_level")
 
 
 class Cap_Event_Base(SQLModel):
@@ -252,3 +240,6 @@ class Cap_Event_Areas(SQLModel, table=True):
     basin_id: int = Field(default=None, foreign_key=f"{default_schema}.basins.basin_id")
 
 
+class Alert_Basins(AlertsRead):
+    alert_id: int
+    alert_links: List[Alert_Areas] = Relationship(back_populates="alert")

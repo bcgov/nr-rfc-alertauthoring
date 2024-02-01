@@ -49,7 +49,11 @@ def upgrade() -> None:
         alert=alert_data_1,
         basin_levels=basin_levels_1,
     )
-    LOGGER.debug(f"alert basin {alert.basins}")
+    LOGGER.debug(f"**************** alert basin {alert}")
+    for link_atr in alert.alert_links:
+        LOGGER.debug(f"**************** alert basin {link_atr.basin}")
+        LOGGER.debug(f"**************** alert level {link_atr.alert_level}")
+        LOGGER.debug(f"**************** alert {link_atr.alert}")
 
     alert_data_2 = model.Alerts(
         alert_description="Alert Description 2",

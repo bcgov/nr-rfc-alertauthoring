@@ -3,7 +3,6 @@ from typing import Any, List
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
-
 from src.db import session
 from src.v1.models import model
 

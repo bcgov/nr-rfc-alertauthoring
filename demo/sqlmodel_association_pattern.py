@@ -1,6 +1,9 @@
+import os
 from typing import List, Optional
 
 from sqlmodel import Field, Relationship, Session, SQLModel, create_engine, select
+
+# One way to address the junction table pattern / idea
 
 
 class HeroTeamLink(SQLModel, table=True):
@@ -43,7 +46,14 @@ class Hero(SQLModel, table=True):
     )
 
 
+class Team_Team_Position_Link(HeroTeamLink):
+    Team: Team
+    Team_Position: Team_Position
+
+
 sqlite_file_name = "database.db"
+if os.path.exists(sqlite_file_name):
+    os.remove(sqlite_file_name)
 sqlite_url = f"sqlite:///{sqlite_file_name}"
 
 engine = create_engine(sqlite_url, echo=True)

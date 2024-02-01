@@ -1,8 +1,7 @@
 import logging
 
-from sqlmodel import Session, select
-
 import src.types
+from sqlmodel import Session, select
 
 LOGGER = logging.getLogger(__name__)
 
@@ -50,11 +49,18 @@ def create_alert_with_basins_and_level(
             model.Alert_Levels.alert_level == basin_level["alert_level"]
         )
         alert_level_data = session.exec(alert_level_select).one()
+
         junction_table = model.Alert_Areas(
-            alert_id=alert.alert_id,
-            basin_id=basin_data.basin_id,
-            alert_level_id=alert_level_data.alert_level_id,
+            alert=alert,
+            basin=basin_data,
+            alert_level=alert_level_data,
         )
+        # junction_table = model.Alert_Areas(
+        #     alert_id=alert.alert_id,
+        #     basin_id=basin_data.basin_id,
+        #     alert_level_id=alert_level_data.alert_level_id,
+        # )
+
         session.add(junction_table)
         session.flush()
 

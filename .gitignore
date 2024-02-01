@@ -134,3 +134,4 @@ backend/src/junk.py
 Hydrological Alerting-installation-dev.json
 backend/junk.sql
 demo/database.db
+backend/alembic/u-junk/**
