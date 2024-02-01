@@ -125,6 +125,7 @@ def create_heroes():
         print("Spider-Boy:", hero_spider_boy)
         print("Spider-Boy Teams:", hero_spider_boy.teams)
 
+        # --- example of what would be nice, but doesn't work
         # hero_borat = Hero(
         #     name="Sasha Baron Cohen",
         #     secret_name="Borat Sagdiyev",
@@ -135,15 +136,6 @@ def create_heroes():
         # session.add(hero_borat)
         # session.flush()
         # print("added borat...")
-
-
-def doesntwork():
-    hero_borat = Hero(
-        name="Sasha Baron Cohen",
-        secret_name="Borat Sagdiyev",
-        teams=[team_preventers],
-        position=[team_positions_manager],
-    )
 
 
 def update_heroes():
