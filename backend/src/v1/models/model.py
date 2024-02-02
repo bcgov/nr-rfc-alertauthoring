@@ -240,6 +240,12 @@ class Cap_Event_Areas(SQLModel, table=True):
     basin_id: int = Field(default=None, foreign_key=f"{default_schema}.basins.basin_id")
 
 
+class Alert_Areas_Read(SQLModel):
+    basin: BasinsRead
+    alert_level: Alert_Levels_Read
+
+
 class Alert_Basins(AlertsRead):
     alert_id: int
-    alert_links: List[Alert_Areas] = Relationship(back_populates="alert")
+    # alert_links: List[Alert_Areas]
+    alert_links: List[Alert_Areas_Read]

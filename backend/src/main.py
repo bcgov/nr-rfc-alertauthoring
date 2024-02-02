@@ -56,8 +56,8 @@ async def root():
     return {"message": "Route verification endpoints"}
 
 
-app.include_router(basin_router, prefix=api_prefix_v1 + "/basins", tags=["Basin CRUD"])
-app.include_router(alert_routes, prefix=api_prefix_v1 + "/alerts", tags=["Alert CRUD"])
+app.include_router(basin_router, prefix=api_prefix_v1 + "/basins", tags=["Basins"])
+app.include_router(alert_routes, prefix=api_prefix_v1 + "/alerts", tags=["Alerts"])
 
 
 # Define the filter
