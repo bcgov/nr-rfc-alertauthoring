@@ -10,7 +10,7 @@ from .v1.routes.basin_routes import router as basin_router
 
 # to run through debugger see ../debug_init.py
 
-api_prefix_v1 = "/api/v1"
+api_prefix_v1 = Configuration.API_V1_STR
 logging.getLogger("uvicorn").handlers.clear()  # removes duplicated logs
 
 OpenAPIInfo = {

@@ -1,0 +1,6 @@
+POSTGRES_USER = "postgres"
+POSTGRES_PASSWORD = "default"
+POSTGRES_HOST = "localhost"
+POSTGRES_DATABASE = "postgres"
+POSTGRES_PORT = 5432
+POSTGRES_SCHEMA = "py_api"

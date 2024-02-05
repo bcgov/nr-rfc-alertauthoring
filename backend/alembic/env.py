@@ -6,19 +6,11 @@ from sqlalchemy import create_engine
 
 # from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.schema import CreateSchema
-from sqlmodel import SQLModel  # NEW
+from sqlmodel import SQLModel
 from src.v1.models.model import *
 
 from alembic import context
 from alembic.script import ScriptDirectory
-
-# (  # NEW make *
-#     Alert_Areas,
-#     Alert_Levels,
-#     Alerts,
-#     Basins,
-#     Subbasins,
-# )
 
 config = context.config
 if config.config_file_name is not None:

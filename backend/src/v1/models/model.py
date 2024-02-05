@@ -236,6 +236,8 @@ class Cap_Event_Areas(SQLModel, table=True):
     :type table: bool, optional
     """
 
+    __table_args__ = {"schema": default_schema}
+
     cap_event_area_id: int = Field(default=None, primary_key=True)
     basin_id: int = Field(default=None, foreign_key=f"{default_schema}.basins.basin_id")
 

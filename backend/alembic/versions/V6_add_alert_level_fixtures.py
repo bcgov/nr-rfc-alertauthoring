@@ -5,7 +5,10 @@ Revises: V4
 Create Date: 2024-01-29 11:38:30.304621
 
 """
+
+import json
 import logging
+import os
 from typing import Sequence, Union
 
 import sqlalchemy as sa
@@ -21,11 +24,20 @@ down_revision: Union[str, None] = "V5"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
-alert_levels = [
-    model.Alert_Levels(alert_level="High Streamflow Advisory"),
-    model.Alert_Levels(alert_level="Flood Watch"),
-    model.Alert_Levels(alert_level="Flood Warning"),
-]
+alert_level_data_file = os.path.join(
+    os.path.dirname(__file__), "..", "data", "alert_levels.json"
+)
+with open(alert_level_data_file, "r") as json_file:
+    alert_level_data = json.load(json_file)
+alert_levels = []
+for alert in alert_level_data:
+    alert_levels.append(model.Alert_Levels(alert_level=alert["alert_level"]))
+
+# alert_levels = [
+#     model.Alert_Levels(alert_level="High Streamflow Advisory"),
+#     model.Alert_Levels(alert_level="Flood Watch"),
+#     model.Alert_Levels(alert_level="Flood Warning"),
+# ]
 
 
 def upgrade() -> None:

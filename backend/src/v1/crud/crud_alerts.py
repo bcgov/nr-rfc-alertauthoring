@@ -9,9 +9,6 @@ LOGGER = logging.getLogger(__name__)
 from src.v1.models import model
 
 
-def get_alert(session: Session, alert_id: int):
-    # TODO: include a query that returns a list of alerts
-    pass
 
 
 def create_alert_with_basins_and_level(
