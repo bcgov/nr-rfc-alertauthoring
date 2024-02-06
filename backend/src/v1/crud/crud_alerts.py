@@ -1,14 +1,13 @@
 import logging
 
-import src.types
 from sqlmodel import Session, select
+
+import src.types
 
 LOGGER = logging.getLogger(__name__)
 
 
 from src.v1.models import model
-
-
 
 
 def create_alert_with_basins_and_level(
@@ -65,4 +64,33 @@ def create_alert_with_basins_and_level(
         LOGGER.debug(f"alert_id  {alert.alert_id}")
         LOGGER.debug(f"basin_id  {basin_data.basin_id}")
         LOGGER.debug(f"alert_level  {alert_level_data.alert_level_id}")
+    return alert
+
+
+def get_alerts(session: Session):
+    """
+    retrieves all the alert records
+
+    :param session: a SQLModel database session
+    :type session: SQLModel.Session
+    :return: a list of alert records
+    :rtype: list[model.Alerts]
+    """
+    alerts = session.exec(select(model.Alerts)).all()
+    return alerts
+
+
+def get_alert(session: Session, alert_id: int):
+    """
+    retrieves an alert record by the primary key
+
+    :param session: a SQLModel database session
+    :type session: SQLModel.Session
+    :param alert_id: the primary key of the alert record to retrieve
+    :type alert_id: int
+    :return: the alert record
+    :rtype: model.Alerts
+    """
+    alert = session.get(model.Alerts, alert_id)
+    LOGGER.debug(f"single alert retrieval for id: {alert_id} {alert}")
     return alert
