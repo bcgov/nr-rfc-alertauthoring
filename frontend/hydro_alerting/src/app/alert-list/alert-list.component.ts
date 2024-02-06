@@ -1,18 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule, } from '@angular/common';
 import {MatTableModule} from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { Router } from '@angular/router';
-
+import { Alert } from '../alert';
+import { AlertsService } from '../alerts.service';
+import { Observable, map } from 'rxjs';
 
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 
-export interface AlertElement {
-  alert_id: number;
-  alert_description: string;
-  last_updated_time: Date;
-}
 
 
 
@@ -23,22 +20,11 @@ export interface AlertElement {
   templateUrl: './alert-list.component.html',
   styleUrl: './alert-list.component.css'
 })
-export class AlertListComponent {
+export class AlertListComponent implements OnInit{
   displayedColumns: string[] = ['alert_id', 'alert_description', 'last_updated_time', 'actions'];
-  alerts: AlertElement[] = [
-    {
-      "alert_id": 1,
-      "alert_description": 'this is ALSO an alert',
-      "last_updated_time": new Date(2018, 0O5, 0O5, 17, 23, 42, 11),
-    }, 
-    {
-      "alert_id": 2,
-      "alert_description": 'this is an alert',
-      "last_updated_time": new Date(2018, 0O5, 0O5, 17, 23, 42, 11)
-    }, 
-  ]
+  alerts!: Observable<Alert[]>;
 
-  constructor(private router: Router) { }
+  constructor(private router: Router, private alertService: AlertsService) { }
 
 
   view() {
@@ -56,4 +42,15 @@ export class AlertListComponent {
     this.router.navigate(['/create_alert']);
   }
 
+  ngOnInit(): void {
+    // this.alerts = this.alertService.getAlerts();
+
+    this.alerts = this.alertService.getAlerts().pipe(map((alerts) => {
+      return alerts.map((alert) => {
+        // alert.streak = alert.id <= 2 ? true : false;
+        console.log("alert: " + JSON.stringify(alert));
+        return alert;
+      });
+    }));
+  }
 }
