@@ -1,4 +1,30 @@
-table {
-    width: 100%;
-  }
-  
+  /* flex-container {
+    display: flex;
+    flex-direction: row; */
+    /* justify-content: center;
+    align-items: flex-start;
+    row-gap: 10000px;
+    column-gap: 10000px;
+    flex-wrap: nowrap; */
+    /* max-width: 1000px; */
+  /* } */
+
+  /* table {
+    width: 80%;
+    border-collapse: collapse;
+  } */
+
+
+  .keys {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.table-size {
+    width: 80%
+}
+
+

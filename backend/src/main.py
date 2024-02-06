@@ -5,17 +5,18 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .core.config import Configuration
-
-#from .v1.routes.user_routes import router as user_router
+from .v1.routes.alert_routes import router as alert_routes
 from .v1.routes.basin_routes import router as basin_router
 
-api_prefix_v1 = "/api/v1"
+# to run through debugger see ../debug_init.py
+
+api_prefix_v1 = Configuration.API_V1_STR
 logging.getLogger("uvicorn").handlers.clear()  # removes duplicated logs
 
 OpenAPIInfo = {
     "title": "FastAPI template for quickstart openshift",
     "version": "0.1.0",
-    "description": "A boilerplate for FastAPI with SQLAlchemy, Postgres"
+    "description": "A boilerplate for FastAPI with SQLAlchemy, Postgres",
 }
 tags_metadata = [
     {
@@ -24,17 +25,18 @@ tags_metadata = [
     },
 ]
 
-app = FastAPI(title=OpenAPIInfo["title"],
-              version=OpenAPIInfo["version"],
-              openapi_tags=tags_metadata, )
+app = FastAPI(
+    title=OpenAPIInfo["title"],
+    version=OpenAPIInfo["version"],
+    openapi_tags=tags_metadata,
+)
 origins: list[str] = [
     "http://localhost*",
     "http://localhost:4200",
     "https://nr-rfc-alertauthoring-*-frontend.apps.silver.devops.gov.bc.ca",
-
 ]
 
-origins_regex: str = '^https*\:\/\/nr-rfc-alertauthoring\-(\d)*\-frontend\.apps\.silver\.devops\.gov\.bc\.ca$'
+origins_regex: str = "^https*\:\/\/nr-rfc-alertauthoring\-(\d)*\-frontend\.apps\.silver\.devops\.gov\.bc\.ca$"
 
 app.add_middleware(
     CORSMiddleware,
@@ -54,9 +56,8 @@ async def root():
     return {"message": "Route verification endpoints"}
 
 
-app.include_router(basin_router,
-                   prefix=api_prefix_v1 + '/basins',
-                   tags=["Basin CRUD"])
+app.include_router(basin_router, prefix=api_prefix_v1 + "/basins", tags=["Basins"])
+app.include_router(alert_routes, prefix=api_prefix_v1 + "/alerts", tags=["Alerts"])
 
 
 # Define the filter

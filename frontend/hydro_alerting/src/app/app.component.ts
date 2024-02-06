@@ -55,6 +55,7 @@ export class AppComponent  implements OnInit{
   //     this.title = result.message;
   //   });
   // }
+  
 
 
   ngOnInit(): void {}
@@ -62,5 +63,7 @@ export class AppComponent  implements OnInit{
   get_title() {
     return this.title;
   }
+
+
 
 }

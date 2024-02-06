@@ -1,0 +1,15 @@
+[
+    {
+        "id": 1,
+        "alert_level": "High Streamflow Advisory"
+    },
+    {
+        "id": 2,
+        "alert_level": "Flood Watch"
+    },
+    {
+        "id": 3,
+        "alert_level": "Flood Warning"
+    }
+
+]

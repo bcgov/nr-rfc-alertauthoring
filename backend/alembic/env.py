@@ -2,14 +2,15 @@ import logging
 from logging.config import fileConfig
 
 import src.core.config as app_config
+from sqlalchemy import create_engine
+
+# from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.schema import CreateSchema
+from sqlmodel import SQLModel
+from src.v1.models.model import *
+
 from alembic import context
 from alembic.script import ScriptDirectory
-from sqlalchemy import create_engine, pool
-from sqlalchemy.schema import CreateSchema
-from sqlmodel import SQLModel  # NEW
-from src.v1.models.model import *  # NEW make *
-
-# from ...src.v1.models.model import metadata
 
 config = context.config
 if config.config_file_name is not None:
@@ -35,7 +36,16 @@ LOGGER.debug("test test test")
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
+# target_metadata = SQLModel.metadata
 target_metadata = SQLModel.metadata
+# target_metadata = MetaData()
+
+# for datum in target_metadata_sql_model:
+#     for table in datum.tables.values():
+#         print(f'table: {table}')
+#         table.to_metadata(target_metadata)
+
+print("target_metadata: ", target_metadata)
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -44,7 +54,7 @@ target_metadata = SQLModel.metadata
 
 
 def process_revision_directives(context, revision, directives):
-    """overriding the default generation of revision ids to use a 
+    """overriding the default generation of revision ids to use a
     sequential integer instead of a hex string.
 
     :param context: _description_
@@ -80,7 +90,9 @@ def get_url():
         LOGGER.debug(f"url from -x: {url}")
 
     if not url:
-        LOGGER.debug(f"app_config.Configuration.SQLALCHEMY_DATABASE_URI: {app_config.Configuration.SQLALCHEMY_DATABASE_URI}")
+        LOGGER.debug(
+            f"app_config.Configuration.SQLALCHEMY_DATABASE_URI: {app_config.Configuration.SQLALCHEMY_DATABASE_URI}"
+        )
         url = app_config.Configuration.SQLALCHEMY_DATABASE_URI.unicode_string()
         LOGGER.debug(f"url from app config: {url}")
     LOGGER.debug(f"captured the url string: {url}")
@@ -100,16 +112,16 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    include_schemas=True
+    include_schemas = True
     LOGGER.debug("running migrations offline")
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
         literal_binds=True,
         target_metadata=target_metadata,
-        version_table='alembic_version',
+        version_table="alembic_version",
         version_table_schema=app_config.Configuration.DEFAULT_SCHEMA,
-        process_revision_directives=process_revision_directives
+        process_revision_directives=process_revision_directives,
     )
 
     with context.begin_transaction():
@@ -123,29 +135,41 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    include_schemas=True
+    include_schemas = True
     url = get_url()
     LOGGER.debug(f"using url: {url}")
-    connectable = create_engine(url)
+    connectable = create_engine(
+        url,
+        execution_options={
+            "schema_translate_map": {
+                "tenant_schema": app_config.Configuration.DEFAULT_SCHEMA
+            }
+        },
+    )
 
     with connectable.connect() as connection:
+        # connection(execution_options={"schema_translate_map": {"tenant_schema": app_config.Configuration.DEFAULT_SCHEMA}})
 
         context.configure(
+            include_schemas=True,
             connection=connection,
-            version_table='alembic_version',
+            compare_type=True,
+            version_table="alembic_version",
             target_metadata=target_metadata,
             version_table_schema=app_config.Configuration.DEFAULT_SCHEMA,
-            process_revision_directives=process_revision_directives
+            process_revision_directives=process_revision_directives,
         )
-        schema_create = CreateSchema(app_config.Configuration.DEFAULT_SCHEMA, if_not_exists=True)
+        schema_create = CreateSchema(
+            app_config.Configuration.DEFAULT_SCHEMA, if_not_exists=True
+        )
         LOGGER.debug(f"schema_create: {schema_create}")
         connection.execute(schema_create)
         # create_schema_sql = 'CREATE SCHEMA IF NOT EXISTS {}'
         # connection.execute(create_schema_sql)
 
-
         with context.begin_transaction():
             context.run_migrations()
+
 
 if context.is_offline_mode():
     run_migrations_offline()

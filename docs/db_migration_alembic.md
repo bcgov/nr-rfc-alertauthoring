@@ -1,12 +1,25 @@
 # Database Migrations
 
+## Environment variable Dependencies
+
+To run this code there needs to be a database running, and the following env vars
+in order for alembic to able to connect to the database.
+
+* POSTGRES_USER
+* POSTGRES_PASSWORD
+* POSTGRES_HOST
+* POSTGRES_DATABASE
+* POSTGRES_PORT
+* POSTGRES_SCHEMA
+
 ## install dependencies / activate env
 
 make sure the dev dependencies have been installed,
 
-```
+``` sh
 cd backend
 poetry install
+
 # activate the env
 source $(poetry env info --path)/bin/activate
 ```
@@ -23,7 +36,12 @@ however reviewing the output is always a good idea.
 This step does not run the actual migration, but rather generates the
 migration file.  Migration files will be located in the folder: `backend/alembic/versions`
 
-```
+``` sh
+# load dev env vars from home directory or wherever the .env file is located
+# alternatively load the env vars
+set -o allexport; source .env; set +o allexport
+
+
 alembic revision --autogenerate -m "migration message"
 ```
 
