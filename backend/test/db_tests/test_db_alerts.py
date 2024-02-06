@@ -46,3 +46,19 @@ def test_create_alert_with_basins_and_level(db_test_connection: Session):
     )
     alert_result = session.exec(alert_select).one()
     assert alert_result.alert_created == alert.alert_created
+
+
+def test_get_alerts(db_with_alert: Session):
+    session = db_with_alert
+    alerts = crud_alerts.get_alerts(session=session)
+    LOGGER.debug(f"alerts: {alerts}")
+    assert len(alerts) >= 1
+
+
+def test_get_alert(db_with_alert: Session):
+    session = db_with_alert
+    alerts = crud_alerts.get_alerts(session=session)
+    alert_id = alerts[0].alert_id
+    alert = crud_alerts.get_alert(session=session, alert_id=alert_id)
+    LOGGER.debug(f"alert data: {alert}")
+    assert alert.alert_id == alert_id

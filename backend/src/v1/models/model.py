@@ -136,7 +136,6 @@ class Alerts(AlertsRead, table=True):
     :param table: Tells sql model that this is a table def, defaults to True
     :type table: bool, optional
     """
-
     __table_args__ = {"schema": default_schema}
 
     alert_links: List["Alert_Areas"] = Relationship(back_populates="alert")
