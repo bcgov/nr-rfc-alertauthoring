@@ -68,7 +68,7 @@
     		connect-src 'self' 
 			    https://dev.loginproxy.gov.bc.ca
 			    https://*.apps.silver.devops.gov.bc.ca 
-				http://*.apps.silver.gov.bc.ca;
+				http://*.apps.silver.devops.gov.bc.ca;
 			script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www2.gov.bc.ca ;
 			style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://use.fontawesome.com;
 			font-src 'self' https://fonts.gstatic.com;
