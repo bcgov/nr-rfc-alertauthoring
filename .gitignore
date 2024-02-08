@@ -136,3 +136,4 @@ backend/junk.sql
 demo/database.db
 backend/alembic/u-junk/**
 test_db.db
+junk.py

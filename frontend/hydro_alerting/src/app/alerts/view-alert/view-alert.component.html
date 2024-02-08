@@ -1,1 +1,19 @@
 <p>view-alert works!</p>
+<p> alert id: {{ alert_id }}</p>
+<div *ngIf="alert | async as user"> 
+    
+    <p > alert.alert_status is {{ user.alert_description }}</p>
+    <!-- <p > alert.alert_status is --{{ (alert | async)?.alert_description }}--</p> -->
+</div>
+<!-- <div [formGroup]="single_alert_form">
+    <mat-form-field FloatLabel='always'>
+        <mat-label >Alert Id</mat-label>
+        <input [attr.readonly]="editable" matInput [attr.value]="alert_id" placeholder="pat@example.com" type="text" >
+    </mat-form-field> -->
+    <!-- <mat-form-field FloatLabel='always' >
+        <mat-label >Alert Description</mat-label>
+        <input [attr.readonly]="editable" matInput [attr.value]="alert.alert_description" type="text" >
+    </mat-form-field> -->
+
+    
+<!-- </div> -->
