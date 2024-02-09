@@ -7,6 +7,8 @@ import {
 import { provideAuth } from 'angular-auth-oidc-client';
 import { routes } from './app.routes';
 import { authCodeFlowConfig } from './sso.config';
+import { provideAnimations } from '@angular/platform-browser/animations';
+
 
 
 // function initializeOAuth(oauthService: OAuthService): Promise<void> {
@@ -27,6 +29,6 @@ export const appConfig: ApplicationConfig = {
       config: 
         authCodeFlowConfig
     }),
-
+    provideAnimations(),
   ]
 };

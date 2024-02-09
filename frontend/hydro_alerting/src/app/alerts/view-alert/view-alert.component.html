@@ -1,19 +1,45 @@
-<p>view-alert works!</p>
-<p> alert id: {{ alert_id }}</p>
-<div *ngIf="alert | async as user"> 
-    
-    <p > alert.alert_status is {{ user.alert_description }}</p>
-    <!-- <p > alert.alert_status is --{{ (alert | async)?.alert_description }}--</p> -->
-</div>
-<!-- <div [formGroup]="single_alert_form">
-    <mat-form-field FloatLabel='always'>
-        <mat-label >Alert Id</mat-label>
-        <input [attr.readonly]="editable" matInput [attr.value]="alert_id" placeholder="pat@example.com" type="text" >
-    </mat-form-field> -->
-    <!-- <mat-form-field FloatLabel='always' >
-        <mat-label >Alert Description</mat-label>
-        <input [attr.readonly]="editable" matInput [attr.value]="alert.alert_description" type="text" >
-    </mat-form-field> -->
+<div >
 
-    
-<!-- </div> -->
+    <div *ngIf="alert | async as alert_as">
+        <!-- <div  > *ngIf="editable | async as edit_as" -->
+        <!-- <p > alert.alert_status is --{{ (alert | async)?.alert_description }}--</p> -->
+        <div [formGroup]="single_alert_form" class=container>
+            <mat-form-field FloatLabel='always' class="alert-elements">
+                <mat-label>Alert Id</mat-label>
+                <input matInput [attr.value]="alert_as.alert_id" type="text" [disabled]="form_disabled">
+            </mat-form-field>
+            <mat-form-field FloatLabel='always' class="alert-elements">
+                <mat-label>Alert Description</mat-label>
+                <input matInput [attr.value]="alert_as.alert_description" type="text" [disabled]="form_disabled">
+            </mat-form-field>
+            <mat-form-field FloatLabel='always' class="alert-elements">
+                <mat-label>Hydrological Conditions</mat-label>
+                <input matInput [attr.value]="alert_as.alert_hydro_conditions" type="text" [disabled]="form_disabled">
+            </mat-form-field>
+            <mat-form-field FloatLabel='always' class="alert-elements">
+                <mat-label>Meteorological Conditions</mat-label>
+                <input matInput [attr.value]="alert_as.alert_meteorological_conditions" type="text"
+                    [disabled]="form_disabled">
+            </mat-form-field>
+            <mat-form-field FloatLabel='always' class="alert-elements">
+                <mat-label>Meteorological Conditions</mat-label>
+                <input [disabled]="form_disabled" matInput [attr.value]="alert_as.alert_meteorological_conditions"
+                    type="text">
+            </mat-form-field>
+            <mat-form-field FloatLabel='always' class="alert-elements">
+                <mat-label>Last Updated</mat-label>
+                <input [disabled]="form_disabled" matInput [attr.value]="format_date(alert_as.alert_updated)"
+                    type="text">
+            </mat-form-field>
+            <mat-form-field FloatLabel='always' class="alert-elements">
+                <mat-label>Alert Status</mat-label>
+                <input [disabled]="form_disabled" matInput [attr.value]="alert_as.alert_status" type="text">
+            </mat-form-field>
+
+            <button mat-raised-button color="primary" (click)="onEnableEditing()">Edit</button>
+
+            <!-- {{form_disabled}} -->
+
+        </div>
+    </div>
+</div>
