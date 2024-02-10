@@ -48,10 +48,13 @@ export class ViewAlertComponent {
   meteorological_data_contents: string = "";
   hydrological_data_contents: string = "";
 
+  // used to keep track of whether we have initiated an edit session or not
+  edit_session_status: boolean = false;
+
   // quill component properties
   blurred = false;
   focused = false;
-  quillReadonly=true;
+  quillReadonly=false;
 
 
   constructor(private route: ActivatedRoute, private alertService: AlertService, private formBuilder: FormBuilder) {
@@ -82,6 +85,25 @@ export class ViewAlertComponent {
     this.single_alert_form.disable();
   }
 
+  /**
+   * cancel the changes, replace values in form with original state
+   */
+  onCancel() {
+    console.log("Cancel button clicked");
+    // this.edit_session_status = false;
+    // this.single_alert_form.disable();
+  }
+
+
+  /**
+   * save the changes on the form and return to readonly mode
+   */
+  onSave() {
+    console.log("Save button clicked");
+    // this.edit_session_status = false;
+    // this.single_alert_form.disable();
+  }
+
   onEnableEditing() {
     if (this.editable === "readonly") {
       this.editable = null;
@@ -91,10 +113,13 @@ export class ViewAlertComponent {
     if (this.form_disabled === 'disabled') {
       this.form_disabled = null;
       this.quillReadonly = false;
+      this.edit_session_status = true;
     } else {
       this.form_disabled = 'disabled';
       this.quillReadonly = true;
+      this.edit_session_status = false;
     }
+
   }
 
   /**
@@ -131,23 +156,6 @@ export class ViewAlertComponent {
   nativeFocus($event: any) {
     // tslint:disable-next-line:no-console
     console.log('native-focus', $event)
-  }
-
-  blur($event: any) {
-    // tslint:disable-next-line:no-console
-    console.log('blur', $event)
-    this.focused = false
-    this.blurred = true
-  }
-  nativeBlur($event: any) {
-    // tslint:disable-next-line:no-console
-    console.log('native-blur', $event)
-  }
-
-  created(editor: any) {
-    const range = editor.getSelection(true)
-    
-    // editor.insertText(0, this.meteorological_data_contents)
   }
 
 }

@@ -18,3 +18,10 @@
     align-items: stretch;
     width: 90%;
 }
+
+.alert-buttons {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    gap: 10px;
+}

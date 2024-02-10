@@ -44,13 +44,13 @@
                     [readOnly]="quillReadonly">
                 </mat-quill>
             </mat-form-field>
-            <!-- <mat-form-field FloatLabel='always' class="alert-elements">
-                <mat-label>Hydrological Conditions</mat-label>
-                <input matInput [attr.value]="alert_as.alert_hydro_conditions" type="text" [disabled]="form_disabled">
-            </mat-form-field> -->
-            
-
-            <button mat-raised-button color="primary" (click)="onEnableEditing()">Edit</button>
+            <div id="start_edit" *ngIf="!edit_session_status">
+                <button mat-raised-button color="primary" (click)="onEnableEditing()">Edit</button>
+            </div>
+            <div id="editing_active" *ngIf="edit_session_status" class="alert-buttons">
+                <button mat-raised-button color="primary" (click)="onSave()">Save</button>
+                <button mat-raised-button color="warn" (click)="onCancel()">Cancel</button>
+            </div>
         </div>
     </div>
 </div>
