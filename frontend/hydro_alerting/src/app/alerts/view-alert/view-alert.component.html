@@ -1,1 +1,45 @@
-<p>view-alert works!</p>
+<div>
+
+    <div *ngIf="alert | async as alert_as">
+        <!-- <div  > *ngIf="editable | async as edit_as" -->
+        <!-- <p > alert.alert_status is --{{ (alert | async)?.alert_description }}--</p> -->
+        <div [formGroup]="single_alert_form" class=container>
+            <mat-form-field floatLabel='always' class="alert-elements">
+                <mat-label>Alert Id</mat-label>
+                <input matInput [attr.value]="alert_as.alert_id" type="text" readonly>
+            </mat-form-field>
+            <mat-form-field FloatLabel='always' class="alert-elements">
+                <mat-label>Alert Description</mat-label>
+                <!-- [(ngModel)]="" -->
+                <textarea matInput type="text" readonly cdkTextareaAutosize>{{alert_as.alert_description}}</textarea>
+            </mat-form-field>
+            <mat-form-field floatLabel='always' class="alert-elements">
+                <mat-label>Alert Original Issue Date</mat-label>
+                <input readonly matInput [attr.value]="format_date(alert_as.alert_created)" type="text">
+            </mat-form-field>
+            <mat-form-field floatLabel='always' class="alert-elements">
+                <mat-label>Alert Last Updated</mat-label>
+                <input readonly matInput [attr.value]="format_date(alert_as.alert_updated)" type="text">
+            </mat-form-field>
+            <mat-form-field floatLabel='always' class="alert-elements">
+                <mat-label>Alert Status</mat-label>
+                <input readonly matInput [attr.value]="alert_as.alert_status" type="text">
+            </mat-form-field>
+            <mat-form-field floatLabel='always' class="alert-elements">
+                <mat-label>Meteorological Conditions</mat-label>
+                <mat-quill [(ngModel)]="meteorological_data_contents" [ngModelOptions]="{standalone: true}"
+                    [readOnly]="true" [modules]="{toolbar: false}">
+                </mat-quill>
+            </mat-form-field>
+            <mat-form-field floatLabel='always' class="alert-elements">
+                <mat-label>Hydrological Conditions</mat-label>
+                <mat-quill [(ngModel)]="hydrological_data_contents" [ngModelOptions]="{standalone: true}"
+                    [modules]="{toolbar: false}" [readOnly]="true">
+                </mat-quill>
+            </mat-form-field>
+            <div id="start_edit" *ngIf="this.authenticated">
+                <button mat-raised-button color="primary" (click)="route_to_edit()">Edit</button>
+            </div>
+        </div>
+    </div>
+</div>

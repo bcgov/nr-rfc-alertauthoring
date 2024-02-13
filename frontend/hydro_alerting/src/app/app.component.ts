@@ -45,19 +45,6 @@ export class AppComponent  implements OnInit{
     this.oidcSecurityService.logoff();
   }
 
-  // example of passing the access token to the backend
-  // getHelloText() {
-  //   this.httpClient.get<{ message: string }>('http://localhost:3003', {
-  //     headers: {
-  //       'Authorization': `Bearer ${this.oauthService.getAccessToken()}`
-  //     }
-  //   }).subscribe(result => {
-  //     this.title = result.message;
-  //   });
-  // }
-  
-
-
   ngOnInit(): void {}
 
   get_title() {
