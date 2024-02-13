@@ -1,55 +1,44 @@
-<div >
+<div>
 
     <div *ngIf="alert | async as alert_as">
         <!-- <div  > *ngIf="editable | async as edit_as" -->
         <!-- <p > alert.alert_status is --{{ (alert | async)?.alert_description }}--</p> -->
         <div [formGroup]="single_alert_form" class=container>
-            <mat-form-field FloatLabel='always' class="alert-elements">
+            <mat-form-field floatLabel='always' class="alert-elements">
                 <mat-label>Alert Id</mat-label>
-                <input matInput [attr.value]="alert_as.alert_id" type="text" [disabled]="form_disabled">
+                <input matInput [attr.value]="alert_as.alert_id" type="text" readonly>
             </mat-form-field>
             <mat-form-field FloatLabel='always' class="alert-elements">
                 <mat-label>Alert Description</mat-label>
-                <input matInput [attr.value]="alert_as.alert_description" type="text" [disabled]="form_disabled">
+                <!-- [(ngModel)]="" -->
+                <textarea matInput type="text" readonly cdkTextareaAutosize>{{alert_as.alert_description}}</textarea>
             </mat-form-field>
-            <mat-form-field FloatLabel='always' class="alert-elements">
+            <mat-form-field floatLabel='always' class="alert-elements">
                 <mat-label>Alert Original Issue Date</mat-label>
-                <input [disabled]="form_disabled" matInput [attr.value]="format_date(alert_as.alert_created)"
-                    type="text">
+                <input readonly matInput [attr.value]="format_date(alert_as.alert_created)" type="text">
             </mat-form-field>
-            <mat-form-field FloatLabel='always' class="alert-elements">
+            <mat-form-field floatLabel='always' class="alert-elements">
                 <mat-label>Alert Last Updated</mat-label>
-                <input [disabled]="form_disabled" matInput [attr.value]="format_date(alert_as.alert_updated)"
-                    type="text">
+                <input readonly matInput [attr.value]="format_date(alert_as.alert_updated)" type="text">
             </mat-form-field>
-            <mat-form-field FloatLabel='always' class="alert-elements">
+            <mat-form-field floatLabel='always' class="alert-elements">
                 <mat-label>Alert Status</mat-label>
-                <input [disabled]="form_disabled" matInput [attr.value]="alert_as.alert_status" type="text">
+                <input readonly matInput [attr.value]="alert_as.alert_status" type="text">
             </mat-form-field>
-            <mat-form-field FloatLabel='always' class="alert-elements">
+            <mat-form-field floatLabel='always' class="alert-elements">
                 <mat-label>Meteorological Conditions</mat-label>
-                <mat-quill
-                    [(ngModel)]="meteorological_data_contents"
-                    (onEditorCreated)="created($event)"
-                    [ngModelOptions]="{standalone: true}"
-                    [readOnly]="quillReadonly">
+                <mat-quill [(ngModel)]="meteorological_data_contents" [ngModelOptions]="{standalone: true}"
+                    [readOnly]="true" [modules]="{toolbar: false}">
                 </mat-quill>
             </mat-form-field>
-            <mat-form-field FloatLabel='always' class="alert-elements">
+            <mat-form-field floatLabel='always' class="alert-elements">
                 <mat-label>Hydrological Conditions</mat-label>
-                <mat-quill
-                    [(ngModel)]="hydrological_data_contents"
-                    (onEditorCreated)="created($event)"
-                    [ngModelOptions]="{standalone: true}"
-                    [readOnly]="quillReadonly">
+                <mat-quill [(ngModel)]="hydrological_data_contents" [ngModelOptions]="{standalone: true}"
+                    [modules]="{toolbar: false}" [readOnly]="true">
                 </mat-quill>
             </mat-form-field>
-            <div id="start_edit" *ngIf="!edit_session_status">
-                <button mat-raised-button color="primary" (click)="onEnableEditing()">Edit</button>
-            </div>
-            <div id="editing_active" *ngIf="edit_session_status" class="alert-buttons">
-                <button mat-raised-button color="primary" (click)="onSave()">Save</button>
-                <button mat-raised-button color="warn" (click)="onCancel()">Cancel</button>
+            <div id="start_edit" *ngIf="this.authenticated">
+                <button mat-raised-button color="primary" (click)="route_to_edit()">Edit</button>
             </div>
         </div>
     </div>
