@@ -1,0 +1,27 @@
+
+
+.container {
+    display: flex; /* or inline-flex */
+    flex-direction: row;
+    flex-flow: center;
+    justify-content: center;
+    align-items: center
+  }
+
+
+.mat-header-cell {
+    color: rgb(15, 15, 15);
+    text-align: center;
+}
+
+.mat-cell {
+    padding: 8px 8px 8px 0;
+    border-right: 1px solid black;
+  }
+
+  .mat-column-alert_level {
+    /* border-left: 1px solid currentColor; */
+
+  }
+  
+  
