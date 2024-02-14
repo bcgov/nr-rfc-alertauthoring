@@ -12,7 +12,7 @@ import Quill from 'quill'
 import { MatQuillModule } from '../../mat-quill/mat-quill-module'
 import { EditorChangeContent, EditorChangeSelection, QuillEditorComponent } from 'ngx-quill'
 import { OidcSecurityService } from 'angular-auth-oidc-client';
-
+import { ViewBasinLevelComponent } from '../view-basin-level/view-basin-level.component';
 
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
@@ -33,15 +33,12 @@ import utc from 'dayjs/plugin/utc';
     MatButtonModule,
     QuillEditorComponent,
     MatQuillModule,
-    MatFormFieldModule],
+    ViewBasinLevelComponent],
   templateUrl: './view-alert.component.html',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   styleUrl: './view-alert.component.css',
 })
 export class ViewAlertComponent {
-  typeof(arg0: string | null) {
-    throw new Error('Method not implemented.');
-  }
   alert_id: number | undefined;
   alert!: Observable<Alert>;
   form_disabled: string | null = 'disabled';

@@ -19,6 +19,12 @@
     width: 90%;
 }
 
+.alert-table {
+    align-items: stretch;
+    width: 65%;
+}
+
+
 .alert-buttons {
     display: flex;
     justify-content: center;
