@@ -1,6 +1,7 @@
 <div>
     <div *ngIf="alert | async as alert_as">
         <form  [formGroup]="edit_alert_form" class=container (ngSubmit)="onSubmit()">
+
             <mat-form-field floatLabel='always' class="alert-elements">
                 <mat-label>Alert Id</mat-label>
                 <input matInput [attr.value]="alert_as.alert_id" type="text" readonly>
@@ -38,8 +39,9 @@
             </mat-form-field>
             <mat-form-field floatLabel='always' class="alert-elements">
                 <mat-label>Meteorological Conditions</mat-label>
-                <mat-quill 
-                    [(ngModel)]="meteorological_data_contents" 
+                <!-- [(ngModel)]="meteorological_data_contents"  -->
+                <mat-quill
+                    formControlName="meteorologicalDataEditor"
                     [ngModelOptions]="{standalone: true}"
                 >
                 </mat-quill>
@@ -54,11 +56,15 @@
                 </mat-quill>
                 <mat-hint align="end" class="md-caption">Describe the hydrological conditions that contributed to this alert</mat-hint>
             </mat-form-field>
-            <!-- *ngIf="this.authenticated" -->
-            <div id="submit_changes">
+            <br>
+            <div class="alert-buttons">
                 <button mat-raised-button color="primary" >Submit Changes</button>
-                <!-- (click)="ngSubmit() -->
+                <button mat-raised-button color="warn" (click)="resetForm()">Reset</button>
             </div>
         </form>
     </div>
 </div>
+
+            <!-- *ngIf="this.authenticated" -->
+            <!-- (click)="ngSubmit() -->
+            <!-- formControlName="matEditor"> -->
