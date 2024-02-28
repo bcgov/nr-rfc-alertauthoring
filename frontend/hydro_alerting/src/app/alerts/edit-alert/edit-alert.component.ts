@@ -139,4 +139,11 @@ export class EditAlertComponent implements OnInit {
       this.edit_alert_form.get('alert_description')!.patchValue(alert.alert_description);
     });
   }
+
+  submit_edits() {
+    // TODO: need to pass the values onto the api
+    console.log(`form data: ${JSON.stringify(this.edit_alert_form.value)}`);
+    console.log(`alert description: ${this.edit_alert_form.value.alert_description}`);
+    // pass the json contained in: this.edit_alert_form.value to the api
+  }
 }
