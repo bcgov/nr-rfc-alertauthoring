@@ -57,9 +57,6 @@ export class EditAlertComponent implements OnInit {
     static: true
   }) hydrologicalDataEditor: MatQuill | undefined
 
-
-
-
   test_param: string = "test";
 
   constructor(
