@@ -4,12 +4,15 @@ import { ActivatedRoute, Params, Router } from '@angular/router';
 import { switchMap, Observable, of } from 'rxjs';
 import { Alert } from '../../alert';
 import { AlertService } from '../alert.service';
-import { FormGroup, FormBuilder ,FormsModule, Validators} from '@angular/forms';
+import { FormGroup, FormControl, FormBuilder ,FormsModule, Validators} from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatButton } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { ReactiveFormsModule } from '@angular/forms';
 import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone' 
+dayjs.extend(timezone); // use plugin
+
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import {MatSelectModule} from '@angular/material/select';
 
@@ -18,6 +21,7 @@ import { MatQuillModule } from '../../mat-quill/mat-quill-module'
 import { MatQuill } from '../../mat-quill/mat-quill'
 
 import { EditorChangeContent, EditorChangeSelection, QuillEditorComponent } from 'ngx-quill'
+import { TokenHelperService } from 'angular-auth-oidc-client/lib/utils/tokenHelper/token-helper.service';
 
 // 
 @Component({
@@ -30,7 +34,6 @@ import { EditorChangeContent, EditorChangeSelection, QuillEditorComponent } from
     ReactiveFormsModule, 
     MatSelectModule,
     QuillEditorComponent,
-    
     MatQuillModule,
     FormsModule,
     MatButton,
@@ -45,13 +48,14 @@ export class EditAlertComponent implements OnInit {
   edit_alert_form: FormGroup;
   alert_create_date!: Date;
   alert_updated_date!: Date;
-  meteorological_data_contents!: string;
-  hydrological_data_contents!: string;
-
+  local_tz: string;
 
   @ViewChild('meteorologicalDataEditor', {
     static: true
   }) meteorologicalDataEditor: MatQuill | undefined
+  @ViewChild('hydrologicalDataEditor', {
+    static: true
+  }) hydrologicalDataEditor: MatQuill | undefined
 
 
 
@@ -64,14 +68,19 @@ export class EditAlertComponent implements OnInit {
     private formBuilder: FormBuilder,
 
   ) {
+
+    this.local_tz = dayjs.tz.guess();
+
+    dayjs.tz.setDefault(this.local_tz);
     this.edit_alert_form = this.formBuilder.group({
       // meteorological_data_contents: this.alert?.alert_meteorological_conditions,
       alert_data: of(alert),
       alert_description: ["",],
-      meteorological_data_contents: ["",],
-      hydrological_data_contents: ["",],
       alert_status: ["",],
       meteorologicalDataEditor: [""],
+      hydrologicalDataEditor: [""],
+      alert_updated_date: [],
+      alert_created_date: [],
     });
   }
 
@@ -86,13 +95,16 @@ export class EditAlertComponent implements OnInit {
         console.log('alert: ' + JSON.stringify(alert));
         dayjs.extend(customParseFormat);
         this.test_param = "test";
+        // convert the date to a Date object to send to the ui
         this.alert_create_date = dayjs(alert.alert_created, "YYYY-MM-DDTHH:MM:SS.SSSSSS").toDate();
-        this.alert_updated_date = dayjs(alert.alert_updated, "YYYY-MM-DDTHH:MM:SS.SSSSSS").toDate();
-        this.hydrological_data_contents = alert.alert_hydro_conditions;
-        this.meteorological_data_contents = alert.alert_meteorological_conditions;
+        this.edit_alert_form.controls['alert_created_date'].setValue(dayjs().toDate());
+
         // example of setting a property on the form object
         this.edit_alert_form.controls['alert_description'].setValue(alert.alert_description);
-        this.edit_alert_form.controls['meteorologicalDataEditor'].setValue(alert.alert_meteorological_conditions);
+        this.edit_alert_form.controls['alert_updated_date'].setValue(dayjs().toDate());
+        this.edit_alert_form.controls['alert_status'].setValue(alert.alert_status);
+        this.edit_alert_form.setControl('meteorologicalDataEditor', new FormControl(alert.alert_meteorological_conditions))
+        this.edit_alert_form.setControl('hydrologicalDataEditor', new FormControl(alert.alert_hydro_conditions))    
 
         this.alert = of(alert);
       });
@@ -116,17 +128,15 @@ export class EditAlertComponent implements OnInit {
   }
 
   resetForm() {
-    // reset the values in the form back to original values
+    // reset the values in the form back to original values, original values come
+    // from the alert observable
     this.alert.subscribe((alert: Alert) => {
-      // console.log('alert: ' + JSON.stringify(alert));
       console.log(`alert description: ${alert.alert_description}`);
-      this.edit_alert_form.patchValue({
-        hydrological_data_contents: alert.alert_hydro_conditions,
-        meteorological_data_contents: alert.alert_meteorological_conditions,
-        alert_description: alert.alert_description,
-        alert_status: alert.alert_status,
-      });
+      this.edit_alert_form.get('meteorologicalDataEditor')!.patchValue(alert.alert_meteorological_conditions);
+      this.edit_alert_form.get('hydrologicalDataEditor')!.patchValue(alert.alert_hydro_conditions);
+      this.edit_alert_form.get('hydrologicalDataEditor')!.patchValue(alert.alert_hydro_conditions);
+      this.edit_alert_form.get('alert_status')!.patchValue(alert.alert_status);
+      this.edit_alert_form.get('alert_description')!.patchValue(alert.alert_description);
     });
   }
-
 }
