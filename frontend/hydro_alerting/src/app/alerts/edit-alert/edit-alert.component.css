@@ -1,0 +1,27 @@
+.container {
+    display: flex;
+    margin: 5%;
+    /* identify the main axis */
+    flex-direction: column;
+
+    /* aligns on main axis in this case column makes main axis the veritcal */
+    flex-direction: column;
+
+    /* aligns on the cross axis */
+    justify-content: center;
+
+    align-items: center;
+    /* or inline-flex */
+}
+
+.alert-elements {
+    align-items: stretch;
+    width: 90%;
+}
+
+.alert-buttons {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    gap: 10px;
+}

@@ -1,5 +1,5 @@
 import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ActivatedRoute, Params } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { AlertService } from '../alert.service';
 import { switchMap, Observable, of } from 'rxjs';
 import { Alert } from '../../alert';
@@ -13,6 +13,7 @@ import { MatQuillModule } from '../../mat-quill/mat-quill-module'
 import { EditorChangeContent, EditorChangeSelection, QuillEditorComponent } from 'ngx-quill'
 import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { ViewBasinLevelComponent } from '../view-basin-level/view-basin-level.component';
+
 
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
@@ -57,7 +58,8 @@ export class ViewAlertComponent {
       private route: ActivatedRoute, 
       private alertService: AlertService,
       private formBuilder: FormBuilder, 
-      private oidcSecurityService: OidcSecurityService) {
+      private oidcSecurityService: OidcSecurityService, 
+      private router: Router) {
     this.single_alert_form = this.formBuilder.group({
       alert_data: of(alert)
     });
@@ -124,8 +126,9 @@ export class ViewAlertComponent {
    * triggers the edit session / route to ./edit route
    */
   route_to_edit() {
-    console.log("route_to_edit");
-    
+    let edit_path: string = "/alert/" + this.alert_id + "/edit"
+    console.log(`navigate to: ${edit_path}`);
+    this.router.navigate([edit_path])
   }
 
 }

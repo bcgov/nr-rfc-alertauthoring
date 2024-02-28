@@ -137,3 +137,6 @@ demo/database.db
 backend/alembic/u-junk/**
 test_db.db
 junk.py
+junk.json
+frontend/hydro_alerting/junk.ts
+frontend/hydro_alerting/junk.js
