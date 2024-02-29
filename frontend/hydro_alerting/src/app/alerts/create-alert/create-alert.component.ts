@@ -9,4 +9,9 @@ import { Component } from '@angular/core';
 })
 export class CreateAlertComponent {
 
+
+  onSubmitCreate() {
+    console.log('Create Alert Form Submitted');
+  }
+
 }

@@ -1,11 +1,21 @@
+
+
 <div>
     <div *ngIf="alert | async as alert_as">
+        <div class="keys">
+            <h1> Editing Alert Id: {{alert_as.alert_id}} </h1>
+        </div>
+        
+
+
         <form  [formGroup]="edit_alert_form" class=container (ngSubmit)="onSubmit()">
-            <mat-form-field floatLabel='always' class="alert-elements">
+
+            <!-- <mat-form-field floatLabel='always' class="alert-elements">
                 <mat-label>Alert Id</mat-label>
                 <input matInput [attr.value]="alert_as.alert_id" type="text" readonly>
                 <mat-hint align="end">a unique identifier for this alert</mat-hint>
-            </mat-form-field>
+            </mat-form-field> -->
+
             <mat-form-field floatLabel='always' class="alert-elements">
                 <mat-label>Alert Created Date</mat-label>
                 <!-- alert_updated_date -->

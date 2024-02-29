@@ -1,1 +1,89 @@
 <p>create-alert works!</p>
+
+
+
+<div>
+    <div *ngIf="alert | async as alert_as">
+        <div class="keys">
+            <h1> Editing Alert Id: {{alert_as.alert_id}} </h1>
+        </div>
+        
+
+
+        <form  [formGroup]="edit_alert_form" class=container (ngSubmit)="onSubmitCreate()">
+
+            <!-- <mat-form-field floatLabel='always' class="alert-elements">
+                <mat-label>Alert Id</mat-label>
+                <input matInput [attr.value]="alert_as.alert_id" type="text" readonly>
+                <mat-hint align="end">a unique identifier for this alert</mat-hint>
+            </mat-form-field> -->
+
+            <mat-form-field floatLabel='always' class="alert-elements">
+                <mat-label>Alert Created Date</mat-label>
+                <!-- alert_updated_date -->
+                <input 
+                    matInput 
+                    formControlName="alert_updated_date"
+                    type="text" readonly>
+                <mat-hint align="end">When this alert was originally created</mat-hint>
+            </mat-form-field>
+            <mat-form-field floatLabel='always' class="alert-elements">
+                <mat-label>Alert Last Updated Date</mat-label>
+                <!-- [attr.value]="alert_create_date"  -->
+                <input 
+                    matInput 
+                    formControlName="alert_updated_date"
+                    type="text" readonly>
+                <mat-hint align="end" class="md-caption">The date time the form was last updated (gets updated on
+                    submit)</mat-hint>
+            </mat-form-field>
+            <mat-form-field floatLabel='always' class="alert-elements">
+                <mat-label>Alert Description</mat-label>
+                <input 
+                    matInput
+                    formControlName="alert_description"
+                    type="text">
+                <mat-hint align="end" class="md-caption">Brief description of the alert</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field floatLabel='always' class="alert-elements">
+                <mat-label>Alert Status</mat-label>
+                <mat-select 
+                    (value)="alert_as.alert_status"
+                    formControlName="alert_status">
+                        <mat-option value="active">Active</mat-option>
+                        <mat-option value="cancelled">Cancelled</mat-option>
+                </mat-select>
+                <mat-hint align="end" class="md-caption">Brief description of the alert</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field floatLabel='always' class="alert-elements">
+                <mat-label>Meteorological Conditions</mat-label>
+                <!-- [(ngModel)]="meteorological_data_contents"  -->
+                <mat-quill
+                    formControlName="meteorologicalDataEditor"
+                    [ngModelOptions]="{standalone: true}"
+                >
+                </mat-quill>
+                <mat-hint align="end" class="md-caption">Describe the meteorological conditions that contributed to this alert</mat-hint>
+            </mat-form-field>
+            <mat-form-field floatLabel='always' class="alert-elements">
+                <mat-label>Hydrological Conditions</mat-label>
+                <!-- [(ngModel)]="hydrological_data_contents" -->
+                <mat-quill 
+                    formControlName=hydrologicalDataEditor
+                    [ngModelOptions]="{standalone: true}"
+                >
+                </mat-quill>
+                <mat-hint align="end" class="md-caption">Describe the hydrological conditions that contributed to this alert</mat-hint>
+            </mat-form-field>
+            <br>
+            <div class="alert-buttons">
+                <button mat-raised-button color="primary" (click)="submit_edits()">Submit Changes</button>
+                <button mat-raised-button color="warn" (click)="resetForm()">Reset</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+         
