@@ -14,7 +14,7 @@ export const routes: Routes = [
     { path: 'alertlist', component: AlertListComponent },
     { path: 'basins', component: BasinListComponent },
     { path: 'login', component: LoginComponent},
-    { path: 'create_alert', component: CreateAlertComponent},
+    { path: 'alert/create', component: CreateAlertComponent},
     { path: 'alert/:id/edit', component: EditAlertComponent },
     { path: 'alert/:id', component: ViewAlertComponent },
     { path: '', redirectTo: 'alertlist', pathMatch: 'full' },
