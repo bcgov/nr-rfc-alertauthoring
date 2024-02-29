@@ -38,7 +38,7 @@ export class AlertListComponent implements OnInit{
 
   create_alert() {
     console.log("create alert clicked");
-    this.router.navigate(['/create_alert']);
+    this.router.navigate(['/alert/create']);
   }
 
   ngOnInit(): void {
