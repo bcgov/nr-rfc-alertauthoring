@@ -1,19 +1,21 @@
+
 <div>
 
     <div *ngIf="alert | async as alert_as">
         <!-- <div  > *ngIf="editable | async as edit_as" -->
         <!-- <p > alert.alert_status is --{{ (alert | async)?.alert_description }}--</p> -->
-
+        <div class="keys">
+            <h1> Viewing Alert Id: {{alert_as.alert_id}} </h1>
+        </div>
+        
 
 
         <div [formGroup]="single_alert_form" class=container>
-            <mat-form-field floatLabel='always' class="alert-elements">
+            <!-- <mat-form-field floatLabel='always' class="alert-elements">
                 <mat-label>Alert Id</mat-label>
                 <input matInput [attr.value]="alert_as.alert_id" type="text" readonly>
             </mat-form-field>
-
-            <!-- <app-view-basin-level *ngFor="let basin_level_list of alert_as.alert_links"
-                [basin_level_list]="basin_level_list"></app-view-basin-level> -->
+ -->
             <div class="alert-table" >
                 <div></div>
                 <div flex-grow="-1">
