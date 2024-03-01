@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Basin } from '../basin';
+import { Basin } from '../types/basin';
 
 @Component({
   selector: 'app-basin-item',

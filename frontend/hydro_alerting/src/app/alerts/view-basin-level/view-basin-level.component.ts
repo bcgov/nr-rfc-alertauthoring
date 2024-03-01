@@ -3,7 +3,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { CommonModule } from '@angular/common';
 import { FormGroup, FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { AlertAreaLevels } from '../../alert';
+import { AlertAreaLevels } from '../../types/alert';
 
 import {MatTableModule} from '@angular/material/table';
 

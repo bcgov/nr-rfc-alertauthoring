@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { Alert } from '../alert';
+import { Alert } from '../types/alert';
 
 
 @Injectable({

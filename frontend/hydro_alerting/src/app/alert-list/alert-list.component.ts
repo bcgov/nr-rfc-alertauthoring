@@ -3,8 +3,8 @@ import { CommonModule, } from '@angular/common';
 import {MatTableModule} from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { Router } from '@angular/router';
-import { Alert } from '../alert';
-import { AlertsService } from '../alerts.service';
+import { Alert } from '../types/alert';
+import { AlertsService } from '../services/alerts.service';
 import { Observable, map } from 'rxjs';
 
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';

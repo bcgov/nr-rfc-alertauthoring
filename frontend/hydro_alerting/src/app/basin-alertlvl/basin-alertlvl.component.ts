@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { BasinService } from '../basin.service';
+import { BasinService } from '../services/basin.service';
 import { Observable } from 'rxjs';
-import { Basin } from '../basin';
+import { Basin } from '../types/basin';
 import { map } from 'rxjs/operators';
 import {MatInputModule} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';

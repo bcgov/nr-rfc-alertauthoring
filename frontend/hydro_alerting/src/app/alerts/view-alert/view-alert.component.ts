@@ -2,7 +2,7 @@ import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { AlertService } from '../alert.service';
 import { switchMap, Observable, of } from 'rxjs';
-import { Alert } from '../../alert';
+import { Alert } from '../../types/alert';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';

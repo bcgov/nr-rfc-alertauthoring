@@ -2,7 +2,7 @@ import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA, ViewChild } from '@angular/c
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { switchMap, Observable, of } from 'rxjs';
-import { Alert } from '../../alert';
+import { Alert } from '../../types/alert';
 import { AlertService } from '../alert.service';
 import { FormGroup, FormControl, FormBuilder ,FormsModule, Validators} from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
