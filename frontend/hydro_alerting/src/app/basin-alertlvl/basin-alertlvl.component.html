@@ -1,0 +1,34 @@
+<div class=basin-alertlvl-container>
+    <div>
+        <mat-form-field floatLabel='always' class="alert-elements">
+            <mat-label basin-alertlvl-items>Select Basin</mat-label>
+            <mat-select basin-alertlvl-items>
+                @for (basin of basins | async; track basin) {
+                <mat-option [value]="basin.basin_name">{{ basin.basin_name }}</mat-option>
+                }
+            </mat-select>
+        </mat-form-field>
+    </div>
+    <div>
+        <mat-form-field floatLabel='always' class="alert-elements">
+
+            <mat-label basin-alertlvl-items>Select Alert Level</mat-label>
+            <mat-select basin-alertlvl-items>
+                <mat-option value="basin1">high</mat-option>
+                <mat-option value="basin2">medium</mat-option>
+                <mat-option value="basin3">low</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+    </div>
+    
+
+</div>
+<div class="basin-alertlvl-container-button" >
+    <button 
+      mat-stroked-button 
+      color="primary" 
+      type='button'
+      (click)="addNewBasinAlertSelector()">Add</button>
+</div>
+<br>

@@ -3,20 +3,19 @@ import { CommonModule } from '@angular/common';
 import { FormGroup, FormBuilder, FormsModule, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
+// angular material specific imports
 import { MatInputModule } from '@angular/material/input';
 import { MatButton } from '@angular/material/button';
 import {MatSelectModule} from '@angular/material/select';
 
+// quill specific imports for the editor
 import Quill from 'quill'
 import { MatQuillModule } from '../../mat-quill/mat-quill-module'
 import { MatQuill } from '../../mat-quill/mat-quill'
-
 import { EditorChangeContent, EditorChangeSelection, QuillEditorComponent } from 'ngx-quill'
 
-
-
-
-
+// basin alertlvl specific imports
+import {BasinAlertlvlComponent} from '../../basin-alertlvl/basin-alertlvl.component';
 
 @Component({
   selector: 'app-create-alert',
@@ -29,7 +28,8 @@ import { EditorChangeContent, EditorChangeSelection, QuillEditorComponent } from
     MatButton, 
     MatSelectModule,
     QuillEditorComponent,
-    MatQuillModule],
+    MatQuillModule,
+    BasinAlertlvlComponent],
   templateUrl: './create-alert.component.html',
   styleUrl: './create-alert.component.css',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],

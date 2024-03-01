@@ -1,0 +1,20 @@
+.basin-alertlvl-container {
+    display: flex; /* or inline-flex */
+    flex-direction: row;
+  }
+  
+.basin-alertlvl-items {
+    flex: 1;
+    padding: 10px;
+    margin: 10px;
+    border: 1px solid #000;
+    border-radius: 5px;
+    text-align: center;
+    background-color: #f0f0f0;
+}
+
+.basin-alertlvl-container-button {
+    display: flex; /* or inline-flex */
+    flex-direction: row;
+    justify-content: center;
+  }
