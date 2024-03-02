@@ -1,0 +1,17 @@
+<div class="ad-banner-example">
+    <!-- <ng-container *ngComponentOutlet="
+      currentAd.component;
+      inputs: currentAd.inputs;
+    " /> -->
+    <ng-container *ngFor="let component of all">
+        <ng-container *ngComponentOutlet="
+            component.component;
+            inputs: component.inputs;
+            "/>
+        </ng-container>
+</div>
+<ng-template dcWrapper></ng-template>
+<div class="container">
+    <button mat-stroked-button color="primary" type='button' (click)="addNewBasinAlertSelector()">Add</button>
+</div>
+<br>

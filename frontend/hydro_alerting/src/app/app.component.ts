@@ -16,29 +16,19 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 @Component({
     selector: 'app-root',
     standalone: true,
-    // template: `
-    //   <div class="container">
-    //   <h1>{{title}}</h1>
-    //   <app-basin-list></app-basin-list>
-    //   </div>
-    // `,
-    template: `
+    template: 
+    `
     <app-navbar></app-navbar>
-    <!-- <h1>{{title}}</h1> -->
     <br><br>
     <router-outlet></router-outlet>
-    <!-- <div>
-      <button (click)="logout()">LOGOUT</button>
-    </div> -->
-  `,
-    // styleUrl: './app.component.css'
+   `,
     styles: ['h1 { color: blue; }'],
     imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, NavbarComponent]
 })
 export class AppComponent  implements OnInit{
   title = 'Hydrological Alert Authoring System (HAAS)';
   isAuthenticated = false;
-
+  
   constructor(private oidcSecurityService: OidcSecurityService) { }
 
   logout() {

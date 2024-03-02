@@ -1,4 +1,4 @@
-import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA, inject  } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, FormBuilder, FormsModule, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -15,7 +15,8 @@ import { MatQuill } from '../../mat-quill/mat-quill'
 import { EditorChangeContent, EditorChangeSelection, QuillEditorComponent } from 'ngx-quill'
 
 // basin alertlvl specific imports
-import {BasinAlertlvlComponent} from '../../basin-alertlvl/basin-alertlvl.component';
+// import { BasinAlertlvlMultiComponent } from '../../basin-alertlvl-multi/basin-alertlvl-multi.component';
+import {BasinLvlComponent} from '../../basin-lvl/basin-lvl.component';
 
 @Component({
   selector: 'app-create-alert',
@@ -29,7 +30,8 @@ import {BasinAlertlvlComponent} from '../../basin-alertlvl/basin-alertlvl.compon
     MatSelectModule,
     QuillEditorComponent,
     MatQuillModule,
-    BasinAlertlvlComponent],
+    BasinLvlComponent,
+    ],
   templateUrl: './create-alert.component.html',
   styleUrl: './create-alert.component.css',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -50,8 +52,6 @@ export class CreateAlertComponent implements OnInit {
   }
 
   ngOnInit(): void {
-
-
   }
 
   onSubmitCreate() {
