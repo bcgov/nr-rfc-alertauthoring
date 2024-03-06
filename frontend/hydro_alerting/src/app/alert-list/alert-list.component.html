@@ -33,7 +33,8 @@
             <div></div>
         </div>
     </div>
-    <div style="display: flex; justify-content: center; margin-top: 20px;">
+    <!-- *ngIf="this.authenticated" -->
+    <div style="display: flex; justify-content: center; margin-top: 20px;" *ngIf="this.authenticated">
         <button mat-raised-button color="primary" (click)="create_alert()">Create New Alert</button>
     </div>
 </div>

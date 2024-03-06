@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
-import {  RouterLink, RouterOutlet } from '@angular/router';
+import { RouterLink, RouterOutlet } from '@angular/router';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { HttpClient } from '@angular/common/http';
 
@@ -23,15 +23,16 @@ export class NavbarComponent implements OnInit {
 
   ngOnInit(): void {
     this.oidcSecurityService
-    .checkAuth()
-    .subscribe(({ isAuthenticated, userData, accessToken }) => {
-      this.authenticated = isAuthenticated;
-      console.log('app authenticated', isAuthenticated);
-      console.log(`Current access token is '${accessToken}'`);
-      if (isAuthenticated) {
-        this.login_logout_text="logout";
-      }
-    });
+      .checkAuth()
+      .subscribe(({ isAuthenticated, userData, accessToken }) => {
+        this.authenticated = isAuthenticated;
+        console.log('app authenticated', isAuthenticated, typeof (isAuthenticated));
+        console.log(`Current access token is '${accessToken}'`);
+        console.log(`User data: ${userData}`)
+        if (isAuthenticated) {
+          this.login_logout_text = "logout";
+        }
+      });
     // this.login_logout();
   }
 
@@ -41,24 +42,11 @@ export class NavbarComponent implements OnInit {
     if (this.authenticated) {
       this.oidcSecurityService.logoff().subscribe((result) => {
         console.log(result);
-        this.login_logout_text="login";
-    });
-      // this.oidcSecurityService.logoff();
-      // this.login_logout_text="logout";
-      // console.log("has valid token");
+        this.login_logout_text = "login";
+      });
     } else {
       this.oidcSecurityService.authorize();
-      this.login_logout_text="logout";
+      this.login_logout_text = "logout";
     }
-    // if (this.oauthService.hasValidAccessToken()) {
-    //   this.oauthService.logOut();
-    //   this.login_logout_text="logout";
-    //   this.loggedIn = false;
-    //   console.log("has valid token");
-    // } else {
-    //   // this.oauthService.loadDiscoveryDocumentAndLogin();
-    //   this.login_logout_text="login";
-    //   this.loggedIn = true;
-    // }
   }
 }
