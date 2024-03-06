@@ -1,0 +1,19 @@
+<div>
+    <!-- <ng-container *ngComponentOutlet="
+      currentAd.component;
+      inputs: currentAd.inputs;
+    " /> -->
+    <ng-container *ngFor="let component of this.comps">
+        <ng-container *ngComponentOutlet="
+            component.component;
+            inputs: component.inputs;
+            " />
+    </ng-container>
+</div>
+<!-- <ng-template dcWrapper></ng-template> -->
+<div class="basin-lvl-container">
+    <div class="basin-lvl-items">
+        <button mat-stroked-button color="primary" type='button' (click)="addNewBasinAlertSelector()">Add New Basin / Alert Level</button>
+    </div>
+</div>
+<br>

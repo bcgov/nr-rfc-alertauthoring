@@ -1,0 +1,27 @@
+.basin-alertlvl-container {
+    display: flex; /* or inline-flex */
+    flex-direction: row;
+    align-items: center;
+    align-content: center;
+  }
+  
+.basin-alertlvl-items {
+    flex: 1;
+    padding: 10px;
+    margin: 10px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.basin-alertlvl-container-button {
+    display: flex; /* or inline-flex */
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .bas-lvl-item {
+    padding: 5px;
+    justify-content: center;
+    align-items: stretch;
+    flex-grow: 2;
+  }

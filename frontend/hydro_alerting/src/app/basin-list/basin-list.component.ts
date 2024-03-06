@@ -6,8 +6,8 @@ import { BasinAddFormComponent } from '../basin-add-form/basin-add-form.componen
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
 import {map} from 'rxjs/operators';
-import { BasinService } from '../basin.service';
-import { Basin } from '../basin';
+import { BasinService } from '../services/basin.service';
+import { Basin } from '../types/basin';
 
 @Component({
   selector: 'app-basin-list',
