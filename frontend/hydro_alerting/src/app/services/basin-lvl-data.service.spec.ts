@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { BasinLvlService } from './basin-lvl.service';
+import { BasinLvlDataService } from './basin-lvl-data.service';
 
-describe('BasinLvlService', () => {
-  let service: BasinLvlService;
+describe('BasinLvlDataService', () => {
+  let service: BasinLvlDataService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(BasinLvlService);
+    service = TestBed.inject(BasinLvlDataService);
   });
 
   it('should be created', () => {

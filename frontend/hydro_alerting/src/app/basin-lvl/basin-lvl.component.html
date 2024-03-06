@@ -3,7 +3,7 @@
       currentAd.component;
       inputs: currentAd.inputs;
     " /> -->
-    <ng-container *ngFor="let component of all">
+    <ng-container *ngFor="let component of this.comps">
         <ng-container *ngComponentOutlet="
             component.component;
             inputs: component.inputs;
