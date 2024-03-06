@@ -85,16 +85,11 @@ export class ViewAlertComponent {
         this.alert = of(alert);
       });
 
-      // this.single_alert_form.disable();
-
-    this.oidcSecurityService
-    .checkAuth()
-    .subscribe(({ isAuthenticated, userData, accessToken }) => {
-      this.authenticated = isAuthenticated;
-      console.log('app authenticated', isAuthenticated);
-      console.log(`Current access token is '${accessToken}'`);
-    });
-
+      this.oidcSecurityService.isAuthenticated$.subscribe((isAuthenticated) => {
+        console.log("is authenticated", isAuthenticated.isAuthenticated);
+        this.authenticated = isAuthenticated.isAuthenticated;
+      });
+  
   }
 
 

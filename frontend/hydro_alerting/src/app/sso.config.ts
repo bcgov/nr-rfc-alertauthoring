@@ -5,6 +5,7 @@ export const authCodeFlowConfig: OpenIdConfiguration = {
     authority: 'https://dev.loginproxy.gov.bc.ca/auth/realms/standard',
     // redirectUri: window.location.origin + '/index.html',
     redirectUrl: window.location.origin,
+    // redirectUrl: 'http://localhost:4200',
     postLogoutRedirectUri: window.location.origin,
 
     clientId: 'hydrological-alerting-5261',
