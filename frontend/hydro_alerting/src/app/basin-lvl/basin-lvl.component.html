@@ -1,4 +1,4 @@
-<div class="ad-banner-example">
+<div>
     <!-- <ng-container *ngComponentOutlet="
       currentAd.component;
       inputs: currentAd.inputs;
@@ -7,11 +7,13 @@
         <ng-container *ngComponentOutlet="
             component.component;
             inputs: component.inputs;
-            "/>
-        </ng-container>
+            " />
+    </ng-container>
 </div>
-<ng-template dcWrapper></ng-template>
-<div class="container">
-    <button mat-stroked-button color="primary" type='button' (click)="addNewBasinAlertSelector()">Add</button>
+<!-- <ng-template dcWrapper></ng-template> -->
+<div class="basin-lvl-container">
+    <div class="basin-lvl-items">
+        <button mat-stroked-button color="primary" type='button' (click)="addNewBasinAlertSelector()">Add New Basin / Alert Level</button>
+    </div>
 </div>
 <br>

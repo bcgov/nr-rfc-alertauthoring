@@ -1,0 +1,15 @@
+.basin-lvl-container {
+    display: flex; /* or inline-flex */
+    flex-direction: row;
+    align-items: center;
+    align-content: center;
+  }
+
+
+.basin-lvl-items {
+    flex: 1;
+    padding: 10px;
+    margin: 10px;
+    border-radius: 5px;
+    text-align: center;
+}

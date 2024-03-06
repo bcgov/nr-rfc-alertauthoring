@@ -1,16 +1,15 @@
 <div>
     <div class="basin-alertlvl-container">
-        <mat-label class="bas-lvl-item">Define Areas and Alert Levels</mat-label>
+        <div class="basin-alertlvl-items">
+            <mat-label>Define Areas and Alert Levels</mat-label>
+        </div>
     </div>
     <form [formGroup]="basin_alertlvl_form" (ngSubmit)="onDeleteElement()" class="basin-alertlvl-container">
         <div class="bas-lvl-item">
             <mat-form-field floatLabel='always' class="alert-elements">
                 <mat-label basin-alertlvl-items>Select Basin</mat-label>
-                <mat-select 
-                (value)="this.basin_name"
-                (selectionChange)="basinChange($event)"
-                formControlName="basin_name" 
-                basin-alertlvl-items>
+                <mat-select (value)="this.basin_name" (selectionChange)="basinChange($event)"
+                    formControlName="basin_name" basin-alertlvl-items>
                     @for (basin of basins | async; track basin) {
                     <mat-option [value]="basin.basin_name">{{ basin.basin_name }}</mat-option>
                     }
@@ -21,19 +20,23 @@
             <mat-form-field floatLabel='always' class="alert-elements">
 
                 <mat-label basin-alertlvl-items>Select Alert Level</mat-label>
-                <mat-select
-                    (selectionChange)="alertLvlChange($event)"
-                    (value)="this.alert_level"
+                <mat-select (selectionChange)="alertLvlChange($event)" (value)="this.alert_level"
                     formControlName="alert_level">
-                        <mat-option value="HSA">High Streamflow Advisory</mat-option>
-                        <mat-option value="FWatch">Flood Watch</mat-option>
-                        <mat-option value="FWarning">Flood Warning</mat-option>
+                    <mat-option value="HSA">High Streamflow Advisory</mat-option>
+                    <mat-option value="FWatch">Flood Watch</mat-option>
+                    <mat-option value="FWarning">Flood Warning</mat-option>
                 </mat-select>
             </mat-form-field>
         </div>
-        <div class="bas-lvl-item">
-            <button mat-raised-button color="warn">Delete</button>
+        <div >
+            <div style="
+            display: flex; 
+            flex-direction: row; 
+            flex-wrap: wrap; 
+            margin-bottom: 20px;
+            ">
+                <button mat-raised-button color="warn">Delete</button>
+            </div>
         </div>
     </form>
 </div>
-<br>
