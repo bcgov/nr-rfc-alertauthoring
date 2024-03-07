@@ -1,45 +1,42 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { CommonModule, } from '@angular/common';
-import {MatTableModule} from '@angular/material/table';
+import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { Router } from '@angular/router';
 import { Alert } from '../types/alert';
 import { AlertsService } from '../services/alerts.service';
-import { Observable, map, tap, filter, mergeMap, of} from 'rxjs';
+import { Observable, map} from 'rxjs';
 import { OidcSecurityService, OpenIdConfiguration } from 'angular-auth-oidc-client';
 
-
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import {AuthzService} from '../services/authz.service';
 
 
 @Component({
   selector: 'app-alert-list',
   standalone: true,
   imports: [
-    ReactiveFormsModule, 
-    FormsModule, 
-    CommonModule, 
-    MatTableModule, 
+    ReactiveFormsModule,
+    FormsModule,
+    CommonModule,
+    MatTableModule,
     MatButtonModule],
   templateUrl: './alert-list.component.html',
   styleUrl: './alert-list.component.css'
 })
-export class AlertListComponent implements OnInit{
+export class AlertListComponent implements OnInit {
   displayedColumns: string[] = ['alert_id', 'alert_description', 'last_updated_time', 'actions'];
   alerts!: Observable<Alert[]>;
 
   // used to keep track if session has been authenticated
-  authenticated: boolean = false;
+  is_authorized: boolean = false;
 
   constructor(
-    private router: Router, 
+    private router: Router,
     private alertService: AlertsService,
-    private oidcSecurityService: OidcSecurityService) { }
-
-
-  // view() {
-  //   console.log("view alert clicked");
-  // }
+    private oidcSecurityService: OidcSecurityService, 
+    private authzService: AuthzService
+    ) { }
 
   view_alert(row: any) {
     console.log(`edit alert clicked: ${JSON.stringify(row)}`);
@@ -52,19 +49,14 @@ export class AlertListComponent implements OnInit{
     this.router.navigate(['/alert/create']);
   }
 
-
-
   ngOnInit(): void {
-    // this.alerts = this.alertService.getAlerts();
-    // configuration$: Observable<OpenIdConfiguration>;
-  
 
-    this.oidcSecurityService.isAuthenticated$.subscribe((isAuthenticated) => {
-      console.log("is authenticated", isAuthenticated.isAuthenticated);
-      this.authenticated = isAuthenticated.isAuthenticated;
+    this.authzService.canEdit().subscribe((authData) => {
+      console.log("GETTING DATA FROM SERVICE: " + JSON.stringify(authData));
+      this.is_authorized = authData;
     });
 
-
+    // todo: this logic can get wrapped in a service
     this.alerts = this.alertService.getAlerts().pipe(map((alerts) => {
       return alerts.map((alert) => {
         // alert.streak = alert.id <= 2 ? true : false;
@@ -72,8 +64,5 @@ export class AlertListComponent implements OnInit{
         return alert;
       });
     }));
-
-
-
   }
 }

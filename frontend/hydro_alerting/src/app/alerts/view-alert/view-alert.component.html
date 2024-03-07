@@ -54,7 +54,7 @@
                     [modules]="{toolbar: false}" [readOnly]="true">
                 </mat-quill>
             </mat-form-field>
-            <div id="start_edit" *ngIf="this.authenticated">
+            <div id="start_edit" *ngIf="this.is_authorized">
                 <button mat-raised-button color="primary" (click)="route_to_edit()">Edit</button>
             </div>
         </div>

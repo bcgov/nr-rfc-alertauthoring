@@ -11,15 +11,13 @@ import { MatButtonModule } from '@angular/material/button';
 import Quill from 'quill'
 import { MatQuillModule } from '../../mat-quill/mat-quill-module'
 import { EditorChangeContent, EditorChangeSelection, QuillEditorComponent } from 'ngx-quill'
-import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { ViewBasinLevelComponent } from '../view-basin-level/view-basin-level.component';
+import {AuthzService} from '../../services/authz.service';
 
 
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import utc from 'dayjs/plugin/utc';
-
-
 
 
 @Component({
@@ -52,13 +50,14 @@ export class ViewAlertComponent {
 
   // used to keep track if session has been authenticated
   authenticated: boolean = false;
+  is_authorized = false;
 
 
   constructor(
       private route: ActivatedRoute, 
       private alertService: AlertService,
       private formBuilder: FormBuilder, 
-      private oidcSecurityService: OidcSecurityService, 
+      private authzService: AuthzService, 
       private router: Router) {
     this.single_alert_form = this.formBuilder.group({
       alert_data: of(alert)
@@ -85,20 +84,13 @@ export class ViewAlertComponent {
         this.alert = of(alert);
       });
 
-      this.oidcSecurityService.isAuthenticated$.subscribe((isAuthenticated) => {
-        console.log("is authenticated", isAuthenticated.isAuthenticated);
-        this.authenticated = isAuthenticated.isAuthenticated;
+      this.authzService.canEdit().subscribe((authData) => {
+        console.log("GETTING DATA FROM SERVICE: " + JSON.stringify(authData));
+        this.is_authorized = authData;
       });
   
-  }
-
-
-
   
-
-  // isAuthenticated() {
-  //   return this.authenticated;
-  // }
+  }
 
   /**
    * 
