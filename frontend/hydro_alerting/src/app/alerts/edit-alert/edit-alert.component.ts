@@ -22,7 +22,6 @@ import { MatQuill } from '../../mat-quill/mat-quill'
 
 import { EditorChangeContent, EditorChangeSelection, QuillEditorComponent } from 'ngx-quill'
 import { TokenHelperService } from 'angular-auth-oidc-client/lib/utils/tokenHelper/token-helper.service';
-
 // 
 @Component({
   selector: 'app-edit-alert',
@@ -63,6 +62,7 @@ export class EditAlertComponent implements OnInit {
     private route: ActivatedRoute,
     private alertService: AlertService,
     private formBuilder: FormBuilder,
+    
 
   ) {
 
