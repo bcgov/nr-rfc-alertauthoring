@@ -10,6 +10,7 @@ export class AuthzService {
   authenticated = false;
   authorized = false;
   member_roles = [];
+  payload: any = {};
 
 
   canEdit() {
@@ -54,6 +55,8 @@ export class AuthzService {
           return EMPTY;
         }
       })).subscribe((payload) => {
+        this.payload = payload;
+
         console.log(`ZZZ is authenticated3 ${payload}`);
         if (payload.client_roles) {
           this.member_roles = payload.client_roles;

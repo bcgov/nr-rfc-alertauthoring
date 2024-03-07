@@ -1,1 +1,7 @@
-<div>401: You have no rights to access this. Please Login</div>
+
+<div *ngIf="(this.authN); then thenBlock else elseBlock"></div>
+<h3> 
+<ng-template #thenBlock><h3> Welcome {{this.given_name}}, it looks like you have successfully
+logged into the application, however you are not configured / authorized as an editor for this application</h3></ng-template>
+<ng-template #elseBlock><h3>Appologies the route you tried to access is not available unless you login to the application.  Click the button on the top right labelled 'login'</h3></ng-template>
+<br>
