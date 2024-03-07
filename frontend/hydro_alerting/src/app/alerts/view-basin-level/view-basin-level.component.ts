@@ -55,5 +55,4 @@ export class ViewBasinLevelComponent implements OnInit{
     return table_data;
   }
 
-
 }

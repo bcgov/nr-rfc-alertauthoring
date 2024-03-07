@@ -10,19 +10,6 @@ import { authCodeFlowConfig } from './sso.config';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideQuillConfig } from 'ngx-quill/config';
 
-
-
-
-// function initializeOAuth(oauthService: OAuthService): Promise<void> {
-//   return new Promise((resolve) => {
-//     oauthService.configure(authCodeFlowConfig);
-//     oauthService.setupAutomaticSilentRefresh();
-//     oauthService.loadDiscoveryDocumentAndLogin()
-//       .then(() => resolve());
-//   }
-//   );
-// }
-
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),

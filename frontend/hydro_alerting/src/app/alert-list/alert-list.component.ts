@@ -56,25 +56,6 @@ export class AlertListComponent implements OnInit {
       this.is_authorized = authData;
     });
 
-
-    // this.oidcSecurityService.isAuthenticated$.pipe(
-    //   concatMap((isAuthenticated) => {
-    //     this.authenticated = isAuthenticated.isAuthenticated;
-    //     if (isAuthenticated.isAuthenticated) {
-    //       // if we are authenticated then get the payload so we can 
-    //       // evalute authorization          
-    //       return this.oidcSecurityService.getPayloadFromAccessToken();
-    //     } else {
-    //       // not authenticated so return empty, which has no effect on the downstream subscription
-    //       return EMPTY;
-    //     }
-    //   })).subscribe((payload) => {
-    //     console.log(`ZZZ is authenticated3 ${payload}`);
-    //     if (payload.client_roles) {
-    //       this.auth_roles = payload.client_roles;
-    //     }
-    //   });
-
     // todo: this logic can get wrapped in a service
     this.alerts = this.alertService.getAlerts().pipe(map((alerts) => {
       return alerts.map((alert) => {
