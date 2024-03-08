@@ -5,14 +5,17 @@ import { AlertListComponent } from './alert-list/alert-list.component';
 import {CreateAlertComponent} from './alerts/create-alert/create-alert.component';
 import { EditAlertComponent } from './alerts/edit-alert/edit-alert.component';
 import { ViewAlertComponent } from './alerts/view-alert/view-alert.component';
+import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
+import {AuthorizationGuard} from './guards/editor.guard';
 
 export const routes: Routes = [
     // { path: '', component: AlertListComponent },
     // { path: 'home', component: HomeComponent},
-    { path: 'alertlist', component: AlertListComponent },
+    { path: 'alert/list', component: AlertListComponent },
     { path: 'basins', component: BasinListComponent },
-    { path: 'alert/create', component: CreateAlertComponent},
-    { path: 'alert/:id/edit', component: EditAlertComponent },
+    { path: 'alert/create', component: CreateAlertComponent, canActivate: [AuthorizationGuard]},
+    { path: 'alert/:id/edit', component: EditAlertComponent, canActivate: [AuthorizationGuard] },
     { path: 'alert/:id', component: ViewAlertComponent },
-    { path: '', redirectTo: 'alertlist', pathMatch: 'full' },
+    { path: 'unauthorized', component: UnauthorizedComponent},
+    { path: '', redirectTo: 'alert/list', pathMatch: 'full' },
 ];
