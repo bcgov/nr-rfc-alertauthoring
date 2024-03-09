@@ -16,7 +16,7 @@ import { EditorChangeContent, EditorChangeSelection, QuillEditorComponent } from
 
 // basin alertlvl specific imports
 // import { BasinAlertlvlMultiComponent } from '../../basin-alertlvl-multi/basin-alertlvl-multi.component';
-import {BasinLvlComponent} from '../../basin-lvl/basin-lvl.component';
+import {BasinAlertlvlsComponent} from '../../basin-alerts/basin-alertlvls/basin-alertlvls.component';
 
 @Component({
   selector: 'app-create-alert',
@@ -30,7 +30,7 @@ import {BasinLvlComponent} from '../../basin-lvl/basin-lvl.component';
     MatSelectModule,
     QuillEditorComponent,
     MatQuillModule,
-    BasinLvlComponent,
+    BasinAlertlvlsComponent,
     ],
   templateUrl: './create-alert.component.html',
   styleUrl: './create-alert.component.css',
@@ -52,6 +52,7 @@ export class CreateAlertComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    
   }
 
   onSubmitCreate() {

@@ -3,13 +3,13 @@ import { CommonModule, } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { Router } from '@angular/router';
-import { Alert } from '../types/alert';
-import { AlertsService } from '../services/alerts.service';
+import { Alert } from '../../types/alert';
+import { AlertsService } from '../../services/alerts.service';
 import { Observable, map} from 'rxjs';
 import { OidcSecurityService, OpenIdConfiguration } from 'angular-auth-oidc-client';
 
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
-import {AuthzService} from '../services/authz.service';
+import {AuthzService} from '../../services/authz.service';
 
 
 @Component({

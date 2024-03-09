@@ -11,14 +11,13 @@ import { MatButtonModule } from '@angular/material/button';
 import Quill from 'quill'
 import { MatQuillModule } from '../../mat-quill/mat-quill-module'
 import { EditorChangeContent, EditorChangeSelection, QuillEditorComponent } from 'ngx-quill'
-import { ViewBasinLevelComponent } from '../view-basin-level/view-basin-level.component';
 import {AuthzService} from '../../services/authz.service';
-
 
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import utc from 'dayjs/plugin/utc';
 
+import {ViewBasinLevelComponent} from '../../basin-alerts/view-basin-level/view-basin-level.component';
 
 @Component({
   selector: 'app-view-alert',
@@ -32,7 +31,8 @@ import utc from 'dayjs/plugin/utc';
     MatButtonModule,
     QuillEditorComponent,
     MatQuillModule,
-    ViewBasinLevelComponent],
+    ViewBasinLevelComponent,
+    ],
   templateUrl: './view-alert.component.html',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   styleUrl: './view-alert.component.css',
@@ -62,6 +62,7 @@ export class ViewAlertComponent {
     this.single_alert_form = this.formBuilder.group({
       alert_data: of(alert)
     });
+    console.log(`view alert data: ${JSON.stringify(this.alert)}`)
   }
 
   ngOnInit(): void {
