@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { BasinLvlComponent } from './basin-lvl.component';
+import { BasinLvlComponent } from './basin-alertlvls.component';
 
 describe('BasinLvlComponent', () => {
   let component: BasinLvlComponent;

@@ -21,5 +21,5 @@ export interface Alert {
     alert_updated: string;
     author_name: string;
     alert_status: string;
-    alert_links?: [AlertAreaLevels];
+    alert_links?: [AlertAreaLevels] | undefined;
 }

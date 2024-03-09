@@ -4,22 +4,24 @@ import { ActivatedRoute, Params, Router } from '@angular/router';
 import { switchMap, Observable, of } from 'rxjs';
 import { Alert } from '../../types/alert';
 import { AlertService } from '../alert.service';
-import { FormGroup, FormControl, FormBuilder ,FormsModule, Validators} from '@angular/forms';
+import { FormGroup, FormControl, FormBuilder, FormsModule, Validators } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatButton } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { ReactiveFormsModule } from '@angular/forms';
 import dayjs from 'dayjs';
-import timezone from 'dayjs/plugin/timezone' 
+import timezone from 'dayjs/plugin/timezone'
 dayjs.extend(timezone); // use plugin
 
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import {MatSelectModule} from '@angular/material/select';
+import { MatSelectModule } from '@angular/material/select';
+import { BasinLvlDataService } from '../../services/basin-lvl-data.service';
 
 import Quill from 'quill'
 import { MatQuillModule } from '../../mat-quill/mat-quill-module'
 import { MatQuill } from '../../mat-quill/mat-quill'
 
+import { BasinAlertlvlsComponent } from '../../basin-alerts/basin-alertlvls/basin-alertlvls.component';
 import { EditorChangeContent, EditorChangeSelection, QuillEditorComponent } from 'ngx-quill'
 import { TokenHelperService } from 'angular-auth-oidc-client/lib/utils/tokenHelper/token-helper.service';
 // 
@@ -27,15 +29,16 @@ import { TokenHelperService } from 'angular-auth-oidc-client/lib/utils/tokenHelp
   selector: 'app-edit-alert',
   standalone: true,
   imports: [
-    CommonModule, 
-    MatInputModule, 
-    MatFormFieldModule, 
-    ReactiveFormsModule, 
+    CommonModule,
+    MatInputModule,
+    MatFormFieldModule,
+    ReactiveFormsModule,
     MatSelectModule,
     QuillEditorComponent,
     MatQuillModule,
     FormsModule,
     MatButton,
+    BasinAlertlvlsComponent,
   ],
   templateUrl: './edit-alert.component.html',
   styleUrl: './edit-alert.component.css',
@@ -62,7 +65,7 @@ export class EditAlertComponent implements OnInit {
     private route: ActivatedRoute,
     private alertService: AlertService,
     private formBuilder: FormBuilder,
-    
+    private basinLvlDataService: BasinLvlDataService
 
   ) {
 
@@ -101,7 +104,17 @@ export class EditAlertComponent implements OnInit {
         this.edit_alert_form.controls['alert_updated_date'].setValue(dayjs().toDate());
         this.edit_alert_form.controls['alert_status'].setValue(alert.alert_status);
         this.edit_alert_form.setControl('meteorologicalDataEditor', new FormControl(alert.alert_meteorological_conditions))
-        this.edit_alert_form.setControl('hydrologicalDataEditor', new FormControl(alert.alert_hydro_conditions))    
+        this.edit_alert_form.setControl('hydrologicalDataEditor', new FormControl(alert.alert_hydro_conditions))
+        
+        this.basinLvlDataService.setBasinAlertlvlComponentData(alert.alert_links);
+
+        // console.log(`alert_links: ${JSON.stringify(alert.alert_links)}`)
+        // if (alert.alert_links) {
+        //   for (let i = 0; i < alert.alert_links.length; i++) {
+
+        //   }
+        // }
+
 
         this.alert = of(alert);
       });
@@ -110,18 +123,19 @@ export class EditAlertComponent implements OnInit {
 
   onSubmit() {
     // example for capture a property from the form object
-    console.log(`form data: ${this.edit_alert_form.value.alert_description}`);
-    console.log(`form data: ${JSON.stringify(this.edit_alert_form.value)}`);
+    // console.log(`form data: ${this.edit_alert_form.value.alert_description}`);
+    // console.log(`form data: ${JSON.stringify(this.edit_alert_form.value)}`);
 
     this.alert.subscribe((alert: Alert) => {
       // console.log('alert: ' + JSON.stringify(alert));
       console.log(`alert description: ${alert.alert_description}`);
+      // this is where the api call will take place to update the alert
     });
   }
 
   onChange(e: any) {
-    console.log(`onChange: ${JSON.stringify(e)}`);
-    console.log(`form data: ${JSON.stringify(this.edit_alert_form)}`);
+    // console.log(`onChange: ${JSON.stringify(e)}`);
+    // console.log(`form data: ${JSON.stringify(this.edit_alert_form)}`);
   }
 
   resetForm() {
@@ -139,8 +153,8 @@ export class EditAlertComponent implements OnInit {
 
   submit_edits() {
     // TODO: need to pass the values onto the api
-    console.log(`form data: ${JSON.stringify(this.edit_alert_form.value)}`);
-    console.log(`alert description: ${this.edit_alert_form.value.alert_description}`);
+    // console.log(`form data: ${JSON.stringify(this.edit_alert_form.value)}`);
+    // console.log(`alert description: ${this.edit_alert_form.value.alert_description}`);
     // pass the json contained in: this.edit_alert_form.value to the api
   }
 }

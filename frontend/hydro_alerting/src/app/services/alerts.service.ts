@@ -22,6 +22,6 @@ export class AlertsService {
     console.log('alert data has been submitted', alertData);
 
     this.alerts.push(alertData);
-    console.log("basins: " + JSON.stringify(this.alerts));
+    // console.log("basins: " + JSON.stringify(this.alerts));
    }
 }

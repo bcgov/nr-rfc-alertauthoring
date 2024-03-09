@@ -1,6 +1,6 @@
 import { RouterModule, Routes } from '@angular/router';
 import { BasinListComponent } from './basin-list/basin-list.component';
-import { AlertListComponent } from './alert-list/alert-list.component';
+import { AlertListComponent } from './alerts/alert-list/alert-list.component';
 // import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
 import {CreateAlertComponent} from './alerts/create-alert/create-alert.component';
 import { EditAlertComponent } from './alerts/edit-alert/edit-alert.component';
