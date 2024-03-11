@@ -60,6 +60,10 @@ export class CreateAlertComponent implements OnInit {
     // that has been generated, then the route will navigate to the view alert
     console.log('Create Alert Form Submitted');
     console.log(`form data: ${JSON.stringify(this.create_alert_form.value)}`);
+
+    // get the access token
+    
+
     // hard coding the redirect atm
     this.router.navigate(['/alert', '1']);
   }

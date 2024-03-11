@@ -15,4 +15,5 @@ export const authCodeFlowConfig: OpenIdConfiguration = {
     // silentRenew: true,
     useRefreshToken: true,
     logLevel: LogLevel.Debug,
+    secureRoutes: ['/api/v1/alerts/create', '/api/v1/alerts/*/edit', ],
 }
