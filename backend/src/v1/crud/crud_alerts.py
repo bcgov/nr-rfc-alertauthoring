@@ -1,8 +1,7 @@
 import logging
 
-from sqlmodel import Session, select
-
 import src.types
+from sqlmodel import Session, select
 
 LOGGER = logging.getLogger(__name__)
 
@@ -65,6 +64,46 @@ def create_alert_with_basins_and_level(
         LOGGER.debug(f"basin_id  {basin_data.basin_id}")
         LOGGER.debug(f"alert_level  {alert_level_data.alert_level_id}")
     return alert
+
+
+def create_alert(session: Session, alert: model.Alert_Basins_Write):
+    LOGGER.debug(f"input data: {alert})")
+    alert_write: model.Alerts = model.Alerts(
+        alert_description=alert.alert_description,
+        alert_hydro_conditions=alert.alert_hydro_conditions,
+        alert_meteorological_conditions=alert.alert_meteorological_conditions,
+        author_name=alert.author_name,
+        alert_status=alert.alert_status,
+    )
+
+    LOGGER.debug(f"alert_write: {alert_write}")
+    for alert_area_level in alert.alert_links:
+        # get the basin object
+        basin_sql = select(model.Basins).where(
+            model.Basins.basin_name == alert_area_level.basin.basin_name
+        )
+        basin = session.exec(basin_sql).first()
+
+        # get the alert level object
+        alert_lvl_sql = select(model.Alert_Levels).where(
+            model.Alert_Levels.alert_level == alert_area_level.alert_level.alert_level
+        )
+        alert_lvl = session.exec(alert_lvl_sql).first()
+
+        LOGGER.debug(f"basin: {basin}")
+        LOGGER.debug(f"alert level: {alert_lvl}")
+
+        # using the alert/basin/alert_level to create a junction table
+        # entry
+        alert_area = model.Alert_Areas(
+            alert_level=alert_lvl, basin=basin, alert=alert_write
+        )
+        alert_write.alert_links.append(alert_area)
+    LOGGER.debug(f"alert_write before write: {alert_write}")
+    session.add(alert_write)
+    session.commit()
+    session.refresh(alert_write)
+    return alert_write
 
 
 def get_alerts(session: Session):

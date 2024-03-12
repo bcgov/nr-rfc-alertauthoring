@@ -63,12 +63,6 @@ class AlertsBase(SQLModel):
     #       can accomodate a lot of text
     alert_hydro_conditions: str = Field(nullable=False)
     alert_meteorological_conditions: str = Field(nullable=False)
-    alert_created: datetime.datetime = Field(
-        default_factory=datetime.datetime.utcnow, nullable=False
-    )
-    alert_updated: datetime.datetime = Field(
-        default_factory=datetime.datetime.utcnow, nullable=False
-    )
     author_name: str = Field(nullable=True)
 
     # TODO: could further normalize and create a status table...
@@ -85,6 +79,12 @@ class AlertsRead(AlertsBase):
     """
 
     alert_id: Optional[int] = Field(default=None, primary_key=True)
+    alert_created: datetime.datetime = Field(
+        default_factory=datetime.datetime.utcnow, nullable=False
+    )
+    alert_updated: datetime.datetime = Field(
+        default_factory=datetime.datetime.utcnow, nullable=False
+    )
 
 
 class Alert_Areas(SQLModel, table=True):
@@ -102,11 +102,6 @@ class Alert_Areas(SQLModel, table=True):
         {"schema": default_schema},
     )
 
-    # __tablename__ = f"{default_schema}.alert_areas"
-
-    # metadata = meta
-
-    # alert_area_id: int = Field(default=None, primary_key=True)
     alert_id: int = Field(
         default=None, foreign_key=f"{default_schema}.alerts.alert_id", primary_key=True
     )
@@ -123,8 +118,6 @@ class Alert_Areas(SQLModel, table=True):
     alert: "Alerts" = Relationship(back_populates="alert_links")
 
 
-# class AlertBasinLevels(Alert_Areas):
-
 
 class Alerts(AlertsRead, table=True):
     """
@@ -136,6 +129,7 @@ class Alerts(AlertsRead, table=True):
     :param table: Tells sql model that this is a table def, defaults to True
     :type table: bool, optional
     """
+
     __table_args__ = {"schema": default_schema}
 
     alert_links: List["Alert_Areas"] = Relationship(back_populates="alert")
@@ -162,7 +156,11 @@ class Basins(BasinsRead, table=True):
     basin_links: List[Alert_Areas] = Relationship(back_populates="basin")
 
 
-class Alert_Levels_Read(SQLModel):
+class Alert_Levels_Base(SQLModel):
+    alert_level: str
+
+
+class Alert_Levels_Read(Alert_Levels_Base):
     alert_level_id: int
     alert_level: str
 
@@ -241,6 +239,11 @@ class Cap_Event_Areas(SQLModel, table=True):
     basin_id: int = Field(default=None, foreign_key=f"{default_schema}.basins.basin_id")
 
 
+class Alert_Areas_Write(SQLModel):
+    basin: BasinBase
+    alert_level: Alert_Levels_Base
+
+
 class Alert_Areas_Read(SQLModel):
     basin: BasinsRead
     alert_level: Alert_Levels_Read
@@ -250,3 +253,8 @@ class Alert_Basins(AlertsRead):
     alert_id: int
     # alert_links: List[Alert_Areas]
     alert_links: List[Alert_Areas_Read]
+
+
+class Alert_Basins_Write(AlertsBase):
+    alert_links: List[Alert_Areas_Write]
+    # alert_links: List[Alert_Areas]

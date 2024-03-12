@@ -3,7 +3,6 @@ from typing import Any, List
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
-
 from src.db import session
 from src.v1.crud import crud_alerts
 from src.v1.models import model
@@ -19,7 +18,7 @@ def read_alerts(
     db: Session = Depends(session.get_db), skip: int = 0, limit: int = 100
 ) -> Any:
     """
-    Retrieve basins.
+    Retrieve existing alerts.
     """
     alerts = crud_alerts.get_alerts(db)
     for alert in alerts:
@@ -39,10 +38,18 @@ def read_alert(
     limit: int = 100,
 ) -> Any:
     """
-    Retrieve basins.
+    Retrieve a specific alert
     """
     LOGGER.debug(f"alert_id: {alert_id}")
     LOGGER.debug(f"session is type: {type(session)}")
     alert = crud_alerts.get_alert(session, alert_id=alert_id)
     LOGGER.debug(f"alert from DB: {alert}")
     return alert
+
+
+@router.post("/", response_model=model.Alert_Basins)
+def create_alert(
+    alert: model.Alert_Basins_Write, session: Session = Depends(session.get_db)
+):
+    written_alert = crud_alerts.create_alert(session=session, alert=alert)
+    return written_alert

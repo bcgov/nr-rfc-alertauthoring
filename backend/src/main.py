@@ -14,9 +14,9 @@ api_prefix_v1 = Configuration.API_V1_STR
 logging.getLogger("uvicorn").handlers.clear()  # removes duplicated logs
 
 OpenAPIInfo = {
-    "title": "FastAPI template for quickstart openshift",
+    "title": "River Forecasting Alert Authoring API",
     "version": "0.1.0",
-    "description": "A boilerplate for FastAPI with SQLAlchemy, Postgres",
+    "description": "API for the River Forecasting Alert Authoring application",
 }
 tags_metadata = [
     {
@@ -36,7 +36,9 @@ origins: list[str] = [
     "https://nr-rfc-alertauthoring-*-frontend.apps.silver.devops.gov.bc.ca",
 ]
 
-origins_regex: str = "^https*\:\/\/nr-rfc-alertauthoring\-(\d)*\-frontend\.apps\.silver\.devops\.gov\.bc\.ca$"
+origins_regex: str = (
+    "^https*\:\/\/nr-rfc-alertauthoring\-(\d)*\-frontend\.apps\.silver\.devops\.gov\.bc\.ca$"
+)
 
 app.add_middleware(
     CORSMiddleware,
