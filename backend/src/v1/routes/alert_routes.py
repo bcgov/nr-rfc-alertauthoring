@@ -1,6 +1,7 @@
 import logging
 from typing import Any, List
 
+import src.oidc.oidc as oidc
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from src.db import session
@@ -8,9 +9,10 @@ from src.v1.crud import crud_alerts
 from src.v1.models import model
 
 # from src.v1.repository.basin_repository import basinRepository
-
 router = APIRouter()
 LOGGER = logging.getLogger(__name__)
+
+oidc = oidc.get_oidc()
 
 
 @router.get("/", response_model=List[model.Alert_Basins])

@@ -35,6 +35,8 @@ class Settings:
     LOGGER.debug(f"SQLALCHEMY_DATABASE_URI: {SQLALCHEMY_DATABASE_URI}")
     print(f"SQLALCHEMY_DATABASE_URI: {SQLALCHEMY_DATABASE_URI}")
 
+    OIDC_CONF_URL = 'https://dev.loginproxy.gov.bc.ca/auth/realms/standard/.well-known/openid-configuration'
+
 
 # @validator("SQLALCHEMY_DATABASE_URI", pre=True)
 def assemble_db_connection(v: Optional[str], values: Dict[str, Any]) -> Any:

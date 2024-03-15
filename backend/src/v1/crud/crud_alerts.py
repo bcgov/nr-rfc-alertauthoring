@@ -9,6 +9,7 @@ LOGGER = logging.getLogger(__name__)
 from src.v1.models import model
 
 
+
 def create_alert_with_basins_and_level(
     session: Session, alert: model.Alerts, basin_levels: list[src.types.AlertAreaLevel]
 ):

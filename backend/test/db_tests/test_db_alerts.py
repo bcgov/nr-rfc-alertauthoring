@@ -48,6 +48,31 @@ def test_create_alert_with_basins_and_level(db_test_connection: Session):
     assert alert_result.alert_created == alert.alert_created
 
 
+def test_create_alert(db_test_connection: Session, alert_basin_write_data):
+    session = db_test_connection
+    alert = alert_basin_write_data
+    written_alert = crud_alerts.create_alert(session=session, alert=alert)
+    assert written_alert.alert_description == alert.alert_description
+    assert written_alert.alert_status == alert.alert_status
+    assert written_alert.alert_hydro_conditions == alert.alert_hydro_conditions
+    assert (
+        written_alert.alert_meteorological_conditions
+        == alert.alert_meteorological_conditions
+    )
+    assert len(written_alert.alert_links) == len(alert.alert_links)
+
+    for area_lvl in alert.alert_links:
+        areas_lvl_exists = False
+        for area_lvl_written in written_alert.alert_links:
+            if (
+                area_lvl_written.alert_level.alert_level
+                == area_lvl.alert_level.alert_level
+                and area_lvl_written.basin.basin_name == area_lvl.basin.basin_name
+            ):
+                areas_lvl_exists = True
+        assert areas_lvl_exists
+
+
 def test_get_alerts(db_with_alert: Session):
     session = db_with_alert
     alerts = crud_alerts.get_alerts(session=session)
