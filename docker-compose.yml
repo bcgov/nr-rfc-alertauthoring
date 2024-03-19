@@ -30,6 +30,12 @@ x-python-vars: &python-vars
   PYTHONUNBUFFERED: 1
   PYTHONPATH: /application/app/src
 
+x-oidc-vars: &oidc-vars
+  OIDC_WELLKNOWN: "https://dev.loginproxy.gov.bc.ca/auth/realms/standard/.well-known/openid-configuration"
+  OIDC_CLIENT_ID: "hydrological-alerting-5261"
+  OIDC_REQUIRED_ROLES: "editor admin"
+
+
 services:
   database:
     image: postgres:15
@@ -60,7 +66,7 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3003"]
     environment:
-      <<: [*postgres-vars, *python-vars]
+      <<: [*postgres-vars, *python-vars, *oidc-vars]
     ports: ["3003:3000"]
     depends_on:
       migrations:

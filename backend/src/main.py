@@ -1,35 +1,19 @@
 import logging
 import os
 
+import src.oidc.oidcAuthorize as oidcAuthorize
+
 # from authlib.integrations.starlette_client import OAuth, OAuthError
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.config import Config
-from starlette.middleware.sessions import SessionMiddleware
 
 from .core.config import Configuration
-from .oidc.oidc import get_oidc
+from .v1.models import auth_model
 from .v1.routes.alert_routes import router as alert_routes
 from .v1.routes.basin_routes import router as basin_router
 
 logging.getLogger("uvicorn").handlers.clear()  # removes duplicated logs
 LOGGER = logging.getLogger()
-
-config = Config(".env")
-
-oidc = get_oidc()
-
-
-# THIS WORKS IN CASE FUTURE ATTEMPTS AT OAUTH2 FAIL
-# ----------------------------------------------------------
-
-# want to auth with OpenIdConnect (OAuth2, authorization_code with PKCE)
-
-# oauth2_oidc = OAuth2AuthorizationCodeBearer(
-#     authorizationUrl="https://dev.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/auth",
-#     tokenUrl="https://dev.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/token",
-#     scheme_name="hydrological-alerting-5261",
-# )
 
 
 api_prefix_v1 = Configuration.API_V1_STR
@@ -52,7 +36,7 @@ app = FastAPI(
     openapi_tags=tags_metadata,
     swagger_ui_init_oauth={
         # TODO: get client from env
-        "clientId": "hydrological-alerting-5261",
+        "clientId": Configuration.OIDC_CLIENT_ID,
         "appName": "Doc Tools",
         "usePkceWithAuthorizationCodeGrant": True,
         "useBasicAuthenticationWithAccessCodeGrant": False,
@@ -78,10 +62,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.add_middleware(SessionMiddleware, secret_key="!secret")
-
-
-# Add filter to the logger
 
 
 @app.get("/")
@@ -89,39 +69,14 @@ async def root():
     return {"message": "Route verification endpoints"}
 
 
-# @app.route("/login")
-# async def login(request: Request):
-#     # absolute url for callback
-#     # we will define it below
-#     redirect_uri = request.url_for("auth")
-#     LOGGER.info(f"redirect_uri: {redirect_uri}")
-#     return await oauth.bcgov_sso.authorize_redirect(request, redirect_uri)
-#     # return await oauth.google.authorize_redirect(request, redirect_uri)
-
-
-# @app.get("/auth")
-# async def auth(request: Request):
-#     LOGGER.debug("auth called")
-#     try:
-#         token = await oauth.bcgov_sso.authorize_access_token(request)
-#         LOGGER.debug(fa."token: {token}")
-#     except OAuthError as error:
-#         return HTMLResponse(f"<h1>{error.error}</h1>")
-#     user = token.get("userinfo")
-#     if user:
-#         request.session["user"] = dict(user)
-#     return RedirectResponse(url="/")
-
-
-# @app.get("/logout")
-# async def logout(request: Request):
-#     request.session.pop("user", None)
-#     return RedirectResponse(url="/")
-
-
-@app.get("/test_auth")
-async def bar(token=Depends(oidc)):
+@app.get("/auth_user", response_model=auth_model.User)
+async def bar(token=Depends(oidcAuthorize.get_current_user)):
     return token
+
+
+@app.get("/authorized", response_model=bool)
+async def bar(is_authZ=Depends(oidcAuthorize.authorize)):
+    return is_authZ
 
 
 app.include_router(basin_router, prefix=api_prefix_v1 + "/basins", tags=["Basins"])

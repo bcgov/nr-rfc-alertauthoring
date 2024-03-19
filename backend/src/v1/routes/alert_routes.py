@@ -1,18 +1,18 @@
 import logging
 from typing import Any, List
 
-import src.oidc.oidc as oidc
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
+
+# from src.oidc.oidcAuthorize as oidcAuthorize
 from src.db import session
+from src.oidc import oidcAuthorize
 from src.v1.crud import crud_alerts
 from src.v1.models import model
 
 # from src.v1.repository.basin_repository import basinRepository
 router = APIRouter()
 LOGGER = logging.getLogger(__name__)
-
-oidc = oidc.get_oidc()
 
 
 @router.get("/", response_model=List[model.Alert_Basins])
@@ -49,9 +49,16 @@ def read_alert(
     return alert
 
 
-@router.post("/", response_model=model.Alert_Basins)
+@router.post(
+    "/",
+    response_model=model.Alert_Basins,
+)
 def create_alert(
-    alert: model.Alert_Basins_Write, session: Session = Depends(session.get_db)
+    alert: model.Alert_Basins_Write,
+    session: Session = Depends(session.get_db),
+    is_authorized: bool = Depends(oidcAuthorize.authorize),
+    token=Depends(oidcAuthorize.get_current_user),
 ):
+    LOGGER.debug(f"token: {token}")
     written_alert = crud_alerts.create_alert(session=session, alert=alert)
     return written_alert

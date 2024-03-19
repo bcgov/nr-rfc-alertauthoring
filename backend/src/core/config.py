@@ -35,7 +35,10 @@ class Settings:
     LOGGER.debug(f"SQLALCHEMY_DATABASE_URI: {SQLALCHEMY_DATABASE_URI}")
     print(f"SQLALCHEMY_DATABASE_URI: {SQLALCHEMY_DATABASE_URI}")
 
-    OIDC_CONF_URL = 'https://dev.loginproxy.gov.bc.ca/auth/realms/standard/.well-known/openid-configuration'
+    # OIDC_CONF_URL = "https://dev.loginproxy.gov.bc.ca/auth/realms/standard/.well-known/openid-configuration"
+    OIDC_CLIENT_ID = os.getenv("OIDC_CLIENT_ID")
+    OIDC_WELLKNOWN = os.getenv("OIDC_WELLKNOWN")
+    OIDC_REQUIRED_ROLES = os.getenv("OIDC_REQUIRED_ROLES", "editor")
 
 
 # @validator("SQLALCHEMY_DATABASE_URI", pre=True)
