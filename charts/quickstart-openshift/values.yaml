@@ -15,11 +15,20 @@ global:
   domain: "apps.silver.devops.gov.bc.ca" # it is required, apps.silver.devops.gov.bc.ca for silver cluster
   openshiftImageRegistry: "image-registry.openshift-image-registry.svc:5000"
   databaseAlias: bitnami-pg # this is the alias for bitnami postgres, change it based on db type(crunchy,patroni...) and alias used in the chart.
+  oidc_wellknown: ~
+  oidc_client_id: ~
+  oidc_required_roles: ~
 
 backend:
   enabled: true
   deployment: # can be either a statefulSet or a deployment not both
     enabled: true
+  # configmap:
+  #   enabled: true
+  #   data:
+  #     OIDC_WELLKNOWN={{ .Values.global.oidc_wellknown }}
+  #     OIDC_CLIENT_ID={{ .Values.global.oidc_client_id }}
+  #     OIDC_REQUIRED_ROLES={{ .Values.global.oidc_required_roles }}
   containers:
     - name: backend
       registry: '{{ .Values.global.registry }}'
@@ -39,6 +48,12 @@ backend:
             value: '{{ .Release.Name }}-{{.Values.global.databaseAlias}}'
           - name: POSTGRES_PORT
             value: "5432"
+          - name: OIDC_WELLKNOWN
+            value: {{ .Values.global.oidc_wellknown }}
+          - name: OIDC_CLIENT_ID
+            value: {{ .Values.global.oidc_client_id }}
+          - name: OIDC_REQUIRED_ROLES
+            value: {{ .Values.global.oidc_required_roles }}
       ports:
         - name: http
           containerPort: 3000
