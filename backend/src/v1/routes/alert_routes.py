@@ -50,7 +50,7 @@ def read_alert(
 
 
 @router.post(
-    "/create",
+    "/",
     response_model=model.Alert_Basins,
 )
 def create_alert(

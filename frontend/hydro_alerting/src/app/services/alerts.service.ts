@@ -21,7 +21,7 @@ export class AlertsService {
   // todo: define a type for the alertData
   addAlert(alertData: AlertCreate) :Observable<any> {
     console.log('alert data has been submitted', alertData);
-    let url = "/api/v1/alerts/create";
+    let url = "/api/v1/alerts";
     return this.http.post<AlertCreate>(url, alertData);
    }
 }

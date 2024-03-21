@@ -21,5 +21,6 @@ export const authCodeFlowConfig: OpenIdConfiguration = {
     triggerRefreshWhenIdTokenExpired: false,
     // in theory routes matching these should be intercepted and have the 
     // token sent along with the request
-    secureRoutes: ['/api/v1/alerts/create', '/api/v1/alerts/*/edit', ],
+    // secureRoutes: ['/api/v1/alerts/create', '/api/v1/alerts/*/edit', ],
+    secureRoutes: []
 }

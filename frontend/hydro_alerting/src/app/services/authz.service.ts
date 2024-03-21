@@ -13,6 +13,9 @@ export class AuthzService {
   member_roles = [];
   payload: any = {};
 
+  getToken() {
+    return this.oidcSecurityService.getAccessToken();
+  }
 
   canEdit() {
     return this.oidcSecurityService.isAuthenticated$.pipe(
