@@ -43,7 +43,7 @@ export class ViewAlertComponent {
   form_disabled: string | null = 'disabled';
   single_alert_form: FormGroup;
   alert_description: string = "";
-  
+  alert_author : string = "";
 
   meteorological_data_contents: string = "";
   hydrological_data_contents: string = "";
@@ -82,6 +82,7 @@ export class ViewAlertComponent {
         this.meteorological_data_contents = alert.alert_meteorological_conditions;
         this.hydrological_data_contents = alert.alert_hydro_conditions;
         this.alert_description = alert.alert_description;
+        this.alert_author = alert.author_name;
         this.alert = of(alert);
       });
 
