@@ -1,6 +1,6 @@
 import { BehaviorSubject, Observable } from 'rxjs';
 import {ChangeDetectorRef, Injectable, Type, AfterViewInit} from '@angular/core';
-import { BasinLvl } from '../types/basin-lvl';
+import { BasinLvlDynamicComponent } from '../types/basin-lvl';
 import { BasinAlertlvlComponent } from '../basin-alerts/basin-alertlvl/basin-alertlvl.component';
 import {AlertAreaLevels} from '../types/alert';
 
@@ -12,7 +12,7 @@ export class BasinLvlDataService {
 
   // will serve as a central store to the basin/alert-lvl data
   // and components that are displayed by the basin-lvl component
-  all_basin_level_component = <any>[];
+  all_basin_level_component : BasinLvlDynamicComponent[] = [];
   
   dataSubject: BehaviorSubject<any[]>;
   all_basin_level_component_obs!: Observable<any[]>;
@@ -21,12 +21,10 @@ export class BasinLvlDataService {
   allocatedBasins: string[] = [];  
 
   constructor(
-      // private cdr: ChangeDetectorRef,
       private componentService: BasinLvlComponentService) {
 
     // add a value to the subject
     console.log("constructor called")
-
     // this.componentService = new BasinLvlComponentService();
     this.dataSubject = new BehaviorSubject<any>(null);
     this.all_basin_level_component_obs = this.dataSubject.asObservable();
@@ -49,12 +47,29 @@ export class BasinLvlDataService {
     });
   }
 
+  getAllBasinAlertLvlData() : AlertAreaLevels[] {
+    console.log("getting all basin alert level data");
+    let basin_alert_lvl_data: AlertAreaLevels[] = [];
+    this.componentService.components.forEach((component: any) => {
+      console.log(`component: ${JSON.stringify(component)}`);
+      basin_alert_lvl_data.push({
+        "basin": {
+          "basin_name": component.inputs.basin_name
+        },
+        "alert_level": {
+          "alert_level": component.inputs.alert_level
+        }
+      });
+    });
+    return basin_alert_lvl_data;
+  }
+
   /**
    * 
    * @returns a new dynamic basin level component and the data associated with it
    */
   addNewBasinAlertSelector() {
-    return this.componentService.addComponentBlankComponent();
+     this.componentService.addComponentBlankComponent();
   }
 
   getAllComponents() {
@@ -84,7 +99,6 @@ export class BasinLvlDataService {
 
   /** Removes a basin/alert level component from the form */
   deleteComponent(component_id: number) {
-    
     this.componentService.deleteComponent(component_id);
   }
 
@@ -103,17 +117,16 @@ export class BasinLvlComponentService  {
   // tighten up the typing here
   components = <any>[];
 
-  private default_empty_component  = {
+  private default_empty_component: BasinLvlDynamicComponent  = {
     component: BasinAlertlvlComponent,
     inputs: { basin_name: '', alert_level: '', component_id: 1 }
   }
-
 
   reset() {
     this.components = [];
   }
 
-  getComponents() {
+  getComponents() : BasinLvlDynamicComponent[] {
     return this.components;
   }
 
@@ -133,7 +146,7 @@ export class BasinLvlComponentService  {
   addComponentBlankComponent() {
     let comp_id = this.components.length + 1;
     //let cur_comp = JSON.parse(JSON.stringify(this.default_empty_component));
-    let cur_comp = 
+    let cur_comp : BasinLvlDynamicComponent = 
     {
       component: BasinAlertlvlComponent,
       inputs: { basin_name: '', alert_level: '', component_id: comp_id }

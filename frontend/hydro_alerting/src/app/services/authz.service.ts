@@ -3,6 +3,7 @@ import { environment } from '../../environments/environment';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { concatMap, EMPTY, of } from 'rxjs';
 
+
 @Injectable({
   providedIn: 'root'
 })
@@ -17,6 +18,9 @@ export class AuthzService {
     return this.oidcSecurityService.isAuthenticated$.pipe(
       concatMap((isAuthenticated) => {
         this.authenticated = isAuthenticated.isAuthenticated;
+        // if (!isAuthenticated.isAuthenticated) {
+        //   this.oidcSecurityService.authorize();
+        // }
         if (isAuthenticated.isAuthenticated) {
           // if we are authenticated then get the payload so we can 
           // evalute authorization          
@@ -37,10 +41,6 @@ export class AuthzService {
       }));
   }
 
-
-
-
-
   constructor(private oidcSecurityService: OidcSecurityService) {
     this.oidcSecurityService.isAuthenticated$.pipe(
       concatMap((isAuthenticated) => {
@@ -56,16 +56,12 @@ export class AuthzService {
         }
       })).subscribe((payload) => {
         this.payload = payload;
-
-        console.log(`ZZZ is authenticated3 ${payload}`);
         if (payload.client_roles) {
           this.member_roles = payload.client_roles;
           if (environment.roles.editor in this.member_roles) {
             this.authorized = true;
           }
         }
-        // todo: define a type for this return type
-        // return of({"authorized": this.authorized, "authenticated": this.authenticated});
       });
   }
 }

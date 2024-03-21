@@ -1,5 +1,5 @@
 export interface Basin {
-    id: number;
+    id?: number;
     basin_name: string;
     // optional property example:  'property?: string'
     streak?: boolean;

@@ -17,8 +17,6 @@ import { BasinService } from '../../services/basin.service';
 import { BasinLvlDataService} from '../../services/basin-lvl-data.service';
 
 
-import {BasinLvl} from '../../types/basin-lvl';
-
 @Component({
   selector: 'app-basin-alertlvl',
   standalone: true,
@@ -96,11 +94,6 @@ export class BasinAlertlvlComponent implements AfterViewInit {
     console.log(`event data: ${JSON.stringify(this.basin_alertlvl_form.value)}`);
     let basin_name = this.basin_alertlvl_form.value.basin_name;
     console.log(`basin_name before call: ${basin_name}`);
-    let event_descr: BasinLvl = {
-      basin_name: basin_name,
-      alert_level: this.basin_alertlvl_form.value.alert_level,
-      event_type: 'delete'
-    };
     this.basinDataSvc.deleteComponent(this.component_id);
     console.log('emitted delete event');
   }

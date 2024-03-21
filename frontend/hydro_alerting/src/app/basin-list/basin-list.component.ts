@@ -59,8 +59,10 @@ export class BasinListComponent implements OnInit {
 
     this.basins = this.basinService.getBasins().pipe(map((basins) => {
       return basins.map((basin) => {
-        basin.streak = basin.id <= 2 ? true : false;
-        console.log('basin after streak added: ' + JSON.stringify(basin));
+        if (basin.id) { 
+          basin.streak = basin.id <= 2 ? true : false;
+          console.log('basin after streak added: ' + JSON.stringify(basin));
+        }
         return basin;
       })
     }));

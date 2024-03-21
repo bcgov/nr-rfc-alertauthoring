@@ -18,7 +18,9 @@ export class NavbarComponent implements OnInit {
   authenticated = false;
   login_logout_text = 'login';
 
-  constructor(private oidcSecurityService: OidcSecurityService) { }
+  constructor(
+    private oidcSecurityService: OidcSecurityService,
+    ) { }
 
 
   ngOnInit(): void {

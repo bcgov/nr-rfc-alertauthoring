@@ -15,14 +15,19 @@ export class AuthorizationGuard implements CanActivate {
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean | UrlTree> {
     return this.authzService.canEdit().pipe(
+      take(1),
       map((authData) => {
         console.log(`env data: ${JSON.stringify(environment)}`);
+        console.log(`auth data: ${JSON.stringify(authData)}`);
         // allow navigation if authenticated and authorized
         if (authData || environment.disable_route_guard) {
+          console.log('authorized determined as true');
           return true;
         }
-        // redirect if not authenticated
-        return this.router.parseUrl('/unauthorized');
+        else {
+          // redirect if not authenticated
+          return this.router.parseUrl('/unauthorized');
+        }
       })
     );
   }
