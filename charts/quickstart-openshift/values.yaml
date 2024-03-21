@@ -202,8 +202,8 @@ frontend:
       env:
         fromValues:
           - name: BACKEND_URL
-            # value: "http://{{ .Release.Name }}-backend"
-            value: "https://{{ .Release.Name }}-backend.apps.silver.devops.gov.bc.ca"
+            value: "http://{{ .Release.Name }}-backend"
+            # value: "https://{{ .Release.Name }}-backend.apps.silver.devops.gov.bc.ca"
           - name: LOG_LEVEL
             value: "info"
         fromLocalConfigmap: # just for example purpose.

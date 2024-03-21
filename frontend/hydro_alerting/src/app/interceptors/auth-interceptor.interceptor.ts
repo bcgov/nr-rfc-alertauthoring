@@ -19,7 +19,6 @@ export class AlertsWriteInterceptor implements HttpInterceptor {
     if ((request.method === 'POST' || request.method === 'PUT' || request.method === 'DELETE') && this.isSecureRoute(request.url)) {
       return this.authzService.getToken().pipe(
         switchMap((token) => {
-          console.log("got token: ", token);
           if (token) {
             console.log("got token", token)
             request = request.clone({
@@ -28,6 +27,7 @@ export class AlertsWriteInterceptor implements HttpInterceptor {
               }
             });
           }
+          // console.log("returning next.handle(request)")
           return next.handle(request);
         })
       );
