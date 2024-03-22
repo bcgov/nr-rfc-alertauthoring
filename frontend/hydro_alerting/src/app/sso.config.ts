@@ -12,7 +12,15 @@ export const authCodeFlowConfig: OpenIdConfiguration = {
     responseType: 'code',
     // offline_access - don't use
     scope: 'openid profile email',
-    // silentRenew: true,
+    silentRenew: true,
     useRefreshToken: true,
     logLevel: LogLevel.Debug,
+    renewTimeBeforeTokenExpiresInSeconds: 30,
+    ignoreNonceAfterRefresh: true,
+    autoUserInfo: false,
+    triggerRefreshWhenIdTokenExpired: false,
+    // in theory routes matching these should be intercepted and have the 
+    // token sent along with the request
+    // secureRoutes: ['/api/v1/alerts/create', '/api/v1/alerts/*/edit', ],
+    secureRoutes: []
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable, catchError, of, switchMap, throwError } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { Alert } from '../types/alert';
+import { Alert, AlertCreate } from '../types/alert';
 
 
 @Injectable({
@@ -13,15 +13,15 @@ export class AlertsService {
   constructor(private http: HttpClient) { }
 
   getAlerts(): Observable<Alert[]> {
-    let url = "/api/v1/alerts";
+    let url = "/api/v1/alerts/";
 
     return this.http.get<any>(url);
   }
 
-  addAlert(alertData: any) {
+  // todo: define a type for the alertData
+  addAlert(alertData: AlertCreate) :Observable<any> {
     console.log('alert data has been submitted', alertData);
-
-    this.alerts.push(alertData);
-    // console.log("basins: " + JSON.stringify(this.alerts));
+    let url = "/api/v1/alerts/";
+    return this.http.post<AlertCreate>(url, alertData);
    }
 }

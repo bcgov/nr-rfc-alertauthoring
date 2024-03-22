@@ -34,7 +34,7 @@ export class BasinService {
     //return of(this.basins);
 
     // let url = "http://localhost:3003/api/v1/basins";
-    let url = "/api/v1/basins";
+    let url = "/api/v1/basins/";
     // let data = this.http.get<Basin[]>(url);
     // console.log("data: " + JSON.stringify(data));
     return this.http.get<Basin[]>(url);

@@ -30,6 +30,12 @@ x-python-vars: &python-vars
   PYTHONUNBUFFERED: 1
   PYTHONPATH: /application/app/src
 
+x-oidc-vars: &oidc-vars
+  OIDC_WELLKNOWN: "https://dev.loginproxy.gov.bc.ca/auth/realms/standard/.well-known/openid-configuration"
+  OIDC_CLIENT_ID: "hydrological-alerting-5261"
+  OIDC_REQUIRED_ROLES: "editor admin"
+
+
 services:
   database:
     image: postgres:15
@@ -51,70 +57,72 @@ services:
       database:
         condition: service_healthy
 
-  backend-py:
-    profiles: ["python", "all"]
+  backend:
+    # profiles: ["python", "all"]
     image: python:3.12
-    container_name: backend-py
+    container_name: backend
     entrypoint: /application/start-local.sh
     volumes: ["./backend:/application", "/application/.venv"]
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3003"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
     environment:
-      <<: [*postgres-vars, *python-vars]
+      <<: [*postgres-vars, *python-vars, *oidc-vars]
+    # external port is 3003, start-local starts the service on 3000 inside container
     ports: ["3003:3000"]
     depends_on:
       migrations:
         condition: service_completed_successfully
 
-  backend-py-test:
-    profiles: ["python", "all"]
-    image: python:3.12
-    container_name: backend-py-test
-    entrypoint: /application/run-unit-tests.sh
-    volumes: ["./backend:/application", "/application/.venv"]
-    environment:
-      <<: [*postgres-vars, *python-vars]
-    depends_on:
-      backend-py:
-        condition: service_healthy
+  # backend-test:
+  #   profiles: ["python", "all"]
+  #   image: python:3.12
+  #   container_name: backend-test
+  #   entrypoint: /application/run-unit-tests.sh
+  #   volumes: ["./backend:/application", "/application/.venv"]
+  #   environment:
+  #     <<: [*postgres-vars, *python-vars]
+  #   depends_on:
+  #     backend:
+  #       condition: service_healthy
 
-  frontend:
-    container_name: frontend
-    # entrypoint: sh -c "npm ci && npm run dev"
-    #entrypoint: sh -c "npm ci && npm run build"
-
-    # build: 
-    #   context: ./frontend/hydro_alerting
-    #   dockerfile: Dockerfile
-    entrypoint: sh -c "npm ci && npm run start"
-    environment:
-      NODE_ENV: development
-      PORT: 3000
-      BACKEND_URL: http://backend-py:3000
-    image: node:20-bullseye
-    ports: ["4200:4200"]
-    volumes: ["./frontend/hydro_alerting:/app", "/app/node_modules"]
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://localhost:3000"]
-    working_dir: "/app"
-    # depends_on:
-    #   backend-py:
-    #     condition: service_healthy
 
   caddy:
     container_name: caddy
     profiles: ["caddy"]
-    build: ./frontend
+    build: ./frontend/hydro_alerting
     environment:
       NODE_ENV: development
       PORT: 3000
       BACKEND_URL: http://backend:3000
       # frontend/hydro_alerting
-      LOG_LEVEL: info
-    ports: ["3005:3000"]
+      LOG_LEVEL: debug
     volumes: ["./frontend/hydro_alerting/Caddyfile:/etc/caddy/Caddyfile"]
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000"]
+    ports: ["4200:3000"]
     depends_on:
-      backend-py:
+      backend:
         condition: service_healthy
+        
+  # frontend:
+  #   container_name: frontend
+  #   # entrypoint: sh -c "npm ci && npm run dev"
+  #   #entrypoint: sh -c "npm ci && npm run build"
+
+  #   # build: 
+  #   #   context: ./frontend/hydro_alerting
+  #   #   dockerfile: Dockerfile
+  #   entrypoint: sh -c "npm ci && npm run start"
+  #   environment:
+  #     NODE_ENV: development
+  #     PORT: 3000
+  #     BACKEND_URL: http://backend:3003
+  #   image: node:20-bullseye
+  #   ports: ["4200:4200"]
+  #   volumes: ["./frontend/hydro_alerting:/app", "/app/node_modules"]
+  #   # healthcheck:
+  #   #   test: ["CMD", "curl", "-f", "http://localhost:3000"]
+  #   working_dir: "/app"
+  #   depends_on:
+  #     backend:
+  #       condition: service_healthy

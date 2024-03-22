@@ -3,5 +3,5 @@ export const environment = {
     roles: {
         editor: "editor",
     },
-    disable_route_guard: true
+    disable_route_guard: false
 };

@@ -42,6 +42,10 @@
                 <input readonly matInput [attr.value]="format_date(alert_as.alert_updated)" type="text">
             </mat-form-field>
             <mat-form-field floatLabel='always' class="alert-elements">
+                <mat-label>Alert Author</mat-label>
+                <input readonly matInput [attr.value]="alert_as.author_name" type="text">
+            </mat-form-field>
+            <mat-form-field floatLabel='always' class="alert-elements">
                 <mat-label>Alert Status</mat-label>
                 <input readonly matInput [attr.value]="alert_as.alert_status" type="text">
             </mat-form-field>
