@@ -1,9 +1,13 @@
 name: Merge
 
 on:
-  workflow_run:
-    workflows: [PR Closed]
-    types: [completed]
+  push:
+    branches: [main]
+    paths-ignore:
+      - '*.md'
+      - '.github/**'
+      - '.github/graphics/**'
+      - '!.github/workflows/**'
   workflow_dispatch:
     inputs:
       pr_no:
@@ -11,50 +15,49 @@ on:
         type: number
         required: true
 
+concurrency:
+  # Do not interrupt previous workflows
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
 jobs:
   vars:
-    name: PR Number and Semver
+    name: Set Variables
     outputs:
-      pr: ${{ steps.tag.outputs.pr }}
+      pr: ${{ steps.pr.outputs.pr }}
     runs-on: ubuntu-22.04
     timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      # Outputs semver as steps.changelog.outputs.tag
-      - name: Conventional Changelog Update
-        uses: TriPSs/conventional-changelog-action@v4
-        id: changelog
-        with:
-          git-branch: refs/heads/${{ github.event.repository.default_branch }}
-          git-push: "false"
-          github-token: ${{ github.token }}
-          skip-commit: "true"
-          skip-on-empty: "false"
-          skip-version-file: "true"
-
-      # Create and push semver tag
-      - uses: actions/checkout@v4
-      - name: Create Tags
-        run: |
-          git tag ${{ steps.changelog.outputs.tag }}
-          git push origin --tag --force
-
-      # Get last merged (or current) PR number
+      # Get PR number for squash merges to main
       - name: PR Number
         id: pr
         uses: bcgov-nr/action-get-pr@v0.0.1
 
+  # https://github.com/bcgov-nr/action-deployer-openshift
+  deploy-test:
+    name: Deploy (test)
+    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@v0.4.0
+    secrets:
+      oc_namespace: ${{ secrets.OC_NAMESPACE }}
+      oc_token: ${{ secrets.OC_TOKEN }}
+    with:
+      environment: test
+
   deploy-prod:
     name: Deploy (prod)
-    needs: [vars]
-    uses: ./.github/workflows/.deploy.yml
-    secrets: inherit
+    needs: [deploy-test, vars]
+    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@v0.4.0
+    secrets:
+      oc_namespace: ${{ secrets.OC_NAMESPACE }}
+      oc_token: ${{ secrets.OC_TOKEN }}
     with:
-      directory: charts/quickstart-openshift
       environment: prod
-      tag: ${{ needs.vars.outputs.pr }}
-      release: prod
-
+      params:
+        --set backend.deploymentStrategy=RollingUpdate
+        --set frontend.deploymentStrategy=RollingUpdate
+        --set global.autoscaling=true
+        --set frontend.pdb.enabled=true
+        --set backend.pdb.enabled=true
   promote:
     name: Promote Images
     needs: [deploy-prod, vars]
@@ -66,7 +69,7 @@ jobs:
         package: [migrations, backend, frontend]
     timeout-minutes: 1
     steps:
-      - uses: shrink/actions-docker-registry-tag@v3
+      - uses: shrink/actions-docker-registry-tag@v4
         with:
           registry: ghcr.io
           repository: ${{ github.repository }}/${{ matrix.package }}
