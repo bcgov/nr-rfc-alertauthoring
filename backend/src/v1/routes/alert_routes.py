@@ -62,3 +62,18 @@ def create_alert(
     LOGGER.debug(f"token: {token}")
     written_alert = crud_alerts.create_alert(session=session, alert=alert)
     return written_alert
+
+
+@router.patch(
+    "/",
+    response_model=model.Alert_Basins,
+)
+def create_alert(
+    alert: model.Alert_Basins_Write,
+    session: Session = Depends(session.get_db),
+    is_authorized: bool = Depends(oidcAuthorize.authorize),
+    token=Depends(oidcAuthorize.get_current_user),
+):
+    LOGGER.debug(f"token: {token}")
+    written_alert = crud_alerts.create_alert(session=session, alert=alert)
+    return written_alert
