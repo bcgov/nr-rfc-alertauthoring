@@ -42,7 +42,7 @@ jobs:
       oc_token: ${{ secrets.OC_TOKEN }}
     with:
       environment: test
-      directory: charts/quickstart-openshift
+      directory: charts/alert_author
       params: |
         --set-string global.oidc_wellknown='${{ vars.OIDC_WELLKNOWN }}' \
         --set-string global.oidc_client_id='${{ vars.OIDC_CLIENT_ID }}' \
