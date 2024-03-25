@@ -42,6 +42,13 @@ jobs:
       oc_token: ${{ secrets.OC_TOKEN }}
     with:
       environment: test
+      directory: charts/quickstart-openshift
+      params: |
+        --set-string global.oidc_wellknown='${{ vars.OIDC_WELLKNOWN }}' \
+        --set-string global.oidc_client_id='${{ vars.OIDC_CLIENT_ID }}' \
+        --set-string global.oidc_required_roles='${{ vars.OIDC_REQUIRED_ROLES }}' \
+
+
       
   # --- not going to prod yet, uncomment once get to mvp
   # deploy-prod:

@@ -16,6 +16,7 @@ jobs:
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
       oc_token: ${{ secrets.OC_TOKEN }}
+    # need to add my own inputs.packages
     with:
       cleanup: helm
-      packages: backend frontend migrations
+      packages: backend frontend alembicmigrations
