@@ -109,6 +109,8 @@ jobs:
             --set global.autoscaling=${{ inputs.autoscaling }} \
             --set-string global.repository=${{ github.repository }} \
             --set-string global.secrets.databasePassword=${{ secrets.DB_PASSWORD }} \
+            --set-string global.tag="67" \
+
             --set-string backend.containers[0].tag="${{ env.package_tag }}" \
             --set-string backend.initContainers[0].tag="${{ env.package_tag }}" \
             --set-string frontend.containers[0].tag="${{ env.package_tag }}" \
