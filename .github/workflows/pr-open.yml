@@ -156,8 +156,13 @@ jobs:
       oc_token: ${{ secrets.OC_TOKEN }}
     with:
       triggers: ('backend/' 'frontend/' 'migrations/')
+      directory: charts/alert_author
       params:
         --set global.secrets.persist=false
+        --set-string global.oidc_wellknown='${{ vars.OIDC_WELLKNOWN }}' \
+        --set-string global.oidc_client_id='${{ vars.OIDC_CLIENT_ID }}' \
+        --set-string global.oidc_required_roles='${{ vars.OIDC_REQUIRED_ROLES }}' \
+
 
   tests:
     name: Tests
