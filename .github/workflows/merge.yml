@@ -42,36 +42,38 @@ jobs:
       oc_token: ${{ secrets.OC_TOKEN }}
     with:
       environment: test
-
-  deploy-prod:
-    name: Deploy (prod)
-    needs: [deploy-test, vars]
-    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@v0.4.0
-    secrets:
-      oc_namespace: ${{ secrets.OC_NAMESPACE }}
-      oc_token: ${{ secrets.OC_TOKEN }}
-    with:
-      environment: prod
-      params:
-        --set backend.deploymentStrategy=RollingUpdate
-        --set frontend.deploymentStrategy=RollingUpdate
-        --set global.autoscaling=true
-        --set frontend.pdb.enabled=true
-        --set backend.pdb.enabled=true
-  promote:
-    name: Promote Images
-    needs: [deploy-prod, vars]
-    runs-on: ubuntu-22.04
-    permissions:
-      packages: write
-    strategy:
-      matrix:
-        package: [migrations, backend, frontend]
-    timeout-minutes: 1
-    steps:
-      - uses: shrink/actions-docker-registry-tag@v4
-        with:
-          registry: ghcr.io
-          repository: ${{ github.repository }}/${{ matrix.package }}
-          target: ${{ needs.vars.outputs.pr }}
-          tags: prod
+      
+  # --- not going to prod yet, uncomment once get to mvp
+  # deploy-prod:
+  #   name: Deploy (prod)
+  #   needs: [deploy-test, vars]
+  #   uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@v0.4.0
+  #   secrets:
+  #     oc_namespace: ${{ secrets.OC_NAMESPACE }}
+  #     oc_token: ${{ secrets.OC_TOKEN }}
+  #   with:
+  #     environment: prod
+  #     params:
+  #       --set backend.deploymentStrategy=RollingUpdate
+  #       --set frontend.deploymentStrategy=RollingUpdate
+  #       --set global.autoscaling=true
+  #       --set frontend.pdb.enabled=true
+  #       --set backend.pdb.enabled=true
+  
+  # promote:
+  #   name: Promote Images
+  #   needs: [deploy-prod, vars]
+  #   runs-on: ubuntu-22.04
+  #   permissions:
+  #     packages: write
+  #   strategy:
+  #     matrix:
+  #       package: [alembicmigrations, backend, frontend]
+  #   timeout-minutes: 1
+  #   steps:
+  #     - uses: shrink/actions-docker-registry-tag@v4
+  #       with:
+  #         registry: ghcr.io
+  #         repository: ${{ github.repository }}/${{ matrix.package }}
+  #         target: ${{ needs.vars.outputs.pr }}
+  #         tags: prod
