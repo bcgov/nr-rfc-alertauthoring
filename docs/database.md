@@ -30,7 +30,8 @@ erDiagram
         string basin_name "text describing a basin / area"
     }
     ALERT_HISTORY {
-        int alert_id
+        int alert_history_id PK
+        int alert_id FK
         string alert_meteorological_conditions
         string alert_hydrological_conditions
         string alert_status
@@ -41,7 +42,7 @@ erDiagram
         date alert_history_date
     }
     ALERT_AREA_HISTORY {
-        int alert_id FK
+        int alert_history_id FK
         int basin_id FK
         int alert_level_id FK
 
