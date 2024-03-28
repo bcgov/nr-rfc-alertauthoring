@@ -4,7 +4,7 @@ import logging
 from sqlmodel import Session, select
 from src.types import AlertAreaLevel
 from src.v1.crud import crud_alerts
-from src.v1.models import model
+from backend.src.v1.models import alerts
 
 # from testspg.constants import TEST_NEW_USER, TEST_NOT_EXIST_USER_TYPE
 
@@ -27,7 +27,7 @@ def test_create_alert_with_basins_and_level(db_test_connection: Session):
 
     session = db_test_connection
     # create an alert to set
-    alert = model.Alerts(
+    alert = alerts.Alerts(
         alert_created=datetime.datetime.utcnow(),
         alert_updated=datetime.datetime.utcnow(),
         author_name="test_author",
@@ -41,8 +41,8 @@ def test_create_alert_with_basins_and_level(db_test_connection: Session):
         session=session, alert=alert, basin_levels=test_levels
     )
     # verify that its there
-    alert_select = select(model.Alerts).where(
-        model.Alerts.alert_updated == alert.alert_updated
+    alert_select = select(alerts.Alerts).where(
+        alerts.Alerts.alert_updated == alert.alert_updated
     )
     alert_result = session.exec(alert_select).one()
     assert alert_result.alert_created == alert.alert_created

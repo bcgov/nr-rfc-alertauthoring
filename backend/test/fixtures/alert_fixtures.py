@@ -3,7 +3,7 @@ import logging
 
 import pytest
 import sqlmodel
-import src.v1.models.model as model
+import src.v1.models.alerts as alerts
 from src.v1.crud import crud_alerts
 
 LOGGER = logging.getLogger(__name__)
@@ -11,7 +11,7 @@ LOGGER = logging.getLogger(__name__)
 
 @pytest.fixture(scope="function")
 def alert_data_test_levels():
-    test_levels: [model.AlertAreaLevel] = [
+    test_levels: [alerts.AlertAreaLevel] = [
         {"basin": "Central Coast", "alert_level": "High Streamflow Advisory"},
         {"basin": "Skeena", "alert_level": "Flood Watch"},
         {"basin": "Northern Vancouver Island", "alert_level": "Flood Warning"},
@@ -27,7 +27,7 @@ def alert_data_test_levels():
 
 @pytest.fixture(scope="function")
 def alert_data():
-    alert = model.Alerts(
+    alert = alerts.Alerts(
         alert_created=datetime.datetime(2024, 2, 3, 0, 32, 50, 468722),
         alert_updated=datetime.datetime(2024, 2, 3, 0, 32, 50, 468722),
         author_name="test_author",
@@ -41,7 +41,7 @@ def alert_data():
 
 @pytest.fixture(scope="function")
 def alert_basin_write_data(alert_data_test_levels):
-    alert = model.Alert_Basins_Write(
+    alert = alerts.Alert_Basins_Write(
         # alert_created=datetime.datetime(2024, 2, 3, 0, 32, 50, 468722),
         # alert_updated=datetime.datetime(2024, 2, 3, 0, 32, 50, 468722),
         author_name="test_author",
@@ -53,11 +53,11 @@ def alert_basin_write_data(alert_data_test_levels):
     )
     for alert_level in alert_data_test_levels:
 
-        basin_base: model.BasinBase = model.BasinBase(basin_name=alert_level["basin"])
-        alert_level_base: model.Alert_Levels_Base = model.Alert_Levels_Base(
+        basin_base: alerts.BasinBase = alerts.BasinBase(basin_name=alert_level["basin"])
+        alert_level_base: alerts.Alert_Levels_Base = alerts.Alert_Levels_Base(
             alert_level=alert_level["alert_level"]
         )
-        alert_area: model.Alert_Areas_Write = model.Alert_Areas_Write(
+        alert_area: alerts.Alert_Areas_Write = alerts.Alert_Areas_Write(
             basin=basin_base, alert_level=alert_level_base
         )
         alert.alert_links.append(alert_area)

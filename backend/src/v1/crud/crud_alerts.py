@@ -1,17 +1,18 @@
 import logging
 
-import src.types
 from sqlmodel import Session, select
+
+import src.types
+import src.v1.models.alerts as alerts_model
+import src.v1.models.basins as basins_model
 
 LOGGER = logging.getLogger(__name__)
 
 
-from src.v1.models import model
-
-
-
 def create_alert_with_basins_and_level(
-    session: Session, alert: model.Alerts, basin_levels: list[src.types.AlertAreaLevel]
+    session: Session,
+    alert: alerts_model.Alerts,
+    basin_levels: list[src.types.AlertAreaLevel],
 ):
     """
     using the session creates the alert record, then retrieves the basin and
@@ -36,17 +37,17 @@ def create_alert_with_basins_and_level(
     session.flush()  # flush to populate the primary key
 
     for basin_level in basin_levels:
-        basin_query = select(model.Basins).where(
-            model.Basins.basin_name == basin_level["basin"]
+        basin_query = select(alerts_model.Basins).where(
+            alerts_model.Basins.basin_name == basin_level["basin"]
         )
         basin_data = session.exec(basin_query).one()
 
-        alert_level_select = select(model.Alert_Levels).where(
-            model.Alert_Levels.alert_level == basin_level["alert_level"]
+        alert_level_select = select(alerts_model.Alert_Levels).where(
+            alerts_model.Alert_Levels.alert_level == basin_level["alert_level"]
         )
         alert_level_data = session.exec(alert_level_select).one()
 
-        junction_table = model.Alert_Areas(
+        junction_table = alerts_model.Alert_Areas(
             alert=alert,
             basin=basin_data,
             alert_level=alert_level_data,
@@ -67,9 +68,9 @@ def create_alert_with_basins_and_level(
     return alert
 
 
-def create_alert(session: Session, alert: model.Alert_Basins_Write):
+def create_alert(session: Session, alert: alerts_model.Alert_Basins_Write):
     LOGGER.debug(f"input data: {alert})")
-    alert_write: model.Alerts = model.Alerts(
+    alert_write: alerts_model.Alerts = alerts_model.Alerts(
         alert_description=alert.alert_description,
         alert_hydro_conditions=alert.alert_hydro_conditions,
         alert_meteorological_conditions=alert.alert_meteorological_conditions,
@@ -80,14 +81,15 @@ def create_alert(session: Session, alert: model.Alert_Basins_Write):
     LOGGER.debug(f"alert_write: {alert_write}")
     for alert_area_level in alert.alert_links:
         # get the basin object
-        basin_sql = select(model.Basins).where(
-            model.Basins.basin_name == alert_area_level.basin.basin_name
+        basin_sql = select(basins_model.Basins).where(
+            basins_model.Basins.basin_name == alert_area_level.basin.basin_name
         )
         basin = session.exec(basin_sql).first()
 
         # get the alert level object
-        alert_lvl_sql = select(model.Alert_Levels).where(
-            model.Alert_Levels.alert_level == alert_area_level.alert_level.alert_level
+        alert_lvl_sql = select(alerts_model.Alert_Levels).where(
+            alerts_model.Alert_Levels.alert_level
+            == alert_area_level.alert_level.alert_level
         )
         alert_lvl = session.exec(alert_lvl_sql).first()
 
@@ -96,7 +98,7 @@ def create_alert(session: Session, alert: model.Alert_Basins_Write):
 
         # using the alert/basin/alert_level to create a junction table
         # entry
-        alert_area = model.Alert_Areas(
+        alert_area = alerts_model.Alert_Areas(
             alert_level=alert_lvl, basin=basin, alert=alert_write
         )
         alert_write.alert_links.append(alert_area)
@@ -116,7 +118,7 @@ def get_alerts(session: Session):
     :return: a list of alert records
     :rtype: list[model.Alerts]
     """
-    alerts = session.exec(select(model.Alerts)).all()
+    alerts = session.exec(select(alerts_model.Alerts)).all()
     return alerts
 
 
@@ -131,6 +133,6 @@ def get_alert(session: Session, alert_id: int):
     :return: the alert record
     :rtype: model.Alerts
     """
-    alert = session.get(model.Alerts, alert_id)
+    alert = session.get(alerts_model.Alerts, alert_id)
     LOGGER.debug(f"single alert retrieval for id: {alert_id} {alert}")
     return alert

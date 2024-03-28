@@ -15,7 +15,8 @@ import src.core.config as config
 import src.db.session
 from sqlalchemy import Engine, create_engine
 from src.main import app
-from src.v1.models.model import *
+from src.v1.models.alerts import *
+from src.v1.models.basins import *
 
 LOGGER = logging.getLogger(__name__)
 # the folder contains test docker-compose.yml, ours in the root directory
