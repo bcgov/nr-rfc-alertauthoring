@@ -7,17 +7,17 @@ Current database structure / data model used to store alert related information
 erDiagram
     ALERTS {
         int alert_id PK
-        string alert_description 
-        string alert_meteorological_conditions
-        string alert_hydrological_conditions
-        string alert_status
-        string author_name
-        date alert_created
-        date alert_updated
+        string alert_description "descriptive text about the alert"
+        string alert_meteorological_conditions "meteorological conditions contributing to alert"
+        string alert_hydrological_conditions "hydological conditions contributing to alert"
+        string status_id "link to alert status"
+        string author_name "author of the latest status of the alert"
+        date alert_created "date alert originally created"
+        date alert_updated "date alert was last updated"
     }
     ALERT_LEVELS {
         int alert_level_id PK
-        string alert_level
+        string alert_level "text describing the alert levels supported by the application"
     }
     ALERT_AREAS {
         int alert_area_id PK
@@ -27,7 +27,28 @@ erDiagram
     }
     BASINS {
         int basin_id PK
-        string basin_name
+        string basin_name "text describing a basin / area"
+    }
+    ALERT_HISTORY {
+        int alert_id
+        string alert_meteorological_conditions
+        string alert_hydrological_conditions
+        string alert_status
+        string author_name
+        date alert_updated
+        string basin
+        string alert_level
+        date alert_history_date
+    }
+    ALERT_AREA_HISTORY {
+        int alert_id FK
+        int basin_id FK
+        int alert_level_id FK
+
+    }
+    ALERT_STATUSES {
+      int status_id PK
+      string alert_status
     }
     CAP_EVENT {
         int cap_event_id PK
@@ -41,17 +62,6 @@ erDiagram
         int cap_event_area_id PK
         int basin_id FK
     }
-    ALERT_HISTORY {
-        int alert_id
-        string alert_meteorological_conditions
-        string alert_hydrological_conditions
-        string alert_status
-        string author_name
-        date alert_updated
-        string basin
-        string alert_level
-        date alert_history_date
-    }
     CAP_EVENT_HISTORY {
         int cap_event_id
         int alert_id
@@ -63,13 +73,20 @@ erDiagram
     }
 
 
-    ALERTS o| --o{ ALERT_AREAS: "has"
+    ALERTS |o --o{ ALERT_AREAS: "has"
+    ALERTS || --||  ALERT_STATUSES: "has"
     ALERT_AREAS || --|| ALERT_LEVELS: "has"
     ALERT_AREAS || --|| BASINS: "has"
+    ALERTS o| --o{ ALERT_HISTORY: "has"
+    ALERT_HISTORY o| --o{ ALERT_AREA_HISTORY: "has"
+    ALERT_AREA_HISTORY || --|| ALERT_LEVELS: "has"
+    ALERT_AREA_HISTORY || --|| BASINS: "has"
     CAP_EVENT || --|{ CAP_EVENT_AREAS: "has"
     CAP_EVENT || --|| ALERT_LEVELS: "has"
-    ALERTS || --|{ CAP_EVENT: "has"
+    ALERTS || --|{ CAP_EVENT: "creates"
     CAP_EVENT_AREAS || --|| BASINS: "has"
+
+
 ```
 
 # Tables
