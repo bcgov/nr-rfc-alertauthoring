@@ -2,15 +2,15 @@ import logging
 from logging.config import fileConfig
 
 import src.core.config as app_config
+from alembic import context
+from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine
 
 # from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.schema import CreateSchema
 from sqlmodel import SQLModel
-from src.v1.models.model import *
-
-from alembic import context
-from alembic.script import ScriptDirectory
+from src.v1.models.alerts import *
+from src.v1.models.basins import *
 
 config = context.config
 if config.config_file_name is not None:
@@ -38,6 +38,17 @@ LOGGER.debug("test test test")
 # target_metadata = mymodel.Base.metadata
 # target_metadata = SQLModel.metadata
 target_metadata = SQLModel.metadata
+
+
+target_metadata.naming_convention = {
+    "ix": "ix_%(column_0_label)s",
+    "uq": "uq_%(table_name)s_%(column_0_N_name)s",
+    "ck": "ck_%(table_name)s_%(constraint_name)s",
+    "fk": "fk_%(table_name)s_%(column_0_N_name)s_%(referred_table_name)s",
+    "pk": "pk_%(table_name)s_%(column_0_N_name)s",
+}
+
+
 # target_metadata = MetaData()
 
 # for datum in target_metadata_sql_model:

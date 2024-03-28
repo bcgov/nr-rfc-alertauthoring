@@ -195,3 +195,53 @@ class Alert_Basins(AlertsRead):
 class Alert_Basins_Write(AlertsBase):
     alert_links: List[Alert_Areas_Write]
     # alert_links: List[Alert_Areas]
+
+
+class Alert_History(SQLModel, table=True):
+    __table_args__ = {
+        "schema": default_schema,
+        "comment": "This table is used to track the changes over time of alerts",
+    }
+
+    alert_history_id: int = Field(
+        default=None,
+        primary_key=True,
+        description="Primary key for the alert history table",
+    )
+    alert_id: int = Field(default=None, foreign_key=f"{default_schema}.alerts.alert_id")
+    alert_description: str = Field(
+        nullable=False, description="description of the alert"
+    )
+    alert_hydro_conditions: str = Field(nullable=False, default="active")
+    alert_meteorological_conditions: str = Field(nullable=False, default="active")
+    author_name: str = Field(nullable=False, default="active")
+    alert_status: str = Field(nullable=False, default="active")
+    alert_updated: datetime.datetime = Field(
+        description="The timestamp for when this historical record was last changed in the original table"
+    )
+    alert_history_created: datetime.datetime = Field(
+        nullable=False,
+        description="The timestamp for when this history record was created",
+    )
+
+
+class Alert_Area_History(SQLModel, table=True):
+    __table_args__ = {
+        "schema": default_schema,
+        "comment": "This table is used to track the changes over time of area and alert levels for a specific alert",
+    }
+    alert_history_id: int = Field(
+        default=None,
+        primary_key=True,
+        description="Primary key for the alert history table",
+    )
+    basin_id: int = Field(
+        default=None,
+        foreign_key=f"{default_schema}.basins.basin_id",
+        description="Foreign key relationship to the basin associated with this historical record",
+    )
+    alert_level_id: int = Field(
+        default=None,
+        foreign_key=f"{default_schema}.alert_levels.alert_level_id",
+        description="Foreign key relationship to the alert level associated with this historical record",
+    )
