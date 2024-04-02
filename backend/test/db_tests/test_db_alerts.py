@@ -1,19 +1,22 @@
 import datetime
 import logging
+from typing import List
 
 from sqlmodel import Session, select
 from src.types import AlertAreaLevel
 from src.v1.crud import crud_alerts
-from backend.src.v1.models import alerts
+from src.v1.models import alerts
 
 # from testspg.constants import TEST_NEW_USER, TEST_NOT_EXIST_USER_TYPE
 
 LOGGER = logging.getLogger(__name__)
 
 
-def test_create_alert_with_basins_and_level(db_test_connection: Session):
+def test_create_alert_with_basins_and_level(
+    db_test_connection: Session,
+) -> List[AlertAreaLevel]:
     # tests the crud functions in the crud_alerts.py file
-    test_levels: [AlertAreaLevel] = [
+    test_levels: List[AlertAreaLevel] = [
         {"basin": "Central Coast", "alert_level": "High Streamflow Advisory"},
         {"basin": "Skeena", "alert_level": "Flood Watch"},
         {"basin": "Northern Vancouver Island", "alert_level": "Flood Warning"},
@@ -87,3 +90,22 @@ def test_get_alert(db_with_alert: Session):
     alert = crud_alerts.get_alert(session=session, alert_id=alert_id)
     LOGGER.debug(f"alert data: {alert}")
     assert alert.alert_id == alert_id
+
+
+def test_write_edit(
+    db_with_alert: Session,
+    alert_data: alerts.Alerts,
+    alert_data_test_levels: List[alerts.AlertAreaLevel],
+):
+    # ensures that write operation succeeds
+    # verify the history data
+    LOGGER.debug(f"alert_data: {alert_data}")
+    LOGGER.debug(f"alert_data_test_levels: {alert_data_test_levels}")
+
+    session = db_with_alert
+    # modify the alert
+
+    crud_alerts.update_alert(
+        session=session,
+    )
+    pass

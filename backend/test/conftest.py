@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import sys
+from typing import Generator
 
 import pytest
 import sqlmodel
@@ -11,17 +12,13 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 # from mock_alchemy.mocking import UnifiedAlchemyMagicMock
 import constants
-import src.core.config as config
 import src.db.session
 from sqlalchemy import Engine, create_engine
 from src.main import app
-from src.v1.models.alerts import *
-from src.v1.models.basins import *
+from src.v1.models.alerts import *  # noqa: F403
+from src.v1.models.basins import *  # noqa: F403
 
 LOGGER = logging.getLogger(__name__)
-# the folder contains test docker-compose.yml, ours in the root directory
-COMPOSE_PATH = os.path.join(os.path.dirname(__file__), "../../")
-COMPOSE_FILE_NAME = "docker-compose-tests.yml"
 
 # add fixture modules here
 pytest_plugins = [
@@ -67,7 +64,7 @@ def db_pg_session(db_pg_connection: sqlmodel.Session):
 
 
 @pytest.fixture(scope="session")
-def db_sqllite_connection() -> Engine:
+def db_sqllite_connection() -> Generator[Engine, None, None]:
     # should re-create the database every time the tests are run, the following
     # line ensure database that maybe hanging around as a result of a failed
     # test is deleted
@@ -79,7 +76,7 @@ def db_sqllite_connection() -> Engine:
     LOGGER.debug(f"SQL Alchemy URL: {SQLALCHEMY_DATABASE_URL}")
     execution_options = {"schema_translate_map": {"py_api": None}}
 
-    engine = create_engine(
+    engine: Engine = create_engine(
         SQLALCHEMY_DATABASE_URL,
         connect_args={"check_same_thread": False},
         execution_options=execution_options,
@@ -104,6 +101,7 @@ def db_test_load_data(db_sqllite_connection):
     """
     loads test data
     """
+    LOGGER.info("loading basin data into test database")
     session = sqlmodel.Session(db_sqllite_connection)
     basin_file = os.path.join(
         os.path.dirname(__file__), "..", "alembic", "data", "basins.json"
@@ -111,11 +109,10 @@ def db_test_load_data(db_sqllite_connection):
     LOGGER.debug(f"src file: {basin_file}")
 
     with open(basin_file, "r") as json_file:
-
         basins_data = json.load(json_file)
 
     for basin in basins_data:
-        basin = Basins(basin_name=basin["basin_name"])
+        basin = Basins(basin_name=basin["basin_name"])  # noqa: F405
         session.add(basin)
 
     alert_level_data_file = os.path.join(
@@ -129,7 +126,7 @@ def db_test_load_data(db_sqllite_connection):
     with open(alert_level_data_file, "r") as json_file:
         alert_level_data = json.load(json_file)
     for alert in alert_level_data:
-        alert_level = Alert_Levels(alert_level=alert["alert_level"])
+        alert_level = Alert_Levels(alert_level=alert["alert_level"])  # noqa: F405
         session.add(alert_level)
     session.commit()
 

@@ -6,14 +6,10 @@ from sqlalchemy import UniqueConstraint
 
 # from sqlalchemy import MetaData
 from sqlmodel import Field, Relationship, SQLModel
-
 from src.core.config import Settings
+from src.v1.models.basins import BasinBase, Basins, BasinsRead
 
 default_schema = Settings.DEFAULT_SCHEMA
-# metadata = MetaData(schema=default_schema)
-
-
-from src.v1.models.basins import BasinBase, Basins, BasinsRead
 
 
 class AlertsBase(SQLModel):

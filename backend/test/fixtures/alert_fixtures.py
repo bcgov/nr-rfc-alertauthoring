@@ -1,5 +1,6 @@
 import datetime
 import logging
+from typing import List
 
 import pytest
 import sqlmodel
@@ -10,8 +11,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="function")
-def alert_data_test_levels():
-    test_levels: [alerts.AlertAreaLevel] = [
+def alert_data_test_levels() -> List[alerts.AlertAreaLevel]:
+    test_levels: List[alerts.AlertAreaLevel] = [
         {"basin": "Central Coast", "alert_level": "High Streamflow Advisory"},
         {"basin": "Skeena", "alert_level": "Flood Watch"},
         {"basin": "Northern Vancouver Island", "alert_level": "Flood Warning"},
@@ -26,7 +27,7 @@ def alert_data_test_levels():
 
 
 @pytest.fixture(scope="function")
-def alert_data():
+def alert_data() -> alerts.Alerts:
     alert = alerts.Alerts(
         alert_created=datetime.datetime(2024, 2, 3, 0, 32, 50, 468722),
         alert_updated=datetime.datetime(2024, 2, 3, 0, 32, 50, 468722),
