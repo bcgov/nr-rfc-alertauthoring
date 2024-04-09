@@ -82,8 +82,6 @@ def db_sqllite_connection() -> Generator[Engine, None, None]:
         execution_options=execution_options,
     )
 
-    # model.Base.metadata.create_all(bind=engine)
-    # metadata = model.Base.metadata
     sqlmodel.SQLModel.metadata.create_all(engine)
 
     LOGGER.debug(f"engine type: {type(engine)}")
@@ -102,6 +100,7 @@ def db_test_load_data(db_sqllite_connection):
     loads test data
     """
     LOGGER.info("loading basin data into test database")
+    # loading basin data
     session = sqlmodel.Session(db_sqllite_connection)
     basin_file = os.path.join(
         os.path.dirname(__file__), "..", "alembic", "data", "basins.json"
@@ -114,7 +113,7 @@ def db_test_load_data(db_sqllite_connection):
     for basin in basins_data:
         basin = Basins(basin_name=basin["basin_name"])  # noqa: F405
         session.add(basin)
-
+    # loading alert level data
     alert_level_data_file = os.path.join(
         os.path.dirname(__file__),
         "..",
@@ -136,6 +135,7 @@ def db_test_connection(db_test_load_data, db_sqllite_connection):
     # quick and dirty database mocking using
     engine = db_sqllite_connection
     session = sqlmodel.Session(engine)
+
     yield session
     session.rollback()
     session.close()

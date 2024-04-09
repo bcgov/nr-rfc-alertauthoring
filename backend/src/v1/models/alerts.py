@@ -42,7 +42,21 @@ class AlertsRead(AlertsBase):
     )
 
 
-class Alert_Areas(SQLModel, table=True):
+class Alert_Areas_Read(SQLModel):
+    alert_id: int = Field(
+        default=None, foreign_key=f"{default_schema}.alerts.alert_id", primary_key=True
+    )
+    basin_id: int = Field(
+        default=None, foreign_key=f"{default_schema}.basins.basin_id", primary_key=True
+    )
+    alert_level_id: int = Field(
+        default=None,
+        foreign_key=f"{default_schema}.alert_levels.alert_level_id",
+        primary_key=True,
+    )
+
+
+class Alert_Areas(Alert_Areas_Read, table=True):
     """
     This table (junction table) manages the relationship between an alert event and:
         * the basins impacted
@@ -57,17 +71,6 @@ class Alert_Areas(SQLModel, table=True):
         {"schema": default_schema},
     )
 
-    alert_id: int = Field(
-        default=None, foreign_key=f"{default_schema}.alerts.alert_id", primary_key=True
-    )
-    basin_id: int = Field(
-        default=None, foreign_key=f"{default_schema}.basins.basin_id", primary_key=True
-    )
-    alert_level_id: int = Field(
-        default=None,
-        foreign_key=f"{default_schema}.alert_levels.alert_level_id",
-        primary_key=True,
-    )
     basin: "Basins" = Relationship(back_populates="basin_links")
     alert_level: "Alert_Levels" = Relationship(back_populates="alert_level_links")
     alert: "Alerts" = Relationship(back_populates="alert_links")
@@ -87,6 +90,10 @@ class Alerts(AlertsRead, table=True):
     __table_args__ = {"schema": default_schema}
 
     alert_links: List["Alert_Areas"] = Relationship(back_populates="alert")
+
+
+class AlertsWithAreaLevels(AlertsRead, table=False):
+    basin: Alert_Areas_Read | None = None
 
 
 class Alert_Levels_Base(SQLModel):
@@ -193,13 +200,19 @@ class Alert_Basins_Write(AlertsBase):
     # alert_links: List[Alert_Areas]
 
 
-class Alert_History(SQLModel, table=True):
+class Alert_History_Base(AlertsBase):
+    alert_id: int
+    alert_updated: datetime.datetime
+    alert_history_created: datetime.datetime
+
+
+class Alert_History(Alert_History_Base, table=True):
     __table_args__ = {
         "schema": default_schema,
         "comment": "This table is used to track the changes over time of alerts",
     }
 
-    alert_history_id: int = Field(
+    alert_history_id: Optional[int] = Field(
         default=None,
         primary_key=True,
         description="Primary key for the alert history table",
@@ -216,28 +229,42 @@ class Alert_History(SQLModel, table=True):
         description="The timestamp for when this historical record was last changed in the original table"
     )
     alert_history_created: datetime.datetime = Field(
+        default_factory=datetime.datetime.utcnow,
         nullable=False,
         description="The timestamp for when this history record was created",
     )
+    alert_history_links: List["Alert_Area_History"] = Relationship(
+        back_populates="alert_history"
+    )
+    # alert_created: datetime.datetime = Field(
+    #     default_factory=datetime.datetime.utcnow, nullable=False
+    # )
 
 
 class Alert_Area_History(SQLModel, table=True):
-    __table_args__ = {
-        "schema": default_schema,
-        "comment": "This table is used to track the changes over time of area and alert levels for a specific alert",
-    }
+    __table_args__ = (
+        UniqueConstraint("alert_history_id", "basin_id", "alert_level_id"),
+        {
+            "schema": default_schema,
+            "comment": "This table is used to track the changes over time of area and alert levels for a specific alert",
+        },
+    )
     alert_history_id: int = Field(
         default=None,
-        primary_key=True,
+        foreign_key=f"{default_schema}.alert_history.alert_history_id",
         description="Primary key for the alert history table",
+        primary_key=True,
     )
     basin_id: int = Field(
         default=None,
         foreign_key=f"{default_schema}.basins.basin_id",
         description="Foreign key relationship to the basin associated with this historical record",
+        primary_key=True,
     )
     alert_level_id: int = Field(
         default=None,
         foreign_key=f"{default_schema}.alert_levels.alert_level_id",
         description="Foreign key relationship to the alert level associated with this historical record",
+        primary_key=True,
     )
+    alert_history: "Alert_History" = Relationship(back_populates="alert_history_links")

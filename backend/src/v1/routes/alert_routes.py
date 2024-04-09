@@ -1,22 +1,20 @@
 import logging
 from typing import Any, List
 
-import src.v1.models.alerts as alerts
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
-import src.v1.models.alerts as alerts
 
-# from src.oidc.oidcAuthorize as oidcAuthorize
 from src.db import session
 from src.oidc import oidcAuthorize
 from src.v1.crud import crud_alerts
+from src.v1.models import alerts as alerts_models
 
 # from src.v1.repository.basin_repository import basinRepository
 router = APIRouter()
 LOGGER = logging.getLogger(__name__)
 
 
-@router.get("/", response_model=List[alerts.Alert_Basins])
+@router.get("/", response_model=List[alerts_models.Alert_Basins])
 def read_alerts(
     db: Session = Depends(session.get_db), skip: int = 0, limit: int = 100
 ) -> Any:
@@ -33,7 +31,7 @@ def read_alerts(
     return alerts
 
 
-@router.get("/{alert_id}", response_model=alerts.Alert_Basins)
+@router.get("/{alert_id}", response_model=alerts_models.Alert_Basins)
 def read_alert(
     alert_id: int,
     session: Session = Depends(session.get_db),
@@ -52,10 +50,10 @@ def read_alert(
 
 @router.post(
     "/",
-    response_model=alerts.Alert_Basins,
+    response_model=alerts_models.Alert_Basins,
 )
 def create_alert(
-    alert: alerts.Alert_Basins_Write,
+    alert: alerts_models.Alert_Basins_Write,
     session: Session = Depends(session.get_db),
     is_authorized: bool = Depends(oidcAuthorize.authorize),
     token=Depends(oidcAuthorize.get_current_user),
@@ -67,11 +65,11 @@ def create_alert(
 
 @router.patch(
     "/{alert_id}",
-    response_model=alerts.Alert_Basins,
+    response_model=alerts_models.Alert_Basins,
 )
 def update_alert(
     alert_id: int,
-    alert: alerts.Alert_Basins_Write,
+    alert: alerts_models.Alert_Basins_Write,
     session: Session = Depends(session.get_db),
     is_authorized: bool = Depends(oidcAuthorize.authorize),
     token=Depends(oidcAuthorize.get_current_user),
@@ -95,7 +93,8 @@ def update_alert(
     """
     LOGGER.debug(f"token: {token}")
     current_status_alert = crud_alerts.get_alert(session, alert_id=alert_id)
-
+    LOGGER.debug(f"current description: {current_status_alert.alert_description}")
+    LOGGER.debug(f"incomming description: {alert.alert_description}")
     # get incomming related (basin and alert_level) data
     # get existing related (basin and alert_level ) data
     # compare incomming and existing data
