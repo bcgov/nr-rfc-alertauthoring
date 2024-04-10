@@ -12,20 +12,6 @@ LOGGER = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="function")
-def alert_data_with_test_levels() -> List[alerts_models.Alert_Areas_Write]:
-    test_levels: List[alerts_models.Alert_Areas_Write] = [
-        {"basin": "Northern Vancouver Island", "alert_level": "Flood Warning"},
-        {
-            "basin": "Eastern Vancouver Island",
-            "alert_level": "High Streamflow Advisory",
-        },
-        {"basin": "Western Vancouver Island", "alert_level": "Flood Watch"},
-        {"basin": "Central Vancouver Island", "alert_level": "Flood Warning"},
-    ]
-    yield test_levels
-
-
-@pytest.fixture(scope="function")
 def alert_data_only(alert_dict) -> Generator[alerts_models.Alerts, None, None]:
     alert = alerts_models.Alerts(
         alert_created=datetime.datetime(2024, 2, 3, 0, 32, 50, 468722),
@@ -51,29 +37,16 @@ def alert_basin_write(
 
 @pytest.fixture(scope="function")
 def alert_basin_write_data(
-    alert_data_with_test_levels, alert_dict, alert_basin_write
+    alert_dict, alert_basin_write
 ) -> Generator[alerts_models.Alert_Basins_Write, None, None]:
     alert_data = alert_basin_write
-    for alert_level in alert_data_with_test_levels:
-
-        basin_base: alerts_models.BasinBase = alerts_models.BasinBase(
-            basin_name=alert_level["basin"]
-        )
-        alert_level_base: alerts_models.Alert_Levels_Base = (
-            alerts_models.Alert_Levels_Base(alert_level=alert_level["alert_level"])
-        )
-        alert_area: alerts_models.Alert_Areas_Write = alerts_models.Alert_Areas_Write(
-            basin=basin_base, alert_level=alert_level_base
-        )
-        alert_data.alert_links.append(alert_area)
-        # alert_links.append(alert_link)
     yield alert_data
 
 
 @pytest.fixture(scope="function")
 def db_with_alert(
     db_test_connection: sqlmodel.Session,
-    alert_data_with_test_levels,
+    alert_basin_write,
     alert_data_only,
     monkeypatch,
 ):
@@ -88,10 +61,14 @@ def db_with_alert(
 
     monkeypatch.setattr(src.db.session, "engine", db_test_connection.bind)
 
-    alert = crud_alerts.create_alert_with_basins_and_level(
-        session=db_test_connection,
-        alert=alert_data_only,
-        basin_levels=alert_data_with_test_levels,
+    # alert = crud_alerts.create_alert_with_basins_and_level(
+    #     session=db_test_connection,
+    #     alert=alert_data_only,
+    #     basin_levels=alert_basin_write,
+    # )
+
+    alert = crud_alerts.create_alert(
+        session=db_test_connection, alert=alert_basin_write
     )
 
     yield db_test_connection
@@ -103,12 +80,14 @@ def db_with_alert(
 def alert_dict():
     """provides a dictionary that can be used to construct an alert object.
     The dictionary mimics the structure of an incomming object from a create
-    new alert endpoint"""
+    new alert endpoint.
+
+    all alert tests that require data should start with this data struct"""
     alert_date = datetime.datetime.utcnow()
     alert_dict = {
         "alert_status": "active",
         "author_name": "tony",
-        "alert_description": "testing alert description",
+        "alert_description": f"testing alert description {alert_date}",
         "alert_hydro_conditions": "testing hydro conditions",
         "alert_meteorological_conditions": "testing meteorological conditions",
         "alert_links": [
@@ -121,6 +100,30 @@ def alert_dict():
             {
                 "basin": {
                     "basin_name": "Skeena",
+                },
+                "alert_level": {
+                    "alert_level": "Flood Watch",
+                },
+            },
+            {
+                "basin": {
+                    "basin_name": "Northern Vancouver Island",
+                },
+                "alert_level": {
+                    "alert_level": "Flood Warning",
+                },
+            },
+            {
+                "basin": {
+                    "basin_name": "Eastern Vancouver Island",
+                },
+                "alert_level": {
+                    "alert_level": "High Streamflow Advisory",
+                },
+            },
+            {
+                "basin": {
+                    "basin_name": "Western Vancouver Island",
                 },
                 "alert_level": {
                     "alert_level": "Flood Watch",

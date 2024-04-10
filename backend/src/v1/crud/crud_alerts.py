@@ -288,6 +288,7 @@ def update_alert(
                 )
                 session.delete(alert_link)
                 session.flush()  # have to flush or won't update the orm relationship
+        session.refresh(current_alert)
         # determine what needs to be added
         alert_area_to_add = []
         for alert_link in updated_alert.alert_links:
@@ -302,6 +303,7 @@ def update_alert(
                     + f"{alert_link.basin.basin_name} {alert_link.alert_level.alert_level}"
                 )
                 alert_area_to_add.append(cur_bas_lvl)
+            # elif cur_bas_lvl not in basin_levels_incomming
 
         # add alert areas that are in incomming but not in existing.
         for alert_link in alert_area_to_add:
@@ -315,6 +317,14 @@ def update_alert(
             )
             current_alert.alert_links.append(alert_area)
             session.refresh(current_alert)
+
+        # finally deal with deletes
+        # identify records in basin_levels_existing that do not exist in basin_levels_incomming
+        # and delete those records
+        # for existing_record in basin_levels_existing:
+        #     if not in basin_levels_incomming:
+        #         # delete the record
+        #         LOGGER.info(f"deleting the record: {existing_record}")
 
         current_alert.alert_updated = datetime.datetime.utcnow()
         # don't think I need to add the session
@@ -441,7 +451,55 @@ def results_to_dict(result: sqlalchemy.engine.Result):
             row_dict = row._asdict()
         except AttributeError as e:
             LOGGER.debug(f"exception: {e}")
-            row_dict = row.dict()
+            row_dict = row.model_dump()
 
         results_list.append(row_dict)
     return results_list
+
+
+def get_latest_history(session: Session, alert_id: int):
+    """
+    retrieves the most recent history record for the specified alert_id
+
+    :param session: a SQLModel database session
+    :type session: SQLModel.Session
+    :param alert_id: the primary key of the alert record to retrieve the history
+    :type alert_id: int
+    :return: the most recent history record
+    :rtype: model.Alert_History
+    """
+    # find the last history id, then use that to get the last history record
+    history_id_query = select(alerts_models.Alert_History.alert_history_id).order_by(
+        alerts_models.Alert_History.alert_history_id.desc()
+    )
+    history_id_record = session.exec(history_id_query).first()
+    LOGGER.debug(f"history_id_query: {history_id_record}")
+
+    history_query = (
+        select(
+            alerts_models.Alert_History,
+            alerts_models.Alert_Area_History,
+            alerts_models.Alert_Levels,
+            basins_model.Basins,
+        )
+        .where(alerts_models.Alert_History.alert_id == alert_id)
+        .where(
+            alerts_models.Alert_History.alert_history_id
+            == alerts_models.Alert_Area_History.alert_history_id
+        )
+        .where(
+            alerts_models.Alert_Area_History.alert_level_id
+            == alerts_models.Alert_Levels.alert_level_id
+        )
+        .where(
+            alerts_models.Alert_Area_History.basin_id == basins_model.Basins.basin_id
+        )
+        .where(alerts_models.Alert_History.alert_history_id == history_id_record)
+    )
+    history_query = history_query.order_by(
+        alerts_models.Alert_History.alert_updated.desc()
+    )
+    LOGGER.debug(f"history query: {history_query}")
+    history_record_result = session.exec(history_query)
+    history_record = history_record_result.all()
+    return history_record
