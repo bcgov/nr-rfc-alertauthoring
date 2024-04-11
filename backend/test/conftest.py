@@ -3,6 +3,7 @@ import logging
 import os
 import sys
 from typing import Generator
+from unittest.mock import MagicMock
 
 import pytest
 import sqlmodel
@@ -15,6 +16,7 @@ import constants
 import src.db.session
 from sqlalchemy import Engine, create_engine
 from src.main import app
+from src.oidc import oidcAuthorize
 from src.v1.models.alerts import *  # noqa: F403
 from src.v1.models.basins import *  # noqa: F403
 
@@ -148,12 +150,41 @@ def test_client_fixture(db_test_connection) -> TestClient:
 
     :rtype: starlette.testclient
     """
+    token = {
+        "exp": 1712792801,
+        "iat": 1712792501,
+        "auth_time": 1712792501,
+        "azp": "hydrological-alerting-5261",
+        "scope": "openid email profile",
+        "idir_user_guid": "3DKJFOSCBMXLAJHFHQPUE39KSVKSLAZX",
+        "client_roles": ["editor", "user"],
+        "identity_provider": "idir",
+        "idir_username": "GLAFLEUR",
+        "email_verified": False,
+        "name": "Lafleur, Guy H WLRS:EX",
+        "display_name": "Lafleur, Guy H WLRS:EX",
+        "given_name": "Guy",
+        "family_name": "Lafleur",
+        "email": "guy.lafleur@gov.bc.ca",
+    }
 
     def get_db() -> sqlmodel.Session:
         yield db_test_connection
 
+    def authorize() -> bool:
+        LOGGER.debug("override the authroizations")
+        yield True
+
+    def get_current_user():
+        LOGGER.debug("current user called")
+        return token
+
     # reset to default database which points to postgres container
     app.dependency_overrides[src.db.session.get_db] = get_db
+    app.dependency_overrides[oidcAuthorize.authorize] = lambda: authorize()
+    app.dependency_overrides[oidcAuthorize.get_current_user] = (
+        lambda: get_current_user()
+    )
 
     yield TestClient(app)
 

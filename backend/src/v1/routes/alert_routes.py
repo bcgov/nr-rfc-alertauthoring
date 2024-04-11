@@ -3,7 +3,6 @@ from typing import Any, List
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
-
 from src.db import session
 from src.oidc import oidcAuthorize
 from src.v1.crud import crud_alerts
@@ -48,8 +47,12 @@ def read_alert(
     return alert
 
 
+#
+
+
 @router.post(
     "/",
+    status_code=201,
     response_model=alerts_models.Alert_Basins,
 )
 def create_alert(
@@ -109,8 +112,11 @@ def update_alert(
     #    - record the previous alert status in history
     #    - update the alert record with incomming changes
 
-    #
-
-    return current_status_alert
+    # TODO: get the author name from the oidc access token and update before
+    #       sending to the database.
+    updated_alert = crud_alerts.update_alert(
+        session=session, alert_id=alert_id, updated_alert=alert
+    )
+    return updated_alert
     # written_alert = crud_alerts.create_alert(session=session, alert=alert)
     # return written_alert
