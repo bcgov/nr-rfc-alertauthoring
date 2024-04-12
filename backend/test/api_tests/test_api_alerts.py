@@ -2,7 +2,7 @@ import datetime
 import json
 import logging
 import os.path
-import src.v1.models.alerts as alert_model
+
 from src.core.config import Configuration
 
 LOGGER = logging.getLogger(__name__)
@@ -114,8 +114,6 @@ def test_alert_patch(test_client_fixture, alert_dict, db_with_alert):
     :param alert_basin_write: same as the dict but in the format of a alert_model.Alert_Basins_Write
     :type alert_basin_write: alert_model.Alert_Basins_Write
     """
-
-    # TODO: code this up
     client = test_client_fixture
     prefix = Configuration.API_V1_STR
     db_with_alert.commit()

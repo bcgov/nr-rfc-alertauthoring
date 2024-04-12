@@ -1,12 +1,14 @@
 import logging
 from typing import Any, List
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, select
+from fastapi import APIRouter, Depends
+from sqlmodel import Session
+
 from src.db import session
 from src.oidc import oidcAuthorize
 from src.v1.crud import crud_alerts
 from src.v1.models import alerts as alerts_models
+from src.v1.models import auth_model
 
 # from src.v1.repository.basin_repository import basinRepository
 router = APIRouter()
@@ -75,24 +77,24 @@ def update_alert(
     alert: alerts_models.Alert_Basins_Write,
     session: Session = Depends(session.get_db),
     is_authorized: bool = Depends(oidcAuthorize.authorize),
-    token=Depends(oidcAuthorize.get_current_user),
-):
+    token: auth_model.User = Depends(oidcAuthorize.get_current_user),
+) -> alerts_models.Alerts:
     """
     Performs an update of the alert, needs to also cache the changes to the previous
     alert.
 
-    :param alert_id: _description_
+    :param alert_id: the id for the alert that is being updated
     :type alert_id: int
-    :param alert: _description_
+    :param alert: the input data model that should be used to update the alert
     :type alert: model.Alert_Basins_Write
-    :param session: _description_, defaults to Depends(session.get_db)
+    :param session: database session for the transaction, defaults to Depends(session.get_db)
     :type session: Session, optional
-    :param is_authorized: _description_, defaults to Depends(oidcAuthorize.authorize)
+    :param is_authorized: determines if the token has been sent and if it includes the required roles, defaults to Depends(oidcAuthorize.authorize)
     :type is_authorized: bool, optional
-    :param token: _description_, defaults to Depends(oidcAuthorize.get_current_user)
+    :param token: access token, defaults to Depends(oidcAuthorize.get_current_user)
     :type token: _type_, optional
-    :return: _description_
-    :rtype: _type_
+    :return: the updated alert object
+    :rtype: auth_model.Alert
     """
     LOGGER.debug(f"token: {token}")
     LOGGER.debug(f"alertid: {alert_id}")
@@ -122,5 +124,3 @@ def update_alert(
     LOGGER.debug(f"updated_alert: {updated_alert}")
     session.commit()
     return updated_alert
-    # written_alert = crud_alerts.create_alert(session=session, alert=alert)
-    # return written_alert

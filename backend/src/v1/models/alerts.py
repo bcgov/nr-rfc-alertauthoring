@@ -268,3 +268,4 @@ class Alert_Area_History(SQLModel, table=True):
         primary_key=True,
     )
     alert_history: "Alert_History" = Relationship(back_populates="alert_history_links")
+

@@ -3,7 +3,6 @@ import logging
 import os
 import sys
 from typing import Generator
-from unittest.mock import MagicMock
 
 import pytest
 import sqlmodel
@@ -144,7 +143,7 @@ def db_test_connection(db_test_load_data, db_sqllite_connection):
 
 
 @pytest.fixture(scope="function")
-def test_client_fixture(db_test_connection) -> TestClient:
+def test_client_fixture(db_test_connection) -> Generator[TestClient, None, None]:
     """returns a requests object of the current app,
     with the objects defined in the model created in it.
 
@@ -168,10 +167,10 @@ def test_client_fixture(db_test_connection) -> TestClient:
         "email": "guy.lafleur@gov.bc.ca",
     }
 
-    def get_db() -> sqlmodel.Session:
+    def get_db() -> Generator[sqlmodel.Session, None, None]:
         yield db_test_connection
 
-    def authorize() -> bool:
+    def authorize() -> Generator[bool, None, None]:
         LOGGER.debug("override the authroizations")
         yield True
 

@@ -2,11 +2,12 @@ import datetime
 import logging
 
 import sqlalchemy
+from sqlmodel import Session, select
+
 import src.db.session
 import src.types
 import src.v1.models.alerts as alerts_models
 import src.v1.models.basins as basins_model
-from sqlmodel import Session, select
 
 LOGGER = logging.getLogger(__name__)
 
@@ -373,7 +374,7 @@ def create_area_alert_record(
     return alert_area
 
 
-def is_alert_equal(alert1, alert2):
+def is_alert_equal(alert1, alert2, core_atributes_only=False):
     """
     compares two alert records, and returns boolean value indicating if they
     are considered equal.
@@ -382,52 +383,67 @@ def is_alert_equal(alert1, alert2):
     :type alert1: dict
     :param alert2: the second alert record to compare
     :type alert2: dict
+    :param core_atributes_only: don't check the timestamp attributes
+    :type core_atributes_only: bool
     :return: a list of the keys that are different between the two records
     :rtype: list
     """
     is_equal = True
     comparison_fields = [
-        "alert_created",
-        "alert_updated",
         "alert_description",
         "alert_hydro_conditions",
         "alert_meteorological_conditions",
         "alert_status",
     ]
+
+    if not core_atributes_only:
+        comparison_fields.append("alert_created")
+        comparison_fields.append("alert_updated")
     for comp_field in comparison_fields:
-        if (
-            hasattr(alert1, comp_field)
-            and hasattr(alert2, comp_field)
-            and getattr(alert1, comp_field) != getattr(alert2, comp_field)
-        ):
+        # both objects must have the comp_field or they are not equal
+        if ( hasattr(alert1, comp_field)
+             and hasattr(alert2, comp_field) ):
+            # both alerts have the property, now checking to see if they are not equal
+            if (getattr(alert1, comp_field) != getattr(alert2, comp_field)):
+                is_equal = False
+                LOGGER.debug(
+                    f"the field {comp_field} has these values {getattr(alert1, comp_field)}, and {getattr(alert2, comp_field)}"
+                )
+                break
+        else:
             is_equal = False
-            LOGGER.debug(
-                f"the field {comp_field} has these values {getattr(alert1, comp_field)}, and {getattr(alert2, comp_field)}"
-            )
+            LOGGER.debug(f"missing field: {comp_field}")
             break
     if is_equal:
-        # now compare the related fields
-        alert_1_ids = []
-        for alert_link in alert1.alert_links:
-            record = []
-            record.append(alert_link.basin.basin_name)
-            record.append(alert_link.alert_level.alert_level)
-            alert_1_ids.append(record)
+        # both objects should have an alert_links attribute
+        if hasattr(alert1, "alert_links") and hasattr(alert2, "alert_links"):
+            # now compare the related fields
+            alert_1_ids = []
+            for alert_link in alert1.alert_links:
+                record = []
+                record.append(alert_link.basin.basin_name)
+                record.append(alert_link.alert_level.alert_level)
+                alert_1_ids.append(record)
 
-        alert_2_ids = []
-        for alert_link in alert2.alert_links:
-            record = []
-            record.append(alert_link.basin.basin_name)
-            record.append(alert_link.alert_level.alert_level)
-            alert_2_ids.append(record)
-        alert_1_ids.sort()
-        alert_2_ids.sort()
-        if alert_1_ids != alert_2_ids:
+            alert_2_ids = []
+            for alert_link in alert2.alert_links:
+                record = []
+                record.append(alert_link.basin.basin_name)
+                record.append(alert_link.alert_level.alert_level)
+                alert_2_ids.append(record)
+            alert_1_ids.sort()
+            alert_2_ids.sort()
+            if alert_1_ids != alert_2_ids:
+                is_equal = False
+                LOGGER.debug("alert basin/lvls not equal")
+                LOGGER.debug(f"basin/lvls alert1: {alert_1_ids}")
+                LOGGER.debug(f"basin/lvls alert1: {alert_2_ids}")
+        # if one has the attribute but the other does not then they are not equal
+        elif ( 
+                ( hasattr(alert1, "alert_links") and not hasattr(alert2, "alert_links") ) or 
+                ( not hasattr(alert1, "alert_links") and hasattr(alert2, "alert_links") )
+        ):
             is_equal = False
-            LOGGER.debug("alert basin/lvls not equal")
-            LOGGER.debug(f"basin/lvls alert1: {alert_1_ids}")
-            LOGGER.debug(f"basin/lvls alert1: {alert_2_ids}")
-
     return is_equal
 
 

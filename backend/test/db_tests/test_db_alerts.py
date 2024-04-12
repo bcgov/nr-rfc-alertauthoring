@@ -1,11 +1,8 @@
-import copy
 import datetime
 import logging
 from typing import List
 
 import pytest
-import sqlalchemy
-import sqlalchemy.orm.session
 from sqlmodel import Session, select
 from src.types import AlertAreaLevel
 from src.v1.crud import crud_alerts
@@ -449,8 +446,8 @@ def test_update_existing_basin_alert_level(
     )
 
     LOGGER.debug(f"updated_record: {updated_record}")
-    assert crud_alerts.is_alert_equal(updated_record, alert_basin_write)
-    assert crud_alerts.is_alert_equal(updated_record, alert_data)
+    assert crud_alerts.is_alert_equal(updated_record, alert_basin_write, core_atributes_only=True)
+    assert crud_alerts.is_alert_equal(updated_record, alert_data, core_atributes_only=True)
 
     # assert that the updated record contains what it should
     alert_query = (
@@ -530,9 +527,13 @@ def test_delete_alert_link(db_with_alert, alert_dict, alert_basin_write):
     assert len(updated_record.alert_links) != len(alert_dict["alert_links"])
 
 
-def test_is_alert_equal(db_with_alert: Session, alert_data: alerts_models.Alerts):
+def test_is_alert_equal(db_with_alert: Session, alert_data_only: alerts_models.Alerts):
     session = db_with_alert
+    session.add(alert_data_only)
+    session.flush()
+    alert_data = alert_data_only
 
+    LOGGER.debug(f"query for : {alert_data.alert_id}")
     # query of same alert object
     second_alert_query = select(alerts_models.Alerts).where(
         alerts_models.Alerts.alert_id == alert_data.alert_id
@@ -542,6 +543,9 @@ def test_is_alert_equal(db_with_alert: Session, alert_data: alerts_models.Alerts
     are_equal = crud_alerts.is_alert_equal(
         alert1=alert_data, alert2=second_alert_record
     )
+
+
+
     # verify that comparison returns true when comparing the same object
     assert are_equal is True
 
@@ -558,7 +562,7 @@ def test_is_alert_equal(db_with_alert: Session, alert_data: alerts_models.Alerts
     different_obj_not_equal = crud_alerts.is_alert_equal(
         alert1=alert_data, alert2=new_alert
     )
-    assert different_obj_not_equal == False
+    assert not different_obj_not_equal
 
     # now add the same areas / alerts to the record
     for alert_link in alert_data.alert_links:
@@ -572,5 +576,5 @@ def test_is_alert_equal(db_with_alert: Session, alert_data: alerts_models.Alerts
     different_obj_not_equal2 = crud_alerts.is_alert_equal(
         alert1=alert_data, alert2=new_alert
     )
-    assert different_obj_not_equal2 == False
-    assert different_obj_not_equal2 == False
+    assert not different_obj_not_equal2
+    assert not different_obj_not_equal2

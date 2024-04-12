@@ -1,6 +1,6 @@
 import datetime
 import logging
-from typing import Generator, List
+from typing import Generator
 
 import pytest
 import sqlmodel
@@ -67,14 +67,14 @@ def db_with_alert(
     #     basin_levels=alert_basin_write,
     # )
 
-    alert = crud_alerts.create_alert(
+    crud_alerts.create_alert(
         session=db_test_connection, alert=alert_basin_write
     )
 
     yield db_test_connection
 
     db_test_connection.rollback()
-
+ 
 
 @pytest.fixture(scope="function")
 def alert_dict():
@@ -132,3 +132,4 @@ def alert_dict():
         ],
     }
     yield alert_dict
+ 
