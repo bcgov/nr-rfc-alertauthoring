@@ -122,5 +122,8 @@ def update_alert(
         session=session, alert_id=alert_id, updated_alert=alert
     )
     LOGGER.debug(f"updated_alert: {updated_alert}")
+    # now update the author from the access token
+    updated_alert.author_name = token.display_name
+    session.add(updated_alert)
     session.commit()
     return updated_alert
