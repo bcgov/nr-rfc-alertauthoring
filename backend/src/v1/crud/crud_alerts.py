@@ -240,7 +240,7 @@ def update_alert(
     # with Session(src.db.session.engine) as session_2:
 
     current_alert = get_alert(session=session, alert_id=alert_id)
-
+    LOGGER.debug(f"current alert: {current_alert}")
     LOGGER.debug(f"current alert: {current_alert.alert_description}")
     # LOGGER.debug(f"updated alert: {updated_alert_as_alert.alert_description}")
     # need to implement my own comparison
@@ -265,7 +265,8 @@ def update_alert(
             if getattr(current_alert, atrib) != update_value:
                 LOGGER.debug(f"updating the atrib: {atrib} with {update_value}")
                 setattr(current_alert, atrib, update_value)
-
+                session.add(current_alert)
+                session.flush()
         # Dealing with the related basin / alert levels
         # -- get the alert areas / levels incomming
         basin_levels_incomming = []
@@ -329,6 +330,7 @@ def update_alert(
         current_alert.alert_updated = datetime.datetime.utcnow()
         # don't think I need to add the session
         # session.add(current_alert)
+    LOGGER.debug(f"current alert before send: {current_alert}")
     return current_alert
 
 

@@ -1,7 +1,8 @@
 import datetime
 import json
 import logging
-
+import os.path
+import src.v1.models.alerts as alert_model
 from src.core.config import Configuration
 
 LOGGER = logging.getLogger(__name__)
@@ -91,5 +92,98 @@ def test_alert_post(test_client_fixture, alert_dict):
 
 
 def test_alert_patch(test_client_fixture, alert_dict, db_with_alert):
-    #TODO: code this up
-    pass
+    """
+    The fixture db_with_alert ensure that the database includes the alert that
+    is also described in alert_basin_write as an alert_model.Alert_Basins_Write
+    and alert_dict which contains a dict with the same data.
+
+    the test will call the update end point, and then verify that the returned
+    data contains the changes that were requested.
+
+    The method that the end point calls has other tests associated with it that
+    do in depth verification that the correct history records etc are created.
+
+    :param test_client_fixture: a startlette test client that is configured to
+        test the application
+    :type test_client_fixture: fastapi.testclient.TestClient
+    :param alert_dict: a dictionary that contains the alert record that has been
+        inserted into the database
+    :type alert_dict: dict
+    :param db_with_alert: a database session object with the data in the database
+    :type db_with_alert: sqlmodel.Session
+    :param alert_basin_write: same as the dict but in the format of a alert_model.Alert_Basins_Write
+    :type alert_basin_write: alert_model.Alert_Basins_Write
+    """
+
+    # TODO: code this up
+    client = test_client_fixture
+    prefix = Configuration.API_V1_STR
+    db_with_alert.commit()
+
+    response = client.get(f"{prefix}/alerts/1/")
+    resp_json = response.json()
+    LOGGER.debug(f"resp_json: {resp_json}")
+    alert_id = resp_json['alert_id']
+
+    # modify the dict
+    #  - change the alert_description
+    alert_dict["alert_description"] = (
+        f"testing the patch method {datetime.datetime.now()}"
+    )
+
+    # add a basin / alert level
+    alert_dict["alert_links"].append(
+        {
+            "basin": {"basin_name": "Liard"},
+            "alert_level": {"alert_level": "High Streamflow Advisory"},
+        }
+    )
+    endpoint_path = os.path.join(prefix, 'alerts', str(alert_id)) + '/'
+    response = client.patch(endpoint_path, json=alert_dict)
+    response_data = response.json()
+    LOGGER.debug(f"response_data: {response_data}")
+
+    assert response_data["alert_description"] == alert_dict["alert_description"]
+
+    new_link_added = False
+    liard_basin_cnt = 0
+    for link in response_data['alert_links']:
+        if link['basin']['basin_name'] == 'Liard':
+            new_link_added = True
+            break
+        liard_basin_cnt += 1
+    assert new_link_added
+
+    # now modify the alert level for the record we just added
+    alert_dict['alert_links'][liard_basin_cnt]['alert_level']['alert_level'] = 'Flood Watch'
+    response = client.patch(endpoint_path, json=alert_dict)
+    resp_data = response.json()
+
+    liard_basin_cnt = 0
+    for link in alert_dict['alert_links']:
+        if link['basin']['basin_name'] == 'Liard':
+            break
+        liard_basin_cnt += 1
+    LOGGER.debug(f'resp_data: {resp_data}')
+    assert resp_data['alert_links'][liard_basin_cnt]['alert_level']['alert_level'] == 'Flood Watch'
+
+    # test delete of alert link
+    del alert_dict['alert_links'][liard_basin_cnt]
+    response = client.patch(endpoint_path, json=alert_dict)
+    resp_data = response.json()
+
+    assert len(resp_data['alert_links']) == len(alert_dict['alert_links'])
+
+    # make sure the same links are in the response as the sent data
+    for link in resp_data['alert_links']:
+        link_basin = {
+            "basin": {"basin_name": link['basin']['basin_name']},
+            "alert_level": {"alert_level": link['alert_level']['alert_level']}
+        }
+        assert link_basin in alert_dict['alert_links']
+
+    for property in alert_dict.keys():
+        if not isinstance(resp_data[property], list):
+            assert resp_data[property] == alert_dict[property]
+
+

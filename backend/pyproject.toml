@@ -29,6 +29,9 @@ alembic = "^1.13.1"
 black = "^24.3.0"
 isort = "^5.13.2"
 
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.1.1"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

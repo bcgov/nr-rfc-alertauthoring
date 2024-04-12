@@ -95,8 +95,9 @@ def update_alert(
     :rtype: _type_
     """
     LOGGER.debug(f"token: {token}")
+    LOGGER.debug(f"alertid: {alert_id}")
     current_status_alert = crud_alerts.get_alert(session, alert_id=alert_id)
-    LOGGER.debug(f"current description: {current_status_alert.alert_description}")
+    LOGGER.debug(f"current description: {current_status_alert}")
     LOGGER.debug(f"incomming description: {alert.alert_description}")
     # get incomming related (basin and alert_level) data
     # get existing related (basin and alert_level ) data
@@ -114,9 +115,12 @@ def update_alert(
 
     # TODO: get the author name from the oidc access token and update before
     #       sending to the database.
+
     updated_alert = crud_alerts.update_alert(
         session=session, alert_id=alert_id, updated_alert=alert
     )
+    LOGGER.debug(f"updated_alert: {updated_alert}")
+    session.commit()
     return updated_alert
     # written_alert = crud_alerts.create_alert(session=session, alert=alert)
     # return written_alert
