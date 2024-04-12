@@ -168,6 +168,9 @@ def create_alert(
     LOGGER.debug(f"input data: {alert})")
 
     alert_write: alerts_models.Alerts = convert_to_alert(session, alert)
+    create_time_stamp = datetime.datetime.utcnow()
+    alert_write.alert_created = create_time_stamp
+    alert_write.alert_updated = create_time_stamp
 
     LOGGER.debug(f"alert_write before write: {alert_write}")
     session.add(alert_write)
