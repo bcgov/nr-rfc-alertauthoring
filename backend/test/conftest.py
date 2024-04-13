@@ -26,7 +26,6 @@ pytest_plugins = [
     "fixtures.alert_fixtures",
 ]
 
-
 # used for postgres testing
 @pytest.fixture(scope="session")
 def set_env():
@@ -37,10 +36,9 @@ def set_env():
     os.environ["POSTGRES_PORT"] = str(constants.POSTGRES_PORT)
     os.environ["POSTGRES_SCHEMA"] = constants.POSTGRES_SCHEMA
 
-
 # used for postgres testing
 @pytest.fixture(scope="session")
-def db_pg_connection(set_env):
+def db_pg_engine(set_env):
     engine = create_engine(
         "postgresql+psycopg2://"
         + f"{os.environ.get('POSTGRES_USER')}:"
@@ -52,20 +50,20 @@ def db_pg_connection(set_env):
 
     # session_local = sessionmaker(bind=engine)
     # test_db = session_local()
-    test_db = sqlmodel.Session(engine)
+    #test_db = sqlmodel.Session(engine)
 
-    yield test_db
-    test_db.close()
+    yield engine
+    engine.dispose()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def db_pg_session(db_pg_connection: sqlmodel.Session):
     yield db_pg_connection
     db_pg_connection.rollback()
 
 
 @pytest.fixture(scope="session")
-def db_sqllite_connection() -> Generator[Engine, None, None]:
+def db_sqllite_engine() -> Generator[Engine, None, None]:
     # should re-create the database every time the tests are run, the following
     # line ensure database that maybe hanging around as a result of a failed
     # test is deleted
@@ -94,15 +92,15 @@ def db_sqllite_connection() -> Generator[Engine, None, None]:
         LOGGER.debug("remove the database: ./test_db.db'")
         # os.remove("./test_db.db")
 
-
 @pytest.fixture(scope="session")
-def db_test_load_data(db_sqllite_connection):
+def db_test_load_data(db_sqllite_engine):
     """
     loads test data
     """
+    engine = db_sqllite_engine
     LOGGER.info("loading basin data into test database")
     # loading basin data
-    session = sqlmodel.Session(db_sqllite_connection)
+    session = sqlmodel.Session(engine)
     basin_file = os.path.join(
         os.path.dirname(__file__), "..", "alembic", "data", "basins.json"
     )
@@ -130,11 +128,18 @@ def db_test_load_data(db_sqllite_connection):
         session.add(alert_level)
     session.commit()
 
-
+# db_pg_engine db_sqllite_engine
 @pytest.fixture(scope="session")
-def db_test_connection(db_test_load_data, db_sqllite_connection):
+def db_test_connection(db_pg_engine):
+    engine = db_pg_engine
+
+# def db_test_connection(db_test_load_data, db_sqllite_engine):
+#     engine = db_sqllite_engine
+
+
+
     # quick and dirty database mocking using
-    engine = db_sqllite_connection
+    #engine = db_sqllite_engine
     session = sqlmodel.Session(engine)
 
     yield session

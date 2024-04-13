@@ -61,7 +61,7 @@ def upgrade() -> None:
             ["basin_id"],
             ["py_api.basins.basin_id"],
         ),
-        sa.PrimaryKeyConstraint("alert_history_id"),
+        sa.PrimaryKeyConstraint("alert_history_id", "basin_id", "alert_level_id"),
         schema="py_api",
         comment="This table is used to track the changes over time of area and alert levels for a specific alert",
     )

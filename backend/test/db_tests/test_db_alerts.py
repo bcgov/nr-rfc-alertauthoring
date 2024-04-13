@@ -218,7 +218,7 @@ def test_add_new_alert_links(db_test_connection, alert_dict, alert_basin_write):
     # create a new alert record, and write to the db
     # alert_basin_write = alerts_models.Alert_Basins_Write(**alert_dict)
     new_alert = crud_alerts.create_alert(session=session, alert=alert_basin_write)
-    session.commit()
+    # session.commit()
 
     # now modify the object with a new basin / alert level
     #  - create a new alert_area record to add to the alert, then add it

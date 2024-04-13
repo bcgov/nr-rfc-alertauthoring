@@ -7,7 +7,7 @@ import { AuthzService } from '../services/authz.service';
 @Injectable()
 export class AlertsWriteInterceptor implements HttpInterceptor {
   // These are the routes that are going to be monitored for.
-  private secureRoutes = ['/api/v1/alerts', '/api/v1/alerts/*/edit'];
+  private secureRoutes = ['/api/v1/alerts', '/api/v1/alerts/*'];
 
   constructor(private authzService: AuthzService) {
     console.log("interceptor has been created")
@@ -16,7 +16,7 @@ export class AlertsWriteInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     console.log("interceptor request")
     console.log(`request: ${JSON.stringify(request)}`)
-    if ((request.method === 'POST' || request.method === 'PUT' || request.method === 'DELETE') && this.isSecureRoute(request.url)) {
+    if ((request.method === 'POST' || request.method === 'PUT' || request.method === 'PATCH' ||  request.method === 'DELETE') && this.isSecureRoute(request.url)) {
       return this.authzService.getToken().pipe(
         switchMap((token) => {
           if (token) {

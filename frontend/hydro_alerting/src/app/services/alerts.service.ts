@@ -12,6 +12,13 @@ export class AlertsService {
 
   constructor(private http: HttpClient) { }
 
+
+  getAlert(id: number): Observable<Alert> {
+    let url = `/api/v1/alerts/${id}`;
+
+    return this.http.get<any>(url);
+  }
+
   getAlerts(): Observable<Alert[]> {
     let url = "/api/v1/alerts/";
 
@@ -24,4 +31,11 @@ export class AlertsService {
     let url = "/api/v1/alerts/";
     return this.http.post<AlertCreate>(url, alertData);
    }
+
+   editAlert(alertData: AlertCreate, alert_id: number) :Observable<any> {
+    console.log('alert data has been submitted', alertData);
+    let url = "/api/v1/alerts/" + alert_id + "/";
+    return this.http.patch<AlertCreate>(url, alertData);
+   }
+
 }

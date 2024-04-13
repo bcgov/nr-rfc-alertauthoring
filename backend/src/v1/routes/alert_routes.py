@@ -65,11 +65,12 @@ def create_alert(
 ):
     LOGGER.debug(f"token: {token}")
     written_alert = crud_alerts.create_alert(session=session, alert=alert)
+    session.commit()
     return written_alert
 
 
 @router.patch(
-    "/{alert_id}",
+    "/{alert_id}" + '/',
     response_model=alerts_models.Alert_Basins,
 )
 def update_alert(
@@ -123,7 +124,8 @@ def update_alert(
     )
     LOGGER.debug(f"updated_alert: {updated_alert}")
     # now update the author from the access token
-    updated_alert.author_name = token.display_name
+    LOGGER.debug(f"token: {token}")
+    updated_alert.author_name = token['display_name']
     session.add(updated_alert)
     session.commit()
     return updated_alert
