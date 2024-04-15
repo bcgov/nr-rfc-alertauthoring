@@ -130,30 +130,22 @@ def db_test_load_data(db_sqllite_engine):
 
 # db_pg_engine db_sqllite_engine
 @pytest.fixture(scope="session")
-def db_test_connection(db_pg_engine):
-    engine = db_pg_engine
-
-# def db_test_connection(db_test_load_data, db_sqllite_engine):
-#     engine = db_sqllite_engine
-
+# def db_test_connection(db_pg_engine):
+#     engine = db_pg_engine
+def db_test_connection(db_test_load_data, db_sqllite_engine):
+    engine = db_sqllite_engine
 
 
-    # quick and dirty database mocking using
-    #engine = db_sqllite_engine
+
+    engine = db_sqllite_engine
     session = sqlmodel.Session(engine)
 
     yield session
     session.rollback()
     session.close()
 
-
 @pytest.fixture(scope="function")
-def test_client_fixture(db_test_connection) -> Generator[TestClient, None, None]:
-    """returns a requests object of the current app,
-    with the objects defined in the model created in it.
-
-    :rtype: starlette.testclient
-    """
+def mock_access_token():
     token = {
         "exp": 1712792801,
         "iat": 1712792501,
@@ -171,6 +163,16 @@ def test_client_fixture(db_test_connection) -> Generator[TestClient, None, None]
         "family_name": "Lafleur",
         "email": "guy.lafleur@gov.bc.ca",
     }
+    yield token
+
+@pytest.fixture(scope="function")
+def test_client_fixture(db_test_connection, mock_access_token) -> Generator[TestClient, None, None]:
+    """returns a requests object of the current app,
+    with the objects defined in the model created in it.
+
+    :rtype: starlette.testclient
+    """
+    token = mock_access_token
 
     def get_db() -> Generator[sqlmodel.Session, None, None]:
         yield db_test_connection

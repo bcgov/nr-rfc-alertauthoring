@@ -3,7 +3,9 @@ import json
 import logging
 import os.path
 
+from sqlmodel import select
 from src.core.config import Configuration
+from src.v1.models import alerts as alert_model
 
 LOGGER = logging.getLogger(__name__)
 
@@ -91,7 +93,7 @@ def test_alert_post(test_client_fixture, alert_dict):
     # TODO: assert the data created is the same as the data sent
 
 
-def test_alert_patch(test_client_fixture, alert_dict, db_with_alert):
+def test_alert_patch(test_client_fixture, alert_dict, db_with_alert, mock_access_token):
     """
     The fixture db_with_alert ensure that the database includes the alert that
     is also described in alert_basin_write as an alert_model.Alert_Basins_Write
@@ -118,16 +120,23 @@ def test_alert_patch(test_client_fixture, alert_dict, db_with_alert):
     prefix = Configuration.API_V1_STR
     db_with_alert.commit()
 
-    response = client.get(f"{prefix}/alerts/1/")
+    # get the alert id
+    # cur_alert = select(alert_model.Alerts).where(alert_model.Alerts.alert_description == alert_dict["alert_description"])
+    # alert_id = cur_alert.alert_id
+    # LOGGER.debug(f"alert_id: {alert_id}")
+
+    response = client.get(f"{prefix}/alerts/")
     resp_json = response.json()
     LOGGER.debug(f"resp_json: {resp_json}")
-    alert_id = resp_json['alert_id']
+    alert_id = resp_json[0]['alert_id']
 
     # modify the dict
     #  - change the alert_description
     alert_dict["alert_description"] = (
         f"testing the patch method {datetime.datetime.now()}"
     )
+    # update the dict author to the authorname from the simulated access token
+    alert_dict["author_name"] = mock_access_token["display_name"]
 
     # add a basin / alert level
     alert_dict["alert_links"].append(
