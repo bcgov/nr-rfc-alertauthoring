@@ -13,8 +13,8 @@ from typing import Sequence, Union
 
 import sqlalchemy as sa
 import sqlmodel
+import src.v1.models.alerts as alerts_model
 from alembic import op
-from src.v1.models import model
 
 LOGGER = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ with open(alert_level_data_file, "r") as json_file:
     alert_level_data = json.load(json_file)
 alert_levels = []
 for alert in alert_level_data:
-    alert_levels.append(model.Alert_Levels(alert_level=alert["alert_level"]))
+    alert_levels.append(alerts_model.Alert_Levels(alert_level=alert["alert_level"]))
 
 # alert_levels = [
 #     model.Alert_Levels(alert_level="High Streamflow Advisory"),
@@ -60,8 +60,8 @@ def downgrade() -> None:
     session = sqlmodel.Session(bind=bind)
 
     for alert_level in alert_levels:
-        stmt = sqlmodel.select(model.Alert_Levels).where(  # noqa: F405
-            model.Alert_Levels.alert_level == alert_level.alert_level
+        stmt = sqlmodel.select(alerts_model.Alert_Levels).where(  # noqa: F405
+            alerts_model.Alert_Levels.alert_level == alert_level.alert_level
         )
         results = session.exec(stmt)
         print("results: ", results.all())

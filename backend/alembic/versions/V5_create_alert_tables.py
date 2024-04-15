@@ -79,6 +79,7 @@ def upgrade() -> None:
             ["py_api.basins.basin_id"],
         ),
         sa.PrimaryKeyConstraint("cap_event_area_id"),
+        schema="py_api",
     )
     op.create_table(
         "alert_areas",

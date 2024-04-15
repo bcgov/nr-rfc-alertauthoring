@@ -1,12 +1,11 @@
-import base64
 import logging
-import os
 import re
 
 import httpx
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OpenIdConnect
 from jose import jwt
+
 from src.core.config import Configuration
 from src.v1.models import auth_model
 

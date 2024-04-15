@@ -3,21 +3,20 @@ from typing import Any, List
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
-from src.db import session
-from src.v1.models import model
 
-# from src.v1.repository.basin_repository import basinRepository
+import src.v1.models.alerts as alerts
+from src.db import session
 
 router = APIRouter()
 LOGGER = logging.getLogger(__name__)
 
 
-@router.get("/", response_model=List[model.Basins])
+@router.get("/", response_model=List[alerts.Basins])
 def read_basins(
     db: Session = Depends(session.get_db), skip: int = 0, limit: int = 100
 ) -> Any:
     """
     Retrieve basins.
     """
-    basins = db.exec(select(model.Basins)).all()
+    basins = db.exec(select(alerts.Basins)).all()
     return basins

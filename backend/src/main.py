@@ -1,5 +1,4 @@
 import logging
-import os
 
 import src.oidc.oidcAuthorize as oidcAuthorize
 
@@ -70,12 +69,12 @@ async def root():
 
 
 @app.get("/auth_user", response_model=auth_model.User)
-async def bar(token=Depends(oidcAuthorize.get_current_user)):
+async def auth_user(token=Depends(oidcAuthorize.get_current_user)):
     return token
 
 
 @app.get("/authorized", response_model=bool)
-async def bar(is_authZ=Depends(oidcAuthorize.authorize)):
+async def authorized(is_authZ=Depends(oidcAuthorize.authorize)):
     return is_authZ
 
 

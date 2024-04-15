@@ -16,23 +16,31 @@ class User(SQLModel):
     auth_time: int = Field(
         nullable=False, description="Time when the authentication occurred"
     )
-    jti: str = Field(nullable=False, description="The javascript web token id")
-    iss: AnyUrl = Field(description="Issuer")
-    aud: str = Field(description="Audience, application that is consuming the JWT")
-    sub: str = Field(description="Subject")
-    typ: str = Field(
-        description="(token type) claim is a string that indicates the type of the JWT."
-    )
+    jti: str = Optional[
+        Field(nullable=False, description="The javascript web token id")
+    ]
+    iss: AnyUrl = Optional[Field(description="Issuer")]
+    aud: str = Optional[
+        Field(description="Audience, application that is consuming the JWT")
+    ]
+    sub: str = Optional[Field(description="Subject")]
+    typ: str = Optional[
+        Field(
+            description="(token type) claim is a string that indicates the type of the JWT."
+        )
+    ]
     azp: str = Field(
         description="Authorized party - the party to which the ID Token was issued"
     )
-    session_state: str = Field(
-        description="Optional parameter if the OpenID Connect check session extension is enabled."
-    )
+    session_state: str = Optional[
+        Field(
+            description="Optional parameter if the OpenID Connect check session extension is enabled."
+        )
+    ]
     scope: Optional[str] = Field(
         description="Space separated list of the requested scope values. Must include at least the openid value."
     )
-    sid: str = Field(description="Session ID")
+    sid: str = Optional[Field(description="Session ID")]
     idir_user_guid: str = Field(description="GUID used for the user in the IDIR system")
     client_roles: List[str] = Field(
         description="List of roles to which the user belongs"

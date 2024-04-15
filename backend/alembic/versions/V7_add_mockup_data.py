@@ -5,6 +5,7 @@ Revises: V5
 Create Date: 2024-01-29 12:28:16.951414
 
 """
+
 import datetime
 import logging
 from typing import List, Sequence, Union
@@ -12,9 +13,9 @@ from typing import List, Sequence, Union
 import sqlalchemy as sa
 import sqlmodel
 import src.types
+import src.v1.models.alerts as alerts_model
 from alembic import op
 from src.v1.crud import crud_alerts
-from src.v1.models import model
 
 LOGGER = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ def upgrade() -> None:
     bind = op.get_bind()
     session = sqlmodel.Session(bind=bind)
 
-    alert_data_1 = model.Alerts(
+    alert_data_1 = alerts_model.Alerts(
         alert_description="Alert Description 1",
         alert_hydro_conditions="Alert Hydro Conditions 1",
         alert_meteorological_conditions="Alert Meteorological Conditions 1",
@@ -55,7 +56,7 @@ def upgrade() -> None:
         LOGGER.debug(f"**************** alert level {link_atr.alert_level}")
         LOGGER.debug(f"**************** alert {link_atr.alert}")
 
-    alert_data_2 = model.Alerts(
+    alert_data_2 = alerts_model.Alerts(
         alert_description="Alert Description 2",
         alert_hydro_conditions="Alert Hydro Conditions 2",
         alert_meteorological_conditions="Alert Meteorological Conditions 2",

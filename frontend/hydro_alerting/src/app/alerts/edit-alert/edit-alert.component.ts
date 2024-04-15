@@ -2,8 +2,7 @@ import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA, ViewChild } from '@angular/c
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { switchMap, Observable, of } from 'rxjs';
-import { Alert } from '../../types/alert';
-import { AlertService } from '../alert.service';
+import { Alert, AlertAreaLevels, AlertCreate } from '../../types/alert';
 import { FormGroup, FormControl, FormBuilder, FormsModule, Validators } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatButton } from '@angular/material/button';
@@ -24,6 +23,8 @@ import { MatQuill } from '../../mat-quill/mat-quill'
 import { BasinAlertlvlsComponent } from '../../basin-alerts/basin-alertlvls/basin-alertlvls.component';
 import { EditorChangeContent, EditorChangeSelection, QuillEditorComponent } from 'ngx-quill'
 import { TokenHelperService } from 'angular-auth-oidc-client/lib/utils/tokenHelper/token-helper.service';
+import { AuthzService } from '../../services/authz.service';
+import { AlertsService } from '../../services/alerts.service';
 // 
 @Component({
   selector: 'app-edit-alert',
@@ -46,7 +47,7 @@ import { TokenHelperService } from 'angular-auth-oidc-client/lib/utils/tokenHelp
 })
 export class EditAlertComponent implements OnInit {
   alert!: Observable<Alert>;
-  alert_id: number | undefined;
+  alert_id!: number;
   edit_alert_form: FormGroup;
   alert_create_date!: Date;
   alert_updated_date!: Date;
@@ -63,10 +64,11 @@ export class EditAlertComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private alertService: AlertService,
+    private alertService: AlertsService,
+    private router: Router, 
     private formBuilder: FormBuilder,
-    private basinLvlDataService: BasinLvlDataService
-
+    private basinLvlDataService: BasinLvlDataService,
+    private authzService: AuthzService,
   ) {
 
     this.local_tz = dayjs.tz.guess();
@@ -107,15 +109,6 @@ export class EditAlertComponent implements OnInit {
         this.edit_alert_form.setControl('hydrologicalDataEditor', new FormControl(alert.alert_hydro_conditions))
         
         this.basinLvlDataService.setBasinAlertlvlComponentData(alert.alert_links);
-
-        // console.log(`alert_links: ${JSON.stringify(alert.alert_links)}`)
-        // if (alert.alert_links) {
-        //   for (let i = 0; i < alert.alert_links.length; i++) {
-
-        //   }
-        // }
-
-
         this.alert = of(alert);
       });
 
@@ -126,11 +119,28 @@ export class EditAlertComponent implements OnInit {
     // console.log(`form data: ${this.edit_alert_form.value.alert_description}`);
     // console.log(`form data: ${JSON.stringify(this.edit_alert_form.value)}`);
 
-    this.alert.subscribe((alert: Alert) => {
+    // this.alert.subscribe((alert: Alert) => {
       // console.log('alert: ' + JSON.stringify(alert));
-      console.log(`alert description: ${alert.alert_description}`);
-      // this is where the api call will take place to update the alert
+    //console.log(`alert description: ${alert.alert_description}`);
+    let basinAlertLevelData: AlertAreaLevels[] = this.basinLvlDataService.getAllBasinAlertLvlData();
+
+    let edit_alert: AlertCreate = {
+      alert_description: this.edit_alert_form.value.alert_description,
+      alert_status: this.edit_alert_form.value.alert_status,
+      alert_hydro_conditions: this.edit_alert_form.value.meteorologicalDataEditor,
+      alert_meteorological_conditions: this.edit_alert_form.value.hydrologicalDataEditor,
+      alert_links: this.basinLvlDataService.getAllBasinAlertLvlData(),
+      author_name: this.authzService.payload.display_name,
+    }
+    // alert id from this.alert_id
+    this.alertService.editAlert(edit_alert, this.alert_id).subscribe((data) => {
+      console.log(`data from post: ${JSON.stringify(data)}`);
+      // this.alert_data = data.alert_id;
+      this.router.navigate(['/alert', data.alert_id]);
     });
+  
+      // this is where the api call will take place to update the alert
+
   }
 
   onChange(e: any) {
