@@ -1,13 +1,14 @@
 import logging
 
-import src.oidc.oidcAuthorize as oidcAuthorize
-
 # from authlib.integrations.starlette_client import OAuth, OAuthError
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+import src.oidc.oidcAuthorize as oidcAuthorize
+
 from .core.config import Configuration
 from .v1.models import auth_model
+from .v1.routes.alert_levels import router as alert_levels_router
 from .v1.routes.alert_routes import router as alert_routes
 from .v1.routes.basin_routes import router as basin_router
 
@@ -62,31 +63,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 @app.get("/")
 async def root():
     return {"message": "Route verification endpoints"}
-
 
 @app.get("/auth_user", response_model=auth_model.User)
 async def auth_user(token=Depends(oidcAuthorize.get_current_user)):
     return token
 
-
 @app.get("/authorized", response_model=bool)
 async def authorized(is_authZ=Depends(oidcAuthorize.authorize)):
     return is_authZ
 
-
 app.include_router(basin_router, prefix=api_prefix_v1 + "/basins", tags=["Basins"])
 app.include_router(alert_routes, prefix=api_prefix_v1 + "/alerts", tags=["Alerts"])
-
+app.include_router(alert_levels_router, prefix=api_prefix_v1 + "/alert_levels", tags=["Alert Levels"])
 
 # Define the filter
 class EndpointFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         return record.args and len(record.args) >= 3 and record.args[2] != "/"
-
 
 # Add filter to the logger
 logging.getLogger("uvicorn.access").addFilter(EndpointFilter())

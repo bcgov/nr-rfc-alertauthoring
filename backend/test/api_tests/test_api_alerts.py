@@ -3,6 +3,7 @@ import json
 import logging
 import os.path
 
+import fastapi.testclient
 from sqlmodel import select
 from src.core.config import Configuration
 from src.v1.models import alerts as alert_model
@@ -194,3 +195,23 @@ def test_alert_patch(test_client_fixture, alert_dict, db_with_alert, mock_access
             assert resp_data[property] == alert_dict[property]
 
 
+def test_get_alert_levels(test_client_fixture: fastapi.testclient, alert_level_data: list[alert_model.Alert_Levels_Read]):
+    """
+    verifies that the alert level end point is returning the expected data
+
+    :param test_client_fixture: input test fixture
+    :type test_client_fixture: fastapi.testclient
+    :param alert_level_data: dictionary loaded from the alert_levels.json file
+    :type alert_level_data: dict
+    """
+    client = test_client_fixture
+    prefix = Configuration.API_V1_STR
+    response = client.get(f"{prefix}/alert_levels/")
+    alert_levels = response.json()
+    LOGGER.debug(f"alert_levels: {alert_levels}")
+    alert_level_strs = [level['alert_level'] for level in alert_level_data]
+
+    assert len(alert_level_data) == len(alert_levels)
+    for alert_level in alert_level_data:
+        LOGGER.debug(f"alert_level: {alert_level['alert_level']}")
+        assert alert_level['alert_level'] in alert_level_strs

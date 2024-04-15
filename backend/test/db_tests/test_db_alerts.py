@@ -578,3 +578,15 @@ def test_is_alert_equal(db_with_alert: Session, alert_data_only: alerts_models.A
     )
     assert not different_obj_not_equal2
     assert not different_obj_not_equal2
+
+
+def test_get_alert_levels(db_with_alert: Session, alert_level_data):
+    session = db_with_alert
+    alert_levels = crud_alerts.get_alert_levels(session=session)
+    LOGGER.debug(f"alert_levels: {alert_levels}")
+
+    level_strs = [level.alert_level for level in alert_levels]
+    for alert_level in alert_levels:
+        assert alert_level.alert_level in level_strs
+
+    assert len(alert_levels) == len(alert_level_data)
