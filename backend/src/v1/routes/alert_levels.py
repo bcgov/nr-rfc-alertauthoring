@@ -17,9 +17,8 @@ def read_alert_levels(
     db: Session = Depends(session.get_db), skip: int = 0, limit: int = 100
 ) -> Any:
     """
-    Retrieve existing alerts.
+    Retrieve existing alert levels used to define individual alerts.
     """
     alerts = crud_alerts.get_alert_levels(db)
     LOGGER.info(f"alerts: {alerts}")
     return alerts
-
