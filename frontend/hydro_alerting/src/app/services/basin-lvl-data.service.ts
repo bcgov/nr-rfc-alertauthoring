@@ -30,6 +30,10 @@ export class BasinLvlDataService {
     this.all_basin_level_component_obs = this.dataSubject.asObservable();
   }
 
+  reset() {
+    this.componentService.reset();
+  }
+
   addBasin(basin_name: string, component_id: number) {
     this.allocatedBasins.push(basin_name);
     this.componentService.components.forEach((component: any) => {
