@@ -524,3 +524,19 @@ def get_latest_history(session: Session, alert_id: int):
     history_record_result = session.exec(history_query)
     history_record = history_record_result.all()
     return history_record
+
+
+def get_alert_levels(session: Session) -> list[alerts_models.Alert_Levels]:
+    """
+    retrieves all the valid alert levels as defined in the database 
+    alert levels table
+
+    :param session: a SQLModel database session
+    :type session: SQLModel.Session
+    :return: a list of alert level records
+    :rtype: list[model.Alert_Levels]
+    """
+    LOGGER.debug("get_alert_levels")
+    alert_levels = session.exec(select(alerts_models.Alert_Levels)).all()
+    LOGGER.debug(f"alert_levels: {alert_levels}")
+    return alert_levels

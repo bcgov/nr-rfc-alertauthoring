@@ -57,6 +57,7 @@ export class CreateAlertComponent implements OnInit {
       meteorologicalDataEditor: [""],
       hydrologicalDataEditor: [""],
     });
+    basinAlertLevelService.reset();
   }
 
   ngOnInit(): void {
@@ -85,11 +86,6 @@ export class CreateAlertComponent implements OnInit {
       // this.alert_data = data.alert_id;
       this.router.navigate(['/alert', data.alert_id]);
     });
-    // get the access token
-    
-
-    // hard coding the redirect atm
-    // this.router.navigate(['/alert', data.alert_id]);
   }
 
   resetForm() {

@@ -3,7 +3,7 @@ import { BasinAlertlvlComponent } from '../basin-alerts/basin-alertlvl/basin-ale
 import { Basin } from './basin';
 export interface BasinLvl {
     basin_name: string;
-    alert_level: string;
+    alert_level_name: string;
     event_type: string;
 }
 
@@ -12,7 +12,7 @@ export interface BasinLvlDynamicComponent {
     component: Type<any>;
     inputs: {
         basin_name: string;
-        alert_level: string;
+        alert_level_name: string;
         component_id: number;
     }
 }

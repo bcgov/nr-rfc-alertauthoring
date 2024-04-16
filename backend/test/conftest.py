@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import sys
-from typing import Generator
+from typing import Dict, Generator
 
 import pytest
 import sqlmodel
@@ -93,7 +93,28 @@ def db_sqllite_engine() -> Generator[Engine, None, None]:
         # os.remove("./test_db.db")
 
 @pytest.fixture(scope="session")
-def db_test_load_data(db_sqllite_engine):
+def alert_level_data() -> Generator[Alert_Levels_Read, None, None]:
+    """
+    reads the alert levels json file and loads to a List[Dict] structure.
+
+    :yield: List
+    :rtype: Generator[Alert_Levels_Read, None, None]
+    """
+
+    alert_level_data_file = os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "alembic",
+        "data",
+        "alert_levels.json",
+    )
+
+    with open(alert_level_data_file, "r") as json_file:
+        alert_level_data = json.load(json_file)
+    yield alert_level_data
+
+@pytest.fixture(scope="session")
+def db_test_load_data(db_sqllite_engine, alert_level_data):
     """
     loads test data
     """
@@ -113,16 +134,6 @@ def db_test_load_data(db_sqllite_engine):
         basin = Basins(basin_name=basin["basin_name"])  # noqa: F405
         session.add(basin)
     # loading alert level data
-    alert_level_data_file = os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "alembic",
-        "data",
-        "alert_levels.json",
-    )
-
-    with open(alert_level_data_file, "r") as json_file:
-        alert_level_data = json.load(json_file)
     for alert in alert_level_data:
         alert_level = Alert_Levels(alert_level=alert["alert_level"])  # noqa: F405
         session.add(alert_level)
@@ -135,9 +146,6 @@ def db_test_load_data(db_sqllite_engine):
 def db_test_connection(db_test_load_data, db_sqllite_engine):
     engine = db_sqllite_engine
 
-
-
-    engine = db_sqllite_engine
     session = sqlmodel.Session(engine)
 
     yield session
