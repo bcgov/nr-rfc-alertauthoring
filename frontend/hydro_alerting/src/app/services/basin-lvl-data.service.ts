@@ -42,7 +42,7 @@ export class BasinLvlDataService {
   addAlertLvl(alert_level: string, component_id: number) {
     this.componentService.components.forEach((component: any) => {
       if (component.inputs.component_id === component_id) {
-        component.inputs.alert_level = alert_level;
+        component.inputs.alert_level_name = alert_level;
       }
     });
   }
@@ -57,7 +57,7 @@ export class BasinLvlDataService {
           "basin_name": component.inputs.basin_name
         },
         "alert_level": {
-          "alert_level": component.inputs.alert_level
+          "alert_level": component.inputs.alert_level_name
         }
       });
     });
@@ -86,8 +86,12 @@ export class BasinLvlDataService {
         console.log(`alertlevel data: ${JSON.stringify(alertAreaLevel)}`)
         let cur_comp = {
           component: BasinAlertlvlComponent,
-          inputs: { basin_name: alertAreaLevel.basin.basin_name, alert_level: alertAreaLevel.alert_level.alert_level, component_id: comp_id }
+          inputs: { 
+            basin_name: alertAreaLevel.basin.basin_name, 
+            alert_level_name: alertAreaLevel.alert_level.alert_level, 
+            component_id: comp_id }
         }
+        console.log(`cur_comp populated with: ${JSON.stringify(cur_comp)}`);
         this.componentService.components.push(cur_comp);
         comp_id = comp_id + 1;
         // this.dataSubject.next([cur_comp]);
@@ -119,7 +123,7 @@ export class BasinLvlComponentService  {
 
   private default_empty_component: BasinLvlDynamicComponent  = {
     component: BasinAlertlvlComponent,
-    inputs: { basin_name: '', alert_level: '', component_id: 1 }
+    inputs: { basin_name: '', alert_level_name: '', component_id: 1 }
   }
 
   reset() {
@@ -149,7 +153,7 @@ export class BasinLvlComponentService  {
     let cur_comp : BasinLvlDynamicComponent = 
     {
       component: BasinAlertlvlComponent,
-      inputs: { basin_name: '', alert_level: '', component_id: comp_id }
+      inputs: { basin_name: '', alert_level_name: '', component_id: comp_id }
     }
     // let cur_comp = this.default_empty_component;
     this.components.push(cur_comp);

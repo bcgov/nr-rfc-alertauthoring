@@ -47,7 +47,7 @@ export class BasinListComponent implements OnInit {
 
   onAddBasin(basinData: any) {
     console.log("added new basin: " + JSON.stringify(basinData));
-    this.basinService.addBasin(basinData);
+    // this.basinService.addBasin(basinData);
   }
 
   ngOnInit(): void {

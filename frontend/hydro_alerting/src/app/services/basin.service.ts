@@ -8,25 +8,7 @@ import { HttpClient } from '@angular/common/http';
   providedIn: 'root'
 })
 export class BasinService {
-  basins: Basin[] = [
-    {
-      id: 1,
-      basin_name: 'basin 1'
-    },
-    {
-      id: 2,
-      basin_name: 'basin 2'
-    },
-    {
-      id: 3,
-      basin_name: 'basin 33'
-    },
-    {
-      id: 4,
-      basin_name: 'silly basin'
-    }
-  ];
-// 
+ 
   constructor(private http: HttpClient ) { }
 
   getBasins(): Observable<Basin[]> {
@@ -39,15 +21,5 @@ export class BasinService {
     // console.log("data: " + JSON.stringify(data));
     return this.http.get<Basin[]>(url);
   }
-
-  addBasin(basinData: any) {
-    console.log('Your basin has been submitted', basinData);
-    const basin_id = this.basins.length + 1;
-    basinData.id = basin_id;
-    basinData.streak = false;
-
-    this.basins.push(basinData);
-    console.log("basins: " + JSON.stringify(this.basins));
-   }
 
 }
