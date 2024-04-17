@@ -7,7 +7,7 @@
   }
   
 .padding {
-   padding: 0 14px;
+   padding: 0 1px;
 }
 
 .horizontal_spaced {
@@ -15,4 +15,3 @@
   flex-direction: row;
   gap: 3px;
 }
-

@@ -19,12 +19,14 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
     standalone: true,
     template: 
     `
+    <div class="header-locked">
     <app-header></app-header>
     <app-navbar></app-navbar>
+    </div>
     <br><br>
     <router-outlet></router-outlet>
    `,
-    styles: ['h1 { color: blue; }'],
+    styles: ['h1 { color: blue; } .header-locked { position: sticky; position: -webkit-sticky; top: 0; } '],
     imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, NavbarComponent, HeaderComponent]
 })
 export class AppComponent  implements OnInit{
