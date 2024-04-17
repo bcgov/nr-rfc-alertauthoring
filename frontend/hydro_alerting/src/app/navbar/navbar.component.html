@@ -1,12 +1,11 @@
-<mat-toolbar color="primary">
+<mat-toolbar color="accent">
     <mat-toolbar-row>
-    <span>{{ title }} </span>
-    <span class="spacer"></span>
-    <div class="padding">
-    <a mat-raised-button color="primary" routerLink="alert/list">Existing Alerts</a>
-    <!-- <a mat-raised-button color="primary" routerLink="basins">Basins</a> -->
-    <button mat-raised-button color="primary" (click)="login_logout()">{{ login_logout_text }}</button>
-    <!-- <a mat-raised-button (click)="login_logout()" color="primary">login</a> -->
-</div>
+    <!-- <span>{{ title }} </span> -->
+    <div class="spacer"></div>
+    <div class="horizontal_spaced">
+        <a mat-raised-button color="primary" routerLink="alert/list">Existing Alerts</a>
+        <div> </div>
+        <button mat-raised-button color="primary" (click)="login_logout()">{{ login_logout_text }}</button>
+    </div>
 </mat-toolbar-row>
 </mat-toolbar>
