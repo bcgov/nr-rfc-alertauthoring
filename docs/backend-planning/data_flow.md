@@ -166,14 +166,30 @@ illustrate how they will translate to cap events
 
 from a cap event perspective this will 
 * add Middle Fraser and South Thompson to the existing CAP event for HSA
-* Move Upper fraser from Flood Watch CAP event to the Flood Warning CAP event
+* Move Upper fraser moves from Flood Watch CAP event to the Flood Warning CAP event
+* In the previous state the 'Flood Watch' was cancelled, meaning we will generate a 
+  new flood watch cap event, Notice the new CAP_EVENT_ID for flood warning
 * Move Fraser from the HSA CAP event to the Flood Watch Cap Event.
 
+```mermaid
+block-beta
+  columns 3
+  space
+  original_alert("ORIGINAL ALERT\nalert-id: 1\n----Basins / Alert Levels----\n-Fraser / High Streamflow\n-Upper Fraser / Flood Watch")
+  space:5
+  new_alert("ALERT EDITED\nalert-id: 1\n----Basins / Alert Levels----\n - Fraser / Flood Watch\n - Upper Fraser / Flood Warning\n - Middle Fraser / High Streamflow\n - South Thompson / High Streamflow")
+  space
+  space:3
+  cap_event_1("CAP EVENT - UPDATE\ncap-event-id: 10\ncap-event-status: UPDATE\nbasins:'Middle Fraser', 'South Thompson'\nalert_level:'High Streamflow'")
+  cap_event_2("CAP EVENT - UPDATE\ncap-event-id: 11\ncap-event-status: UPDATE\nbasin:'Upper Fraser'\nalert_level:'Flood Watch'")
+  cap_event_3("CAP EVENT - ALERT\ncap-event-id: 13\ncap-event-status: ALERT\nbasin: 'Upper Fraser'\nalert_level:'Flood Warning'")
 
+  original_alert --> new_alert
+  new_alert --> cap_event_1
+  new_alert --> cap_event_2
+  new_alert --> cap_event_3
 
-
-
-
+```
 
 ## Data Flow Summary
 
@@ -183,36 +199,14 @@ from a cap event perspective this will
 * Changing the alert level associated with a basin results in either
   1. The creation of new Cap event for that alert level 
   2. If a cap event with the new alert level already exists, that event will be
-    edited adding the new area to it, and removing it from other CAP events.
+    edited (updated) adding the new area to it, and removing it from other CAP events.
+  3. CAP event cancellations will essentially close that cap event.  If a CAP 
+     event is cancelled, and then a subsequent event is created for the same
+     alert_level, that will generate a net new CAP event.
 
 Cap Event Attributes:
 * Area
 * Alert Level
 * Cap Event Action type [ALERT, UPDATE, CANCEL, None]
-
-
-
-
-
-
-
-##### Scenario 1
-
-Two area are effected with the same alert levels:
-* basin 1 - High Streamflow advisory
-* basin 2 - High Streamflow advisory
-
-Cap Events Emitted:
-* Event 1 - basin 1 and basin 2 - High Streamflow advisory
-
-
-##### Scenario 2
-
-Two areas are effected with different alert levels:
-* basin 1 - High Streamflow Advisory
-* basin 2 - Flood Watch
-
-Cap Events Emitted:
-* Event 1 - basin 1 High Streamflow Advisory
-* Event 2 - basin 2 - Flood watch
+* Cap Area / Basin
 
