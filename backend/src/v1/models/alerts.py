@@ -6,6 +6,7 @@ from sqlalchemy import UniqueConstraint
 
 # from sqlalchemy import MetaData
 from sqlmodel import Field, Relationship, SQLModel
+
 from src.core.config import Settings
 from src.v1.models.basins import BasinBase, Basins, BasinsRead
 
@@ -126,7 +127,6 @@ class Cap_Event_Base(SQLModel):
 
     This table is used to track the cap events that have been emitted.  When
     a new alert is created logic will be used to determine what cap events
-    need to be emitted.  To calculate what events need to be emitted knowing
     what the previous events that have been emitted are required.
 
     :param SQLModel: _description_
@@ -161,6 +161,9 @@ class Cap_Event(Cap_Event_Base, table=True):
 
     cap_event_id: int = Field(default=None, primary_key=True)
 
+    event_area_links: List["Cap_Event_Areas"] = Relationship(back_populates="event_links")
+
+
 
 class Cap_Event_Areas(SQLModel, table=True):
     """
@@ -176,7 +179,10 @@ class Cap_Event_Areas(SQLModel, table=True):
     __table_args__ = {"schema": default_schema}
 
     cap_event_area_id: int = Field(default=None, primary_key=True)
+    cap_event_id: int = Field(default=None, foreign_key=f"{default_schema}.cap_event.cap_event_id")
     basin_id: int = Field(default=None, foreign_key=f"{default_schema}.basins.basin_id")
+    
+    event_links: List["Cap_Event"] = Relationship(back_populates="event_area_links")
 
 
 class Alert_Areas_Write(SQLModel):
