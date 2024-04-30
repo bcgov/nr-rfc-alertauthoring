@@ -49,9 +49,6 @@ def read_alert(
     return alert
 
 
-#
-
-
 @router.post(
     "/",
     status_code=201,
