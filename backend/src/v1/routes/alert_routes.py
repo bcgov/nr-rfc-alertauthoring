@@ -7,6 +7,7 @@ from sqlmodel import Session
 from src.db import session
 from src.oidc import oidcAuthorize
 from src.v1.crud import crud_alerts
+from src.v1.crud import crud_cap
 from src.v1.models import alerts as alerts_models
 from src.v1.models import auth_model
 
@@ -62,6 +63,9 @@ def create_alert(
 ):
     LOGGER.debug(f"token: {token}")
     written_alert = crud_alerts.create_alert(session=session, alert=alert)
+    caps = crud_cap.create_cap_event(session=session, alert=written_alert)
+    # not doing anything with the caps at this point 
+    LOGGER.debug(f"cap created from the alert: {caps}")
     session.commit()
     return written_alert
 

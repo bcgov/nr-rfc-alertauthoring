@@ -42,15 +42,22 @@ def create_cap_event(session: Session,
                 basin_id=alert_link.basin_id,
             )
 
+            # The line commented below feels like should work to build the relationship
+            # between cap event and alert level, however wasn't able to make it work
+            # workaround is to just populate the foreign key for alert_level_id
             cap_event = cap_models.Cap_Event(
-                alert_lvl_link=alert_link.alert_level,
+                # alert_lvl_link=alert_link.alert_level,
+                alert_level_id=alert_link.alert_level.alert_level_id,
                 alert_id=alert.alert_id,
                 cap_event_created_date=datetime.datetime.now(datetime.timezone.utc),
                 cap_event_updated_date=datetime.datetime.now(datetime.timezone.utc),
-                event_area_links=[cap_event_area]
             )
             alert_levels_created[alert_link.alert_level.alert_level] = cap_event
             session.add(cap_event)
+            session.flush()
+            # now add the relationship
+            cap_event.event_area_links.append(cap_event_area)
+            LOGGER.debug(f"cap_event: {cap_event}")
         else:
             cap_event_area = cap_models.Cap_Event_Areas(
                 basin_id=alert_link.basin_id,
@@ -63,3 +70,16 @@ def create_cap_event(session: Session,
     session.add(cap_event)
     return alert_levels_created.values()
     
+def get_cap_event(session: Session, alert_id: int):
+    """
+    Retrieve the CAP events associated with a specific alert
+
+    :param session: a database session
+    :type session: Session
+    :param alert_id: the alert id
+    :type alert_id: int
+    """
+    LOGGER.debug(f"getting the cap event for alert id: {alert_id}")
+    cap_event = session.exec(select(cap_models.Cap_Event).where(
+        cap_models.Cap_Event.alert_id == alert_id)).all()
+    return cap_event

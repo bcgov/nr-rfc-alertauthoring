@@ -6,7 +6,7 @@ import pytest
 import sqlmodel
 import src.db.session
 import src.v1.models.alerts as alerts_models
-from src.v1.crud import crud_alerts
+from src.v1.crud import crud_alerts, crud_cap
 
 LOGGER = logging.getLogger(__name__)
 
@@ -79,23 +79,21 @@ def db_with_alert(
 def db_with_alert_and_data(db_test_connection, monkeypatch, alert_basin_write):
     monkeypatch.setattr(src.db.session, "engine", db_test_connection.bind)
 
-    # alert = crud_alerts.create_alert_with_basins_and_level(
-    #     session=db_test_connection,
-    #     alert=alert_data_only,
-    #     basin_levels=alert_basin_write,
-    # )
-
     alert = crud_alerts.create_alert(
         session=db_test_connection, alert=alert_basin_write
     )
     db_test_connection.flush()
-
-
-
     yield [db_test_connection, alert]
-
     db_test_connection.rollback()
 
+@pytest.fixture(scope="function")
+def db_with_alert_and_caps(db_with_alert_and_data):
+    session = db_with_alert_and_data[0]
+    alert = db_with_alert_and_data[1]
+    caps = crud_cap.create_cap_event(session=session, alert=alert)
+    session.flush()
+    yield [session, alert, caps]
+    session.rollback()
 
 
 @pytest.fixture(scope="function")

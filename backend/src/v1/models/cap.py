@@ -37,8 +37,11 @@ class Cap_Event_Base(SQLModel):
         default_factory=datetime.datetime.utcnow, nullable=False
     )
 
+class Cap_Event_Read(Cap_Event_Base):
+    cap_event_id: int = Field(default=None, primary_key=True)
 
-class Cap_Event(Cap_Event_Base, table=True):
+
+class Cap_Event(Cap_Event_Read, table=True):
     """
     table model used for read and database definition
 
@@ -50,8 +53,6 @@ class Cap_Event(Cap_Event_Base, table=True):
     """
 
     __table_args__ = {"schema": default_schema}
-
-    cap_event_id: int = Field(default=None, primary_key=True)
 
     event_area_links: List["Cap_Event_Areas"] = Relationship(back_populates="event_links")
     alert_lvl_link: "Alert_Levels" = Relationship(back_populates="cap_link")

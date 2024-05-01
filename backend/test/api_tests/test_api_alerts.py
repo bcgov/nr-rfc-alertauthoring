@@ -12,6 +12,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 def test_get_alerts(db_with_alert, test_client_fixture, alert_dict):
+    
+    
     client = test_client_fixture
     prefix = Configuration.API_V1_STR
     response = client.get(f"{prefix}/alerts/")
@@ -23,18 +25,16 @@ def test_get_alerts(db_with_alert, test_client_fixture, alert_dict):
     data = response.json()
 
     # verify that the correct data is returned
-    assert len(data) == 1
+    assert len(data) >= 1
 
-    LOGGER.debug(f'data: { data[0]["alert_created"]} {type( data[0]["alert_created"])}')
+    # find the alert with the alert description the same as the submitted data
+    alert_record = None
+    for alert in data:
+        if alert['alert_description'] == alert_dict['alert_description']:
+            alert_record = alert
+            break
 
-    # 2024-02-03T00:32:50.468722
-    # data: 2024-02-03T00:32:50.468722 <class 'str'>
-
-    # data_create_time = datetime.datetime.strptime(
-    #     data[0]["alert_created"], "%Y-%m-%dT%H:%M:%S.%f"
-    # )
-    # LOGGER.debug(f"data_create_time: {data_create_time}")
-    # assert alert_data_only.alert_created == data_create_time
+    LOGGER.debug(f'data: { alert_record["alert_created"]} {type( alert_record["alert_created"])}')
 
     properties_to_check = [
         "alert_status",
@@ -44,10 +44,10 @@ def test_get_alerts(db_with_alert, test_client_fixture, alert_dict):
         "alert_meteorological_conditions",
     ]
     for current_property in properties_to_check:
-        assert alert_dict[current_property] == data[0][current_property]
+        assert alert_dict[current_property] == alert_record[current_property]
     # now verify the basin / alert levels are entered correctly
 
-    assert len(alert_dict["alert_links"]) == len(data[0]["alert_links"])
+    assert len(alert_dict["alert_links"]) == len(alert_record["alert_links"])
 
 
 # db_with_alert
@@ -59,8 +59,17 @@ def test_alert(test_client_fixture, db_with_alert, alert_dict):
     alerts_response = client.get(f"{prefix}/alerts")
     alerts_data = alerts_response.json()
 
+    # get the alert record that was created by the fixture
+    cnt = 0
+    for cnt in range(0, len(alerts_data)):
+        if alerts_data[cnt]["alert_description"] == alert_dict["alert_description"]:
+            break
+        cnt += 1
+
+
+
     # use the first record from all alerts to test the retrieval of a specific alert
-    url = f"{prefix}/alerts/{alerts_data[0]['alert_id']}"
+    url = f"{prefix}/alerts/{alerts_data[cnt]['alert_id']}"
     alert_response = client.get(url)
     LOGGER.debug(f"alert_response: {alert_response}")
     alert_data = alert_response.json()

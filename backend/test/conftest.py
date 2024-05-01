@@ -39,21 +39,28 @@ def set_env():
 # used for postgres testing
 @pytest.fixture(scope="session")
 def db_pg_engine(set_env):
-    engine = create_engine(
-        "postgresql+psycopg2://"
-        + f"{os.environ.get('POSTGRES_USER')}:"
-        + f"{os.environ.get('POSTGRES_PASSWORD')}@"
-        + f"{os.environ.get('POSTGRES_HOST')}:"
-        f"{os.environ.get('POSTGRES_PORT')}/"
-        f"{os.environ.get('POSTGRES_DATABASE')}"
-    )
+    LOGGER.debug(f"postgres param: {os.getenv('USE_POSTGRES')}")
+    # if the env var USE_POSTGRES is not set, then use the sqlite database
+    if ( os.getenv("USE_POSTGRES_FOR_TESTS") is None) or (os.getenv("USE_POSTGRES_FOR_TESTS").lower() != "true"):
+        engine = None
+    else:
+        LOGGER.debug("creating postgres database")
+        engine = create_engine(
+            "postgresql+psycopg2://"
+            + f"{os.environ.get('POSTGRES_USER')}:"
+            + f"{os.environ.get('POSTGRES_PASSWORD')}@"
+            + f"{os.environ.get('POSTGRES_HOST')}:"
+            f"{os.environ.get('POSTGRES_PORT')}/"
+            f"{os.environ.get('POSTGRES_DATABASE')}"
+        )
 
     # session_local = sessionmaker(bind=engine)
     # test_db = session_local()
     #test_db = sqlmodel.Session(engine)
 
     yield engine
-    engine.dispose()
+    if engine is not None:
+        engine.dispose()
 
 
 @pytest.fixture(scope="session")
@@ -63,27 +70,53 @@ def db_pg_session(db_pg_connection: sqlmodel.Session):
 
 
 @pytest.fixture(scope="session")
-def db_sqllite_engine() -> Generator[Engine, None, None]:
+def db_sqllite_engine(alert_level_data) -> Generator[Engine, None, None]:
     # should re-create the database every time the tests are run, the following
     # line ensure database that maybe hanging around as a result of a failed
     # test is deleted
-    if os.path.exists("./test_db.db"):
-        LOGGER.debug("remove the database: ./test_db.db'")
-        os.remove("./test_db.db")
 
-    SQLALCHEMY_DATABASE_URL = "sqlite:///./test_db.db"
-    LOGGER.debug(f"SQL Alchemy URL: {SQLALCHEMY_DATABASE_URL}")
-    execution_options = {"schema_translate_map": {"py_api": None}}
+    # only need to do something if we are going to use the sqllite database
+    engine = None
+    if ( os.getenv("USE_POSTGRES_FOR_TESTS") is None) or (os.getenv("USE_POSTGRES_FOR_TESTS").lower() != "true"):
+        if os.path.exists("./test_db.db"):
+            LOGGER.debug("remove the database: ./test_db.db'")
+            os.remove("./test_db.db")
 
-    engine: Engine = create_engine(
-        SQLALCHEMY_DATABASE_URL,
-        connect_args={"check_same_thread": False},
-        execution_options=execution_options,
-    )
+        SQLALCHEMY_DATABASE_URL = "sqlite:///./test_db.db"
+        LOGGER.debug(f"SQL Alchemy URL: {SQLALCHEMY_DATABASE_URL}")
+        execution_options = {"schema_translate_map": {"py_api": None}}
 
-    sqlmodel.SQLModel.metadata.create_all(engine)
+        engine: Engine = create_engine(
+            SQLALCHEMY_DATABASE_URL,
+            connect_args={"check_same_thread": False},
+            execution_options=execution_options,
+        )
 
-    LOGGER.debug(f"engine type: {type(engine)}")
+        sqlmodel.SQLModel.metadata.create_all(engine)
+
+        LOGGER.debug(f"engine type: {type(engine)}")
+
+        # for sqllite database we need to load the data
+            
+        # loading basin data
+        LOGGER.info("loading basin data into test database")
+        session = sqlmodel.Session(engine)
+        basin_file = os.path.join(
+            os.path.dirname(__file__), "..", "alembic", "data", "basins.json"
+        )
+        LOGGER.debug(f"src file for basin data: {basin_file}")
+        with open(basin_file, "r") as json_file:
+            basins_data = json.load(json_file)
+
+        for basin in basins_data:
+            basin = Basins(basin_name=basin["basin_name"])  # noqa: F405
+            session.add(basin)
+        # loading alert level data
+        for alert in alert_level_data:
+            alert_level = Alert_Levels(alert_level=alert["alert_level"])  # noqa: F405
+            session.add(alert_level)
+        session.commit()
+
     yield engine
 
     # dropping all objects in the test database and...
@@ -113,40 +146,35 @@ def alert_level_data() -> Generator[Alert_Levels_Read, None, None]:
         alert_level_data = json.load(json_file)
     yield alert_level_data
 
+
+# TODO: Delete this... don't need anymore
 @pytest.fixture(scope="session")
-def db_test_load_data(db_sqllite_engine, alert_level_data):
+def db_test_load_data(db_engine, alert_level_data):
     """
-    loads test data
+    loads test data, this should only be run on the sqllite test database,
+    postgres db should already have the data loaded through the migrations.
     """
-    engine = db_sqllite_engine
-    LOGGER.info("loading basin data into test database")
-    # loading basin data
-    session = sqlmodel.Session(engine)
-    basin_file = os.path.join(
-        os.path.dirname(__file__), "..", "alembic", "data", "basins.json"
-    )
-    LOGGER.debug(f"src file: {basin_file}")
+    engine = db_engine
 
-    with open(basin_file, "r") as json_file:
-        basins_data = json.load(json_file)
 
-    for basin in basins_data:
-        basin = Basins(basin_name=basin["basin_name"])  # noqa: F405
-        session.add(basin)
-    # loading alert level data
-    for alert in alert_level_data:
-        alert_level = Alert_Levels(alert_level=alert["alert_level"])  # noqa: F405
-        session.add(alert_level)
-    session.commit()
+@pytest.fixture(scope="session")
+def db_engine(db_sqllite_engine, db_pg_engine):
+    if db_pg_engine is not None:
+        LOGGER.info("using postgres database for tests")
+        engine = db_pg_engine
+    else:
+        LOGGER.info("using sqllite database for tests")
+        engine = db_sqllite_engine
+    yield engine
+    engine.dispose()
 
 # db_pg_engine db_sqllite_engine
 @pytest.fixture(scope="session")
 # def db_test_connection(db_pg_engine):
 #     engine = db_pg_engine
-def db_test_connection(db_test_load_data, db_sqllite_engine):
-    engine = db_sqllite_engine
+def db_test_connection(db_engine):
 
-    session = sqlmodel.Session(engine)
+    session = sqlmodel.Session(db_engine)
 
     yield session
     session.rollback()
