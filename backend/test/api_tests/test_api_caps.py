@@ -41,20 +41,22 @@ def test_get_caps(db_with_alert: Session, test_client_with_alert_and_cap, alert_
     alert_id_to_verify = alert_record.alert_id
     LOGGER.debug(f"verify the alert id: {alert_id_to_verify}")
 
-    # now verify that the alert levels / basins in the alert record correspond 
-    # to the cap records
-    
-    # verify the alert levels
-    # go through the alert and organize the basins by alert levels
-    alert_lvl_basins_dict = {}
-    for alert_link in alert_record.alert_links:
-        if alert_link.alert_level.alert_level not in alert_lvl_basins_dict:
-            alert_lvl_basins_dict[alert_link.alert_level.alert_level] = []
-        alert_lvl_basins_dict[alert_link.alert_level.alert_level].append(alert_link.basin.basin_name)
-
     # now iterate over the caps and verify the cap data is in the alert
     for cap in cap_dict:
-        assert cap['alert_id'] == alert_id_to_verify
+        # get the alert that corresponds with the cap
+        alert_query = select(alert_models.Alerts).where(alert_models.Alerts.alert_id == cap["alert_id"])
+        alert_record = session.exec(alert_query).first()
+        assert cap['alert_id'] == alert_record.alert_id
+
+        # now extract the alert levels / alert basins from the alert to verify against
+        # alert levels and basins in the cap
+        alert_lvl_basins_dict = {}
+        for alert_link in alert_record.alert_links:
+            if alert_link.alert_level.alert_level not in alert_lvl_basins_dict:
+                alert_lvl_basins_dict[alert_link.alert_level.alert_level] = []
+            alert_lvl_basins_dict[alert_link.alert_level.alert_level].append(alert_link.basin.basin_name)
+
+
         # verify the alert level is in the alert
         assert cap['alert_level']['alert_level'] in alert_lvl_basins_dict
         # verify the basins
