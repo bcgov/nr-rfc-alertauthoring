@@ -40,14 +40,14 @@ def test_create_cap_event(db_with_alert_and_data, alert_dict: typing.Dict):
 
     # verify all the alert levels in the cap are in the original alert
     for cap in caps:
-        assert alert_lvl_dict[cap.alert_lvl_link.alert_level_id] in alert_levels
+        assert alert_lvl_dict[cap.alert_level.alert_level_id] in alert_levels
         # get the basins in the original alert that have the alert_level set
         # to the current alert level
-        alert_basins = [alert_link['basin']['basin_name'] for alert_link in alert_dict['alert_links'] if alert_link['alert_level']['alert_level'] == alert_lvl_dict[cap.alert_lvl_link.alert_level_id]]
-        LOGGER.debug(f"basins for the alert level {alert_lvl_dict[cap.alert_lvl_link.alert_level_id]}: {alert_basins}")
+        alert_basins = [alert_link['basin']['basin_name'] for alert_link in alert_dict['alert_links'] if alert_link['alert_level']['alert_level'] == alert_lvl_dict[cap.alert_level.alert_level_id]]
+        LOGGER.debug(f"basins for the alert level {alert_lvl_dict[cap.alert_level.alert_level_id]}: {alert_basins}")
         # now get the basins for the cap event and verify they are in the original
         # alert
-        for event_area in cap.event_area_links:
+        for event_area in cap.event_areas:
             LOGGER.debug(f"event area link: {event_area}")
             # get the basins in the original alert that have the alert_level set
             # to the current alert level
@@ -78,14 +78,21 @@ def test_get_cap_event(db_with_alert_and_caps, alert_dict):
         assert cap.alert_id == alert.alert_id
         # assert that the alert level is in the original alert
         assert cap.alert_level_id in alert_lvls_basins
-        for event_area in cap.event_area_links:
+        for event_area in cap.event_areas:
             # assert that the basin is associated with the correct alert level
             assert event_area.basin_id in alert_lvls_basins[cap.alert_level_id]
 
-        
+def test_get_cap_events(db_with_alert_and_caps, alert_dict):
+    session = db_with_alert_and_caps[0]
+    alert = db_with_alert_and_caps[1]
+    caps = db_with_alert_and_caps[2]
+    LOGGER.debug("got here")
 
-
-
+    caps = crud_cap.get_cap_events(session=session)
+    LOGGER.debug(f"caps: {caps}")
+    # TODO: do some assertions to make sure that the caps are correct
+    #       could search for the cap assocated with the cap that was sent
+    #       and then verify the fields are the same
 
 def get_alert_level_dict(session: Session):
     """

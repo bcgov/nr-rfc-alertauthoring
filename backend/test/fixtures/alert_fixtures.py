@@ -6,6 +6,7 @@ import pytest
 import sqlmodel
 import src.db.session
 import src.v1.models.alerts as alerts_models
+from fastapi.testclient import TestClient
 from src.v1.crud import crud_alerts, crud_cap
 
 LOGGER = logging.getLogger(__name__)
@@ -75,6 +76,7 @@ def db_with_alert(
 
     db_test_connection.rollback()
 
+
 @pytest.fixture(scope="function")
 def db_with_alert_and_data(db_test_connection, monkeypatch, alert_basin_write):
     monkeypatch.setattr(src.db.session, "engine", db_test_connection.bind)
@@ -85,6 +87,7 @@ def db_with_alert_and_data(db_test_connection, monkeypatch, alert_basin_write):
     db_test_connection.flush()
     yield [db_test_connection, alert]
     db_test_connection.rollback()
+
 
 @pytest.fixture(scope="function")
 def db_with_alert_and_caps(db_with_alert_and_data):
@@ -153,3 +156,16 @@ def alert_dict():
     }
     yield alert_dict
  
+
+@pytest.fixture(scope="function")
+def test_client_with_alert_and_cap(test_app_with_auth, db_with_alert_and_caps):
+    session = db_with_alert_and_caps[0]
+    # alert_from_session = db_with_alert_and_data[1]
+    # caps_from_session = db_with_alert_and_caps[2]
+
+    def get_db() -> Generator[sqlmodel.Session, None, None]:
+        LOGGER.debug(f"get_db called, return type: {type(session)}")
+        yield session
+    test_app_with_auth.dependency_overrides[src.db.session.get_db] = get_db
+
+    yield TestClient(test_app_with_auth)

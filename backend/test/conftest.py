@@ -146,17 +146,6 @@ def alert_level_data() -> Generator[Alert_Levels_Read, None, None]:
         alert_level_data = json.load(json_file)
     yield alert_level_data
 
-
-# TODO: Delete this... don't need anymore
-@pytest.fixture(scope="session")
-def db_test_load_data(db_engine, alert_level_data):
-    """
-    loads test data, this should only be run on the sqllite test database,
-    postgres db should already have the data loaded through the migrations.
-    """
-    engine = db_engine
-
-
 @pytest.fixture(scope="session")
 def db_engine(db_sqllite_engine, db_pg_engine):
     if db_pg_engine is not None:
@@ -202,12 +191,9 @@ def mock_access_token():
     yield token
 
 @pytest.fixture(scope="function")
-def test_client_fixture(db_test_connection, mock_access_token) -> Generator[TestClient, None, None]:
-    """returns a requests object of the current app,
-    with the objects defined in the model created in it.
+def test_app_with_auth(db_test_connection, mock_access_token):
+#def test_client_fixture(db_test_connection, mock_access_token) -> Generator[TestClient, None, None]:
 
-    :rtype: starlette.testclient
-    """
     token = mock_access_token
 
     def get_db() -> Generator[sqlmodel.Session, None, None]:
@@ -220,16 +206,35 @@ def test_client_fixture(db_test_connection, mock_access_token) -> Generator[Test
     def get_current_user():
         LOGGER.debug("current user called")
         return token
-
-    # reset to default database which points to postgres container
+    
     app.dependency_overrides[src.db.session.get_db] = get_db
     app.dependency_overrides[oidcAuthorize.authorize] = lambda: authorize()
     app.dependency_overrides[oidcAuthorize.get_current_user] = (
-        lambda: get_current_user()
+                lambda: get_current_user()
     )
 
-    yield TestClient(app)
+
+    yield app
+    app.dependency_overrides = {}
+
+
+@pytest.fixture(scope="function")
+def test_client_fixture( test_app_with_auth) -> Generator[TestClient, None, None]:
+    """returns a requests object of the current app,
+    with the objects defined in the model created in it.
+
+    :rtype: starlette.testclient
+    """
+
+    yield TestClient(test_app_with_auth)
 
     # reset other dependency override back to app default in each test
     # during test case teardown.
-    app.dependency_overrides = {}
+
+
+@pytest.fixture(scope="function")
+def test_client_fixture_w_alert_cap( test_app_with_auth) -> Generator[TestClient, None, None]:
+
+    def get_db() -> Generator[sqlmodel.Session, None, None]:
+        yield db_test_connection
+

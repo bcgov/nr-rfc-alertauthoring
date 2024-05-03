@@ -56,21 +56,21 @@ def create_cap_event(session: Session,
             session.add(cap_event)
             session.flush()
             # now add the relationship
-            cap_event.event_area_links.append(cap_event_area)
+            cap_event.event_areas.append(cap_event_area)
             LOGGER.debug(f"cap_event: {cap_event}")
         else:
             cap_event_area = cap_models.Cap_Event_Areas(
                 basin_id=alert_link.basin_id,
             )
             cap_event = alert_levels_created[alert_link.alert_level.alert_level]
-            cap_event.event_area_links.append(cap_event_area)
+            cap_event.event_areas.append(cap_event_area)
             
             # add the basin to the cap_event
             pass
     session.add(cap_event)
     return alert_levels_created.values()
     
-def get_cap_event(session: Session, alert_id: int):
+def get_cap_events_for_alert(session: Session, alert_id: int):
     """
     Retrieve the CAP events associated with a specific alert
 
@@ -83,3 +83,17 @@ def get_cap_event(session: Session, alert_id: int):
     cap_event = session.exec(select(cap_models.Cap_Event).where(
         cap_models.Cap_Event.alert_id == alert_id)).all()
     return cap_event
+
+def get_cap_events(session: Session):
+    """
+    retrieves all the cap events in the database
+
+    :param session: _description_
+    :type session: Session
+    """
+    LOGGER.debug(f"getting all the cap events")
+    cap_events_query = select(cap_models.Cap_Event)
+    cap_events = session.exec(cap_events_query).all()
+    LOGGER.debug(f"cap_events: {cap_events}")
+    return cap_events
+

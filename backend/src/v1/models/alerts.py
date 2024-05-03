@@ -43,7 +43,6 @@ class AlertsRead(AlertsBase):
         default_factory=datetime.datetime.utcnow, nullable=False
     )
 
-
 class Alert_Areas_Read(SQLModel):
     alert_id: int = Field(
         default=None, foreign_key=f"{default_schema}.alerts.alert_id", primary_key=True
@@ -56,7 +55,6 @@ class Alert_Areas_Read(SQLModel):
         foreign_key=f"{default_schema}.alert_levels.alert_level_id",
         primary_key=True,
     )
-
 
 class Alert_Areas(Alert_Areas_Read, table=True):
     """
@@ -77,7 +75,6 @@ class Alert_Areas(Alert_Areas_Read, table=True):
     alert_level: "Alert_Levels" = Relationship(back_populates="alert_level_links")
     alert: "Alerts" = Relationship(back_populates="alert_links")
 
-
 class Alerts(AlertsRead, table=True):
     """
     The definition for the database table that will store alerts
@@ -96,15 +93,12 @@ class Alerts(AlertsRead, table=True):
 class AlertsWithAreaLevels(AlertsRead, table=False):
     basin: Alert_Areas_Read | None = None
 
-
 class Alert_Levels_Base(SQLModel):
     alert_level: str
-
 
 class Alert_Levels_Read(Alert_Levels_Base):
     alert_level_id: int
     alert_level: str
-
 
 class Alert_Levels(Alert_Levels_Read, table=True):
     """
@@ -113,23 +107,20 @@ class Alert_Levels(Alert_Levels_Read, table=True):
     :param SQLModel: _description_
     :type SQLModel: _type_
     """
-
     __table_args__ = {"schema": default_schema}
     alert_level_id: int = Field(default=None, primary_key=True)
     alert_level: str = Field(nullable=False)
 
     alert_level_links: List[Alert_Areas] = Relationship(back_populates="alert_level")
-    cap_link: Cap_Event = Relationship(back_populates="alert_lvl_link")
+    cap_link: Cap_Event = Relationship(back_populates="alert_level")
 
 class Alert_Areas_Write(SQLModel):
     basin: BasinBase
     alert_level: Alert_Levels_Base
 
-
 class Alert_Areas_Read(SQLModel):
     basin: BasinsRead
     alert_level: Alert_Levels_Read
-
 
 class Alert_Basins(AlertsRead):
     alert_id: int
@@ -211,3 +202,7 @@ class Alert_Area_History(SQLModel, table=True):
     )
     alert_history: "Alert_History" = Relationship(back_populates="alert_history_links")
 
+
+from .cap import Cap_Event_And_Areas
+
+Cap_Event_And_Areas.model_rebuild()

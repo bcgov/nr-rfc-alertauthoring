@@ -6,10 +6,10 @@ from sqlmodel import Session
 
 from src.db import session
 from src.oidc import oidcAuthorize
-from src.v1.crud import crud_alerts
-from src.v1.crud import crud_cap
+from src.v1.crud import crud_alerts, crud_cap
 from src.v1.models import alerts as alerts_models
 from src.v1.models import auth_model
+from src.v1.models import cap as cap_models
 
 # from src.v1.repository.basin_repository import basinRepository
 router = APIRouter()
@@ -130,3 +130,14 @@ def update_alert(
     session.add(updated_alert)
     session.commit()
     return updated_alert
+
+@router.get("/{alert_id}/caps", response_model=List[cap_models.Cap_Event_And_Areas])
+def get_caps_for_alert(
+        alert_id: int,
+    session: Session = Depends(session.get_db),
+    skip: int = 0,
+    limit: int = 100,
+):
+    LOGGER.debug(f"alert_id: {alert_id}")
+    caps = crud_cap.get_cap_events_for_alert(session=session, alert_id=alert_id)
+    return caps

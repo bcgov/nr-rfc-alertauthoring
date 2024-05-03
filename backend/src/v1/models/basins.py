@@ -1,10 +1,12 @@
 from typing import TYPE_CHECKING, List, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
+
 from src.core.config import Settings
 
 if TYPE_CHECKING:
     from src.v1.models.alerts import Alert_Areas
+    from src.v1.models.cap import Cap_Event_Areas
 
 default_schema = Settings.DEFAULT_SCHEMA
 
@@ -51,6 +53,7 @@ class BasinsRead(BasinBase):
 
     # junction_id: Optional["Alert_Areas"]
     basin_id: Optional[int] = Field(default=None, primary_key=True)
+    
 
 
 class Basins(BasinsRead, table=True):
@@ -72,3 +75,4 @@ class Basins(BasinsRead, table=True):
     subbasins: Optional[Subbasins] = Relationship(back_populates="basins")
 
     basin_links: List["Alert_Areas"] = Relationship(back_populates="basin")
+    basin_cap_links: List["Cap_Event_Areas"] = Relationship(back_populates="cap_area_basin")
