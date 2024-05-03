@@ -29,7 +29,15 @@ def test_get_caps(db_with_alert: Session, test_client_with_alert_and_cap, alert_
     #  first get the alert for the cap
     alert_query = select(alert_models.Alerts).where(alert_models.Alerts.alert_description == alert_dict["alert_description"])
     alert_records = session.exec(alert_query).fetchall()
-    alert_record = alert_records[-1] # get the last record
+    # identify the alert with with the largest id to indicate the last one 
+    # created
+    alert_record = None
+    for cur_alert in alert_records:
+        if alert_record is None:
+            alert_record = cur_alert
+        elif cur_alert.alert_id > alert_record.alert_id:
+            alert_record = cur_alert
+
     alert_id_to_verify = alert_record.alert_id
     LOGGER.debug(f"verify the alert id: {alert_id_to_verify}")
 
