@@ -41,6 +41,9 @@ def test_get_caps(db_with_alert: Session, test_client_with_alert_and_cap, alert_
     alert_id_to_verify = alert_record.alert_id
     LOGGER.debug(f"verify the alert id: {alert_id_to_verify}")
 
+    for cap in cap_dict:
+        LOGGER.debug(f"cap alert id: {cap['alert_id']}")
+
     # now iterate over the caps and verify the cap data is in the alert
     for cap in cap_dict:
         # get the alert that corresponds with the cap
