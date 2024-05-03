@@ -106,12 +106,12 @@ In the Alert, the basin ***Nechako*** is being upgrade from ***Flood Watch*** to
 block-beta
   columns 3
   space
-  new_alert("ALERT EDITED\nalert-id: 1\n----Basins / Alert Levels----\n- Fraser / High Streamflow\n- Nechako / Flood Watch\n- Upper Fraser / Flood Warning")
+  new_alert("ALERT EDITED\nalert-id: 1\n----Basins / Alert Levels----\n- Fraser / High Streamflow\n- Upper Fraser / Flood Warning\n- Nechako / Flood Watch\n")
   space
   space:3
   cap_event_1("CAP EVENT - UPDATED\ncap-event-id: 10\ncap-event-status: UPDATE\nbasins:'Fraser'\nalert_level:'High Streamflow'")
-  cap_event_2("CAP EVENT UPDATED\ncap-event-id: 11\ncap-event-status: UPDATE\nbasin:'Upper Fraser'\nalert_level:'Flood Watch'")
-  cap_event_3("CAP EVENT CREATED\ncap-event-id: 12\ncap-event-status: ALERT\nbasin: 'Nechako'\nalert_level:'Flood Warning'")
+  cap_event_2("CAP EVENT UPDATED\ncap-event-id: 11\ncap-event-status: UPDATE\nbasin:'Upper Fraser'\nalert_level:'Flood Warning'")
+  cap_event_3("CAP EVENT CREATED\ncap-event-id: 12\ncap-event-status: ALERT\nbasin: 'Nechako'\nalert_level:'Flood Watch'")
 
   new_alert --> cap_event_1
   new_alert --> cap_event_2
