@@ -99,7 +99,7 @@ def db_with_alert_and_caps(db_with_alert_and_data):
     session.rollback()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def alert_dict():
     """provides a dictionary that can be used to construct an alert object.
     The dictionary mimics the structure of an incomming object from a create
@@ -158,14 +158,29 @@ def alert_dict():
  
 
 @pytest.fixture(scope="function")
-def test_client_with_alert_and_cap(test_app_with_auth, db_with_alert_and_caps):
+def test_client_with_alert_and_cap(test_app_with_auth, db_with_alert_and_caps, monkeypatch, alert_dict):
     session = db_with_alert_and_caps[0]
+    alert = db_with_alert_and_caps[1]
+
+
+    LOGGER.debug(f"alert id in database sent to client: {alert.alert_id}")
     # alert_from_session = db_with_alert_and_data[1]
     # caps_from_session = db_with_alert_and_caps[2]
 
+    def session_commit_patch():
+        LOGGER.debug("session commit patch called")
+
     def get_db() -> Generator[sqlmodel.Session, None, None]:
         LOGGER.debug(f"get_db called, return type: {type(session)}")
-        yield session
-    test_app_with_auth.dependency_overrides[src.db.session.get_db] = get_db
+        monkeypatch.setattr(session, "commit", session_commit_patch)
+        all_alerts = session.exec(sqlmodel.select(alerts_models.Alerts)).all()
 
-    yield TestClient(test_app_with_auth)
+        yield session
+    LOGGER.debug("here")
+    test_app_with_auth.dependency_overrides[src.db.session.get_db] = get_db
+    # query does NOT return the alert object that aligns with the alert_dict
+    all_alerts = session.exec(sqlmodel.select(alerts_models.Alerts)).all()
+    yield [TestClient(test_app_with_auth), session]
+    session.rollback()
+
+    # the client session will automatically call 

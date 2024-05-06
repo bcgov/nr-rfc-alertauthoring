@@ -246,7 +246,7 @@ def update_alert(
     current_alert = get_alert(session=session, alert_id=alert_id)
     LOGGER.debug(f"current alert: {current_alert}")
     LOGGER.debug(f"current alert: {current_alert.alert_description}")
-    # LOGGER.debug(f"updated alert: {updated_alert_as_alert.alert_description}")
+    
     # need to implement my own comparison
     if not is_alert_equal(current_alert, updated_alert):
         # write the history record

@@ -207,6 +207,9 @@ def test_app_with_auth(db_test_connection, mock_access_token):
         LOGGER.debug("current user called")
         return token
     
+    # debugging code to verify expected alerts are in transaction.. comment out later
+    all_alerts = db_test_connection.exec(sqlmodel.select(Alerts)).all()
+    
     app.dependency_overrides[src.db.session.get_db] = get_db
     app.dependency_overrides[oidcAuthorize.authorize] = lambda: authorize()
     app.dependency_overrides[oidcAuthorize.get_current_user] = (

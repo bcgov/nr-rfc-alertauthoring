@@ -93,7 +93,8 @@ def get_cap_events(session: Session):
     """
     LOGGER.debug(f"getting all the cap events")
     cap_events_query = select(cap_models.Cap_Event)
+    LOGGER.debug(f"cap query: {cap_events_query}")
     cap_events = session.exec(cap_events_query).all()
-    LOGGER.debug(f"cap_events: {cap_events}")
+    #LOGGER.debug(f"cap_events: {cap_events}")
     return cap_events
 
