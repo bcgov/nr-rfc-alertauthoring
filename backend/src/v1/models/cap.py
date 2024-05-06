@@ -4,11 +4,11 @@ from typing import TYPE_CHECKING, List, Optional
 from sqlmodel import Field, Relationship, SQLModel
 
 from src.core.config import Settings
-from src.v1.models.basins import BasinBase, Basins, BasinsRead
+from src.v1.models.basins import Basins
 
 # from src.v1.models.alerts as alert_models
 if TYPE_CHECKING:
-    from src.v1.models.alerts import Alert_Levels, Alert_Levels_Base, Alert_Levels_Read
+    from src.v1.models.alerts import Alert_Levels, Alert_Levels_Read
 
 default_schema = Settings.DEFAULT_SCHEMA
 

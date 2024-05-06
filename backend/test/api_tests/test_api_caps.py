@@ -1,7 +1,6 @@
 import logging
 import pprint
 
-import fastapi.testclient
 import src.v1.models.alerts as alert_models
 from sqlmodel import Session, select
 from src.core.config import Configuration

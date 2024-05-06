@@ -4,7 +4,6 @@ import logging
 import os.path
 
 import fastapi.testclient
-from sqlmodel import select
 from src.core.config import Configuration
 from src.v1.models import alerts as alert_model
 

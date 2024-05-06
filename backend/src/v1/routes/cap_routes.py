@@ -6,7 +6,6 @@ from sqlmodel import Session
 
 from src.db import session
 from src.v1.crud import crud_cap
-from src.v1.models import alerts as alerts_models
 from src.v1.models import cap as cap_models
 
 router = APIRouter()

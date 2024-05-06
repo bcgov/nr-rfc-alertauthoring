@@ -203,6 +203,6 @@ class Alert_Area_History(SQLModel, table=True):
     alert_history: "Alert_History" = Relationship(back_populates="alert_history_links")
 
 
-from .cap import Cap_Event_And_Areas
+from .cap import Cap_Event_And_Areas  # noqa: E402
 
 Cap_Event_And_Areas.model_rebuild()

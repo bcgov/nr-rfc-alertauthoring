@@ -172,13 +172,10 @@ def test_client_with_alert_and_cap(test_app_with_auth, db_with_alert_and_caps, m
     def get_db() -> Generator[sqlmodel.Session, None, None]:
         LOGGER.debug(f"get_db called, return type: {type(session)}")
         monkeypatch.setattr(session, "commit", session_commit_patch)
-        all_alerts = session.exec(sqlmodel.select(alerts_models.Alerts)).all()
-
         yield session
     LOGGER.debug("here")
     test_app_with_auth.dependency_overrides[src.db.session.get_db] = get_db
     # query does NOT return the alert object that aligns with the alert_dict
-    all_alerts = session.exec(sqlmodel.select(alerts_models.Alerts)).all()
     yield [TestClient(test_app_with_auth), session]
     session.rollback()
 

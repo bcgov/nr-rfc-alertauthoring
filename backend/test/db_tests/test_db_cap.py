@@ -1,8 +1,6 @@
-import datetime
 import logging
 import typing
 
-import pytest
 from sqlmodel import Session, select
 from src.v1.crud import crud_cap
 from src.v1.models import alerts as alerts_models
@@ -55,7 +53,7 @@ def test_create_cap_event(db_with_alert_and_data, alert_dict: typing.Dict):
 
 def test_get_cap_event(db_with_alert_and_caps, alert_dict):
     LOGGER.debug(f"db_with_alert_and_caps: {db_with_alert_and_caps}")
-    session = db_with_alert_and_caps[0]
+    # session = db_with_alert_and_caps[0]
     alert = db_with_alert_and_caps[1]
     caps = db_with_alert_and_caps[2]
 
@@ -84,7 +82,7 @@ def test_get_cap_event(db_with_alert_and_caps, alert_dict):
 
 def test_get_cap_events(db_with_alert_and_caps, alert_dict):
     session = db_with_alert_and_caps[0]
-    alert = db_with_alert_and_caps[1]
+    # alert = db_with_alert_and_caps[1]
     caps = db_with_alert_and_caps[2]
     LOGGER.debug("got here")
 

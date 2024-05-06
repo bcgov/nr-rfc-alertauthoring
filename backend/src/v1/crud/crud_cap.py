@@ -4,7 +4,6 @@ import logging
 from sqlmodel import Session, select
 
 import src.v1.models.alerts as alerts_models
-import src.v1.models.basins as basins_model
 import src.v1.models.cap as cap_models
 
 LOGGER = logging.getLogger(__name__)
@@ -91,7 +90,6 @@ def get_cap_events(session: Session):
     :param session: _description_
     :type session: Session
     """
-    LOGGER.debug(f"getting all the cap events")
     cap_events_query = select(cap_models.Cap_Event)
     LOGGER.debug(f"cap query: {cap_events_query}")
     cap_events = session.exec(cap_events_query).all()

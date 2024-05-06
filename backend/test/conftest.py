@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import sys
-from typing import Dict, Generator
+from typing import Generator
 
 import pytest
 import sqlmodel
@@ -126,7 +126,7 @@ def db_sqllite_engine(alert_level_data) -> Generator[Engine, None, None]:
         # os.remove("./test_db.db")
 
 @pytest.fixture(scope="session")
-def alert_level_data() -> Generator[Alert_Levels_Read, None, None]:
+def alert_level_data() -> Generator[Alert_Levels_Read, None, None]:  # noqa: F405
     """
     reads the alert levels json file and loads to a List[Dict] structure.
 
@@ -206,10 +206,7 @@ def test_app_with_auth(db_test_connection, mock_access_token):
     def get_current_user():
         LOGGER.debug("current user called")
         return token
-    
-    # debugging code to verify expected alerts are in transaction.. comment out later
-    all_alerts = db_test_connection.exec(sqlmodel.select(Alerts)).all()
-    
+       
     app.dependency_overrides[src.db.session.get_db] = get_db
     app.dependency_overrides[oidcAuthorize.authorize] = lambda: authorize()
     app.dependency_overrides[oidcAuthorize.get_current_user] = (
