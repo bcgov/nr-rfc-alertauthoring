@@ -71,7 +71,6 @@ def db_with_alert(
     crud_alerts.create_alert(
         session=db_test_connection, alert=alert_basin_write
     )
-
     yield db_test_connection
 
     db_test_connection.rollback()

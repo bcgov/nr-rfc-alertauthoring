@@ -128,7 +128,7 @@ def test_alert_patch(test_client_fixture, alert_dict, db_with_alert, mock_access
     """
     client = test_client_fixture
     prefix = Configuration.API_V1_STR
-    db_with_alert.commit()
+    db_with_alert.flush()
 
     # get the alert id
     # cur_alert = select(alert_model.Alerts).where(alert_model.Alerts.alert_description == alert_dict["alert_description"])
