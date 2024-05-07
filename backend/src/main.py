@@ -11,6 +11,7 @@ from .v1.models import auth_model
 from .v1.routes.alert_levels import router as alert_levels_router
 from .v1.routes.alert_routes import router as alert_routes
 from .v1.routes.basin_routes import router as basin_router
+from .v1.routes.cap_routes import router as cap_router
 
 logging.getLogger("uvicorn").handlers.clear()  # removes duplicated logs
 LOGGER = logging.getLogger()
@@ -78,6 +79,9 @@ async def authorized(is_authZ=Depends(oidcAuthorize.authorize)):
 app.include_router(basin_router, prefix=api_prefix_v1 + "/basins", tags=["Basins"])
 app.include_router(alert_routes, prefix=api_prefix_v1 + "/alerts", tags=["Alerts"])
 app.include_router(alert_levels_router, prefix=api_prefix_v1 + "/alert_levels", tags=["Alert Levels"])
+app.include_router(cap_router, prefix=api_prefix_v1 + "/cap", tags=["Common Alerting Protocol Events"])
+
+
 
 # Define the filter
 class EndpointFilter(logging.Filter):

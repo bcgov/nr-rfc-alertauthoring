@@ -6,7 +6,8 @@ import pytest
 import sqlmodel
 import src.db.session
 import src.v1.models.alerts as alerts_models
-from src.v1.crud import crud_alerts
+from fastapi.testclient import TestClient
+from src.v1.crud import crud_alerts, crud_cap
 
 LOGGER = logging.getLogger(__name__)
 
@@ -70,13 +71,34 @@ def db_with_alert(
     crud_alerts.create_alert(
         session=db_test_connection, alert=alert_basin_write
     )
-
     yield db_test_connection
 
     db_test_connection.rollback()
- 
+
 
 @pytest.fixture(scope="function")
+def db_with_alert_and_data(db_test_connection, monkeypatch, alert_basin_write):
+    monkeypatch.setattr(src.db.session, "engine", db_test_connection.bind)
+
+    alert = crud_alerts.create_alert(
+        session=db_test_connection, alert=alert_basin_write
+    )
+    db_test_connection.flush()
+    yield [db_test_connection, alert]
+    db_test_connection.rollback()
+
+
+@pytest.fixture(scope="function")
+def db_with_alert_and_caps(db_with_alert_and_data):
+    session = db_with_alert_and_data[0]
+    alert = db_with_alert_and_data[1]
+    caps = crud_cap.create_cap_event(session=session, alert=alert)
+    session.flush()
+    yield [session, alert, caps]
+    session.rollback()
+
+
+@pytest.fixture(scope="session")
 def alert_dict():
     """provides a dictionary that can be used to construct an alert object.
     The dictionary mimics the structure of an incomming object from a create
@@ -133,3 +155,28 @@ def alert_dict():
     }
     yield alert_dict
  
+
+@pytest.fixture(scope="function")
+def test_client_with_alert_and_cap(test_app_with_auth, db_with_alert_and_caps, monkeypatch, alert_dict):
+    session = db_with_alert_and_caps[0]
+    alert = db_with_alert_and_caps[1]
+
+
+    LOGGER.debug(f"alert id in database sent to client: {alert.alert_id}")
+    # alert_from_session = db_with_alert_and_data[1]
+    # caps_from_session = db_with_alert_and_caps[2]
+
+    def session_commit_patch():
+        LOGGER.debug("session commit patch called")
+
+    def get_db() -> Generator[sqlmodel.Session, None, None]:
+        LOGGER.debug(f"get_db called, return type: {type(session)}")
+        monkeypatch.setattr(session, "commit", session_commit_patch)
+        yield session
+    LOGGER.debug("here")
+    test_app_with_auth.dependency_overrides[src.db.session.get_db] = get_db
+    # query does NOT return the alert object that aligns with the alert_dict
+    yield [TestClient(test_app_with_auth), session]
+    session.rollback()
+
+    # the client session will automatically call 

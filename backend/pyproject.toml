@@ -19,6 +19,7 @@ sqlmodel = "^0.0.14"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 httpx = "^0.27.0"
 ruff = "^0.3.4"
+pytest-env = "^1.1.3"
 
 [tool.poetry.dev-dependencies]
 prospector = "^1.10.3"

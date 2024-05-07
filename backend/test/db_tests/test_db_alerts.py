@@ -254,7 +254,7 @@ def test_add_new_alert_links(db_test_connection, alert_dict, alert_basin_write):
         f"history description: {history_record.alert_description}, {new_alert.alert_description}"
     )
     assert history_record.alert_description == new_alert.alert_description
-    session.commit()
+    session.flush()
 
     # verify that the HISTORY for the alert links has been written:
     #   history record should have the alert_history_id with the basin /
@@ -334,6 +334,8 @@ def test_add_new_alert_links(db_test_connection, alert_dict, alert_basin_write):
     assert query_record[0].Basins.basin_name == basin_name_to_add
     assert query_record[0].Alert_Levels.alert_level == alert_level_to_add
     assert query_record[0].Alert_Areas.alert_id == new_alert.alert_id
+
+    # cleanup... delete the record that was created.
 
 
 # fraser and liard are net new, Skeena is an existing record with a new alert level
@@ -436,7 +438,7 @@ def test_update_existing_basin_alert_level(
     alert_data_sql = select(alerts_models.Alerts).where(
         alerts_models.Alerts.alert_description == alert_dict["alert_description"]
     )
-    alert_data = session.exec(alert_data_sql).one()
+    alert_data = session.exec(alert_data_sql).all()[-1]
 
     # now call the update method, to update the database
     updated_record = crud_alerts.update_alert(
@@ -515,7 +517,12 @@ def test_delete_alert_link(db_with_alert, alert_dict, alert_basin_write):
     alert_data_sql = select(alerts_models.Alerts).where(
         alerts_models.Alerts.alert_description == alert_dict["alert_description"]
     )
-    alert_data = session.exec(alert_data_sql).one()
+    # this query fails when run all tests.
+    LOGGER.debug(f"alert_data_sql: {alert_data_sql}")
+    alert_results = session.exec(alert_data_sql)
+    #LOGGER.debug(f"alert_results: {alert_results.all()}")
+    # grab the last record
+    alert_data = alert_results.all()[-1]
     # now call the update method, to update the database
     updated_record = crud_alerts.update_alert(
         session=session,

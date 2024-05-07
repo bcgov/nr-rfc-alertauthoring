@@ -2,15 +2,17 @@ import logging
 from logging.config import fileConfig
 
 import src.core.config as app_config
-from alembic import context
-from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine
 
 # from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.schema import CreateSchema
 from sqlmodel import SQLModel
-from src.v1.models.alerts import *
-from src.v1.models.basins import *
+from src.v1.models.alerts import *  # noqa: F403
+from src.v1.models.basins import *  # noqa: F403
+from src.v1.models.cap import *  # noqa: F403
+
+from alembic import context
+from alembic.script import ScriptDirectory
 
 config = context.config
 if config.config_file_name is not None:
@@ -123,7 +125,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    include_schemas = True
+    # include_schemas = True
     LOGGER.debug("running migrations offline")
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
@@ -146,7 +148,6 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    include_schemas = True
     url = get_url()
     LOGGER.debug(f"using url: {url}")
     connectable = create_engine(

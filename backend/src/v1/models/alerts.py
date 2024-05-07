@@ -6,8 +6,10 @@ from sqlalchemy import UniqueConstraint
 
 # from sqlalchemy import MetaData
 from sqlmodel import Field, Relationship, SQLModel
+
 from src.core.config import Settings
 from src.v1.models.basins import BasinBase, Basins, BasinsRead
+from src.v1.models.cap import Cap_Event
 
 default_schema = Settings.DEFAULT_SCHEMA
 
@@ -41,7 +43,6 @@ class AlertsRead(AlertsBase):
         default_factory=datetime.datetime.utcnow, nullable=False
     )
 
-
 class Alert_Areas_Read(SQLModel):
     alert_id: int = Field(
         default=None, foreign_key=f"{default_schema}.alerts.alert_id", primary_key=True
@@ -54,7 +55,6 @@ class Alert_Areas_Read(SQLModel):
         foreign_key=f"{default_schema}.alert_levels.alert_level_id",
         primary_key=True,
     )
-
 
 class Alert_Areas(Alert_Areas_Read, table=True):
     """
@@ -75,7 +75,6 @@ class Alert_Areas(Alert_Areas_Read, table=True):
     alert_level: "Alert_Levels" = Relationship(back_populates="alert_level_links")
     alert: "Alerts" = Relationship(back_populates="alert_links")
 
-
 class Alerts(AlertsRead, table=True):
     """
     The definition for the database table that will store alerts
@@ -91,19 +90,15 @@ class Alerts(AlertsRead, table=True):
 
     alert_links: List["Alert_Areas"] = Relationship(back_populates="alert")
 
-
 class AlertsWithAreaLevels(AlertsRead, table=False):
     basin: Alert_Areas_Read | None = None
-
 
 class Alert_Levels_Base(SQLModel):
     alert_level: str
 
-
 class Alert_Levels_Read(Alert_Levels_Base):
     alert_level_id: int
     alert_level: str
-
 
 class Alert_Levels(Alert_Levels_Read, table=True):
     """
@@ -112,82 +107,20 @@ class Alert_Levels(Alert_Levels_Read, table=True):
     :param SQLModel: _description_
     :type SQLModel: _type_
     """
-
     __table_args__ = {"schema": default_schema}
     alert_level_id: int = Field(default=None, primary_key=True)
     alert_level: str = Field(nullable=False)
 
     alert_level_links: List[Alert_Areas] = Relationship(back_populates="alert_level")
-
-
-class Cap_Event_Base(SQLModel):
-    """
-    base model for cap events, used for write
-
-    This table is used to track the cap events that have been emitted.  When
-    a new alert is created logic will be used to determine what cap events
-    need to be emitted.  To calculate what events need to be emitted knowing
-    what the previous events that have been emitted are required.
-
-    :param SQLModel: _description_
-    :type SQLModel: _type_
-    """
-
-    alert_id: int = Field(default=None, foreign_key=f"{default_schema}.alerts.alert_id")
-    alert_level_id: int = Field(
-        default=None, foreign_key=f"{default_schema}.alert_levels.alert_level_id"
-    )
-    cap_event_status: str = Field(nullable=False, default="active")
-    cap_event_created_date: datetime.datetime = Field(
-        default_factory=datetime.datetime.utcnow, nullable=False
-    )
-    cap_event_updated_date: datetime.datetime = Field(
-        default_factory=datetime.datetime.utcnow, nullable=False
-    )
-
-
-class Cap_Event(Cap_Event_Base, table=True):
-    """
-    table model used for read and database definition
-
-    :param Cap_Event_Base: inheriting from the base cap event model that is used
-                           for write operations
-    :type Cap_Event_Base: SQLModel
-    :param table: indicate that this is a table model, defaults to True
-    :type table: bool, optional
-    """
-
-    __table_args__ = {"schema": default_schema}
-
-    cap_event_id: int = Field(default=None, primary_key=True)
-
-
-class Cap_Event_Areas(SQLModel, table=True):
-    """
-    a junction table that manages the relationship between cap events and the
-    basins that are impacted by the event
-
-    :param SQLModel: inherits from SQLModel
-    :type SQLModel: SQLModel
-    :param table: specifying that this model defines a table, defaults to True
-    :type table: bool, optional
-    """
-
-    __table_args__ = {"schema": default_schema}
-
-    cap_event_area_id: int = Field(default=None, primary_key=True)
-    basin_id: int = Field(default=None, foreign_key=f"{default_schema}.basins.basin_id")
-
+    cap_link: Cap_Event = Relationship(back_populates="alert_level")
 
 class Alert_Areas_Write(SQLModel):
     basin: BasinBase
     alert_level: Alert_Levels_Base
 
-
 class Alert_Areas_Read(SQLModel):
     basin: BasinsRead
     alert_level: Alert_Levels_Read
-
 
 class Alert_Basins(AlertsRead):
     alert_id: int
@@ -269,3 +202,7 @@ class Alert_Area_History(SQLModel, table=True):
     )
     alert_history: "Alert_History" = Relationship(back_populates="alert_history_links")
 
+
+from .cap import Cap_Event_And_Areas  # noqa: E402
+
+Cap_Event_And_Areas.model_rebuild()
