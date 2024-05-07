@@ -1,4 +1,4 @@
-FROM python:3.11-alpine as build
+FROM python:3.12-alpine as build
 
 # Disable cache dir, disable upgrade message, create .venv in project dir
 ARG PIP_NO_CACHE_DIR=off \
@@ -15,7 +15,7 @@ RUN apk update && apk add --no-cache postgresql-dev gcc python3-dev musl-dev && 
 
 
 # # Run Migration
-FROM python:3.11-alpine AS migrate
+FROM python:3.12-alpine AS migrate
 WORKDIR /app
 
 COPY --from=build /app/venv /app/venv
