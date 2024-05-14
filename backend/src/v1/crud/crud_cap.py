@@ -48,6 +48,7 @@ def create_cap_event(session: Session,
                 # alert_lvl_link=alert_link.alert_level,
                 alert_level_id=alert_link.alert_level.alert_level_id,
                 alert_id=alert.alert_id,
+                cap_event_status=cap_models.Cap_Event_Status(cap_event_status='CREATE'),
                 cap_event_created_date=datetime.datetime.now(datetime.timezone.utc),
                 cap_event_updated_date=datetime.datetime.now(datetime.timezone.utc),
             )
