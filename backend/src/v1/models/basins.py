@@ -6,7 +6,7 @@ from src.core.config import Settings
 
 if TYPE_CHECKING:
     from src.v1.models.alerts import Alert_Areas
-    from src.v1.models.cap import Cap_Event_Areas
+    from src.v1.models.cap import Cap_Event_Areas, Cap_Event_Areas_History
 
 default_schema = Settings.DEFAULT_SCHEMA
 
@@ -76,3 +76,4 @@ class Basins(BasinsRead, table=True):
 
     basin_links: List["Alert_Areas"] = Relationship(back_populates="basin")
     basin_cap_links: List["Cap_Event_Areas"] = Relationship(back_populates="cap_area_basin")
+    basin_cap_hist_links: List["Cap_Event_Areas_History"] = Relationship(back_populates="basins")
