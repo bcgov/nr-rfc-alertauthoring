@@ -117,8 +117,6 @@ def update_alert(
     #    - record the previous alert status in history
     #    - update the alert record with incomming changes
 
-    # TODO: get the author name from the oidc access token and update before
-    #       sending to the database.
 
     updated_alert = crud_alerts.update_alert(
         session=session, alert_id=alert_id, updated_alert=alert
@@ -128,7 +126,6 @@ def update_alert(
     LOGGER.debug(f"token: {token}")
     updated_alert.author_name = token['display_name']
     session.add(updated_alert)
-    session.commit()
     return updated_alert
 
 @router.get("/{alert_id}/caps", response_model=List[cap_models.Cap_Event_And_Areas])
