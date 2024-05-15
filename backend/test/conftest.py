@@ -18,6 +18,7 @@ from src.main import app
 from src.oidc import oidcAuthorize
 from src.v1.models.alerts import *  # noqa: F403
 from src.v1.models.basins import *  # noqa: F403
+from src.v1.models.cap import *  # noqa: F403
 
 LOGGER = logging.getLogger(__name__)
 
@@ -115,7 +116,21 @@ def db_sqllite_engine(alert_level_data) -> Generator[Engine, None, None]:
         for alert in alert_level_data:
             alert_level = Alert_Levels(alert_level=alert["alert_level"])  # noqa: F405
             session.add(alert_level)
+
+        # loading the cap_status_data
+        cap_status_file = os.path.join(
+            os.path.dirname(__file__), "..", "alembic", "data", "cap_statuses.json"
+        )
+        with open(cap_status_file, "r") as js_fh:
+            cap_statuses = json.load(js_fh)
+
+        for cap in cap_statuses:
+            LOGGER.debug(f"adding the cap event status record: {cap['cap_event_status']}")
+            cap_status = Cap_Event_Status(cap_event_status=cap['cap_event_status'])
+            session.add(cap_status)
+
         session.commit()
+
 
     yield engine
 

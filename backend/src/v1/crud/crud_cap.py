@@ -25,6 +25,14 @@ def create_cap_event(session: Session,
     LOGGER.debug(f"alert used to create cap: {alert}")
     alert_levels_created = {}
 
+    # get the cap_status record for create
+    # cap_models.Cap_Event_Status(cap_event_status='CREATE'),
+    select_cap_status = select(cap_models.Cap_Event_Status).where(cap_models.Cap_Event_Status.cap_event_status=='CREATE')
+    LOGGER.debug(f"select_cap_status: {select_cap_status}")
+    cap_status_create_record = session.exec(select_cap_status).first()
+    LOGGER.debug(f"cap_status_create_record: {cap_status_create_record}")
+
+
     for alert_link in alert.alert_links:
         LOGGER.debug(f"alert_link to create cap: {alert_link}")
         select_stmt = alert_lvl_rec = ( 
@@ -48,6 +56,7 @@ def create_cap_event(session: Session,
                 # alert_lvl_link=alert_link.alert_level,
                 alert_level_id=alert_link.alert_level.alert_level_id,
                 alert_id=alert.alert_id,
+                cap_event_status_id=cap_status_create_record.cap_event_status_id,
                 cap_event_created_date=datetime.datetime.now(datetime.timezone.utc),
                 cap_event_updated_date=datetime.datetime.now(datetime.timezone.utc),
             )

@@ -1,0 +1,15 @@
+[
+    {
+        "id": 1,
+        "cap_event_status": "CREATE"
+    },
+    {
+        "id": 2,
+        "cap_event_status": "UPDATE"
+    },
+    {
+        "id": 3,
+        "cap_event_status": "CANCEL"
+    }
+
+]

@@ -41,7 +41,6 @@ migration file.  Migration files will be located in the folder: `backend/alembic
 # alternatively load the env vars
 set -o allexport; source .env; set +o allexport
 
-
 alembic revision --autogenerate -m "migration message"
 ```
 
