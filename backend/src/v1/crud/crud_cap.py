@@ -105,3 +105,22 @@ def get_cap_events(session: Session):
     #LOGGER.debug(f"cap_events: {cap_events}")
     return cap_events
 
+def update_cap_event(session: Session, alert: alerts_models.Alerts):
+    """
+    This method will handle the various operations that need to take place when
+    an alert is edited.  
+
+    The method will determine the following categories for what has changed and
+    actions for the cap alerts when these changes take place:
+
+    * new area added to alert with same alert level
+    * new area added to alert with different alert level
+
+    See docs/
+    
+    :param session: _description_
+    :type session: Session
+    :param alert: _description_
+    :type alert: alerts_models.Alerts
+    """
+    pass
