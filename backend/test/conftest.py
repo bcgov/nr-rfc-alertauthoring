@@ -129,8 +129,14 @@ def db_sqllite_engine(alert_level_data) -> Generator[Engine, None, None]:
             cap_status = Cap_Event_Status(cap_event_status=cap['cap_event_status'])
             session.add(cap_status)
 
+        # caps got entered incorrectly, there is a migration to address that.  This
+        # method fixes that for the sqllite tests.
+        old_value = 'CREATE'
+        new_value = 'ALERT'
+        query = sqlmodel.select(Cap_Event_Status).where(Cap_Event_Status.cap_event_status==old_value)
+        record = session.exec(query).one()
+        record.cap_event_status = new_value
         session.commit()
-
 
     yield engine
 

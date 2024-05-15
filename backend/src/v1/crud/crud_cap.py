@@ -26,8 +26,9 @@ def create_cap_event(session: Session,
     alert_levels_created = {}
 
     # get the cap_status record for create
-    # cap_models.Cap_Event_Status(cap_event_status='CREATE'),
-    select_cap_status = select(cap_models.Cap_Event_Status).where(cap_models.Cap_Event_Status.cap_event_status=='CREATE')
+    # todo: should create an enum that reads the lookup table or something like that try to make this
+    # a safer more consistent query.
+    select_cap_status = select(cap_models.Cap_Event_Status).where(cap_models.Cap_Event_Status.cap_event_status=='ALERT')
     LOGGER.debug(f"select_cap_status: {select_cap_status}")
     cap_status_create_record = session.exec(select_cap_status).first()
     LOGGER.debug(f"cap_status_create_record: {cap_status_create_record}")
