@@ -116,7 +116,6 @@ def db_sqllite_engine(alert_level_data) -> Generator[Engine, None, None]:
         for alert in alert_level_data:
             alert_level = Alert_Levels(alert_level=alert["alert_level"])  # noqa: F405
             session.add(alert_level)
-        session.commit()
 
         # loading the cap_status_data
         cap_status_file = os.path.join(
@@ -126,7 +125,11 @@ def db_sqllite_engine(alert_level_data) -> Generator[Engine, None, None]:
             cap_statuses = json.load(js_fh)
 
         for cap in cap_statuses:
-            cap_status = Cap_Event_Status(cap_status=cap['cap_event_status'])
+            LOGGER.debug(f"adding the cap event status record: {cap['cap_event_status']}")
+            cap_status = Cap_Event_Status(cap_event_status=cap['cap_event_status'])
+            session.add(cap_status)
+
+        session.commit()
 
 
     yield engine
