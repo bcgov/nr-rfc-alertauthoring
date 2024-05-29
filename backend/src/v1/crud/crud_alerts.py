@@ -6,6 +6,7 @@ from sqlmodel import Session, select
 
 import src.db.session
 import src.types
+import src.v1.crud.crud_cap as crud_cap
 import src.v1.models.alerts as alerts_models
 import src.v1.models.basins as basins_model
 
@@ -327,17 +328,8 @@ def update_alert(
             current_alert.alert_links.append(alert_area)
             session.refresh(current_alert)
 
-        # finally deal with deletes
-        # identify records in basin_levels_existing that do not exist in basin_levels_incomming
-        # and delete those records
-        # for existing_record in basin_levels_existing:
-        #     if not in basin_levels_incomming:
-        #         # delete the record
-        #         LOGGER.info(f"deleting the record: {existing_record}")
-
-        current_alert.alert_updated = datetime.datetime.utcnow()
-        # don't think I need to add the session
-        # session.add(current_alert)
+        current_alert.alert_updated = datetime.datetime.now(datetime.timezone.utc)
+        # ---- Alert record update complete
     LOGGER.debug(f"current alert before send: {current_alert}")
     return current_alert
 

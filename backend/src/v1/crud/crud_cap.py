@@ -11,8 +11,6 @@ import src.v1.models.cap as cap_models
 LOGGER = logging.getLogger(__name__)
 
 
-
-
 def get_cap_event_status(session: Session, status: str):
     """
     queries the cap event status lookup table for the record that corresponds
@@ -206,8 +204,11 @@ def record_history(session: Session, alert: alerts_models.Alerts):
     * new cap events are ignored as they are new and therfor do not require a history
       record
 
-    :param session: _description_
+    :param session: the current database session / transaction
     :type session: Session
+    :param alert: the new modified alert, this alert can be compared with the alert
+        that currently exists in the database
+    :type alert: alerts_models.Alerts
     """
     # retrieve the caps associated with the incomming alert, need this later to figure
     # out attributes from the actual cap event, for the history records

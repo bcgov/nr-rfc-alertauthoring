@@ -121,15 +121,6 @@ def test_edit_alert_cap_events(db_with_alert_and_caps):
         # send to cap update
         crud_cap.update_cap_event(session, alert)
 
-
-# moving to parameterize this test.  Inputs are defined as dictionaries and 
-# are converted to pydantic models.
-#  alert:
-#    - alert_relation
-#       - alert_level = ''
-#       - basins_names = []
-#    - alert hydro conditions (faker)
-#    - alert meteorlogical conditions (faker)
 @pytest.mark.parametrize(
         "input_alert_dict,updated_alert_dict",
         [

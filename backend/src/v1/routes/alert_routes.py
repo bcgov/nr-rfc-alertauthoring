@@ -107,15 +107,18 @@ def update_alert(
     # get existing related (basin and alert_level ) data
     # compare incomming and existing data
     # separate changes into:
-    #   - net new area / alert level added
-    #   - existing area / alert level removed
-    #   - existing area / alert level updated
+    #   - net new area / alert level added - create-ALERT
+    #   - existing area / alert level removed - deleted-CANCEL
+    #   - existing area / alert level updated - update-UPDATE
     #
     # record changes in the alert history table
 
     # has the alert record changed / yes
     #    - record the previous alert status in history
     #    - update the alert record with incomming changes
+
+    # write history
+    
 
 
     updated_alert = crud_alerts.update_alert(
