@@ -126,6 +126,9 @@ def update_alert(
     LOGGER.debug(f"token: {token}")
     updated_alert.author_name = token['display_name']
     session.add(updated_alert)
+
+    # now handle the cap emissions
+    crud_cap.update_cap_event(session, updated_alert)
     return updated_alert
 
 @router.get("/{alert_id}/caps", response_model=List[cap_models.Cap_Event_And_Areas])

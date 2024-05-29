@@ -87,6 +87,8 @@ def convert_to_alert(
     :param alert: the input alert object
     :type alert: alerts_models.Alert_Basins_Write
     """
+    LOGGER.debug(f"session type: {type(session)}, {type(session)}")
+
     alert_write: alerts_models.Alerts = alerts_models.Alerts(
         alert_description=alert.alert_description,
         alert_hydro_conditions=alert.alert_hydro_conditions,
@@ -99,7 +101,9 @@ def convert_to_alert(
         basin_sql = select(basins_model.Basins).where(
             basins_model.Basins.basin_name == alert_area_level.basin.basin_name
         )
-        basin = session.exec(basin_sql).first()
+        LOGGER.debug(f"basin_sql: {basin_sql}, {session}, {alert_area_level.basin.basin_name}")
+        results = session.exec(basin_sql)
+        basin = results.first()
 
         # get the alert level object
         alert_lvl_sql = select(alerts_models.Alert_Levels).where(

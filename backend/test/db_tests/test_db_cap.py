@@ -1,10 +1,14 @@
+import datetime
 import logging
 import typing
 
+import faker
+import pytest
 from sqlmodel import Session, select
-from src.v1.crud import crud_cap
+from src.v1.crud import crud_alerts, crud_cap
 from src.v1.models import alerts as alerts_models
 from src.v1.models import basins as basin_models
+from src.v1.models import cap as cap_models
 
 LOGGER = logging.getLogger(__name__)
 
@@ -92,6 +96,116 @@ def test_get_cap_events(db_with_alert_and_caps, alert_dict):
     #       could search for the cap assocated with the cap that was sent
     #       and then verify the fields are the same
 
+def test_edit_alert_cap_events(db_with_alert_and_caps):
+        session = db_with_alert_and_caps[0]
+        alert = db_with_alert_and_caps[1]
+        caps = db_with_alert_and_caps[2]
+
+        LOGGER.debug(f"caps: {caps}")
+        LOGGER.debug(f"alert: {alert}")
+        for alert_lnk in alert.alert_links:
+            LOGGER.debug(f"alert_lnk: {alert_lnk} {alert_lnk.basin}")
+
+        # modify the alert adding a new alert_link
+        # add an alert link for 'North Coast'
+        nc_query = select(basin_models.Basins).where(basin_models.Basins.basin_name=='North Coast')
+        nc_record = session.exec(nc_query).first()
+        new_alert_area = alerts_models.Alert_Areas(
+            alert_id=alert.alert_links[0].alert_id,
+            alert_level_id=alert.alert_links[0].alert_level_id,
+            basin_id=nc_record.basin_id
+        )
+        alert.alert_links.append(new_alert_area)
+        LOGGER.debug(f"alert.alert_links: {alert.alert_links}")
+
+        # send to cap update
+        crud_cap.update_cap_event(session, alert)
+
+
+# moving to parameterize this test.  Inputs are defined as dictionaries and 
+# are converted to pydantic models.
+#  alert:
+#    - alert_relation
+#       - alert_level = ''
+#       - basins_names = []
+#    - alert hydro conditions (faker)
+#    - alert meteorlogical conditions (faker)
+@pytest.mark.parametrize(
+        "input_alert_dict,updated_alert_dict",
+        [
+            [
+                {'alert_level': 'High Streamflow Advisory', 'basin_names': ['Central Coast', 'Eastern Vancouver Island']},
+                {'alert_level': 'High Streamflow Advisory', 'basin_names': ['Central Coast']}
+            ],
+            [
+                {'alert_level': 'High Streamflow Advisory', 'basin_names': ['Central Coast']},
+                {'alert_level': 'High Streamflow Advisory', 'basin_names': ['Central Coast', 'Eastern Vancouver Island']}
+            ],
+            [
+                {'alert_level': 'High Streamflow Advisory', 'basin_names': ['Central Coast']},
+                {'alert_level': 'Flood Watch', 'basin_names': ['Central Coast']}
+            ],
+            [
+                {'alert_level': 'Flood Watch', 'basin_names': ['Central Coast']},
+                {'alert_level': 'Flood Watch', 'basin_names': ['Central Coast']}
+            ],
+            [
+                {'alert_level': 'Flood Watch', 'basin_names': ['Central Coast']},
+                {'alert_level': 'Flood Watch', 'basin_names': []}
+            ],
+
+        ]
+)
+def test_record_cap_event_history(db_test_connection, input_alert_dict, updated_alert_dict):
+    session = db_test_connection
+    LOGGER.debug(f"sesion: {db_test_connection}")
+    LOGGER.debug(f"input_alert_dict: {input_alert_dict}")
+
+    # create two fake alerts
+    input_alert = create_fake_alert(input_alert_dict)
+    updated_alert = create_fake_alert(updated_alert_dict)
+    LOGGER.debug(f"input_alert: {input_alert}")
+
+    # add the 'input_alert' alert to the database transaction, and generate caps for 
+    # that alert
+    input_alert_db = crud_alerts.create_alert(session=session, alert=input_alert)
+    caps = crud_cap.create_cap_event(session=session, alert=input_alert_db)
+    LOGGER.debug(f"caps for new alert: {caps}")
+    
+    # now add updated version of the alert to the database transaction.
+    updated_alert_db = crud_alerts.update_alert(session=session, alert_id=input_alert_db.alert_id, updated_alert=updated_alert)
+    session.flush()
+
+    LOGGER.debug(f"input alert: {input_alert_db}, {type(input_alert_db)}")
+    LOGGER.debug(f"updated alert: {updated_alert_db}, {type(updated_alert_db)}")
+
+    # now create the cap event history records
+    crud_cap.record_history(session, updated_alert_db)
+
+    # finally verify the data in the cap history records created
+    for cap_event in caps:
+        cap_hist_query = select(alerts_models.Cap_Event_History).where(
+            alerts_models.Cap_Event_History.cap_event_id == cap_event.cap_event_id)
+        cap_hist_records = session.exec(cap_hist_query).all()
+
+        # if there are no changes, then there will not be any history records and 
+        # this loop will not be entered
+        for cap_hist_record in cap_hist_records:
+            LOGGER.debug(f"cap_hist_records: {cap_hist_record}")
+            LOGGER.debug(f"cap_hist_records alert_level: {cap_hist_record.alert_levels}")
+            LOGGER.debug(f"cap_hist_records status: {cap_hist_record.cap_event_status}")
+            LOGGER.debug(f"cap_hist_records areas: {cap_hist_record.cap_event_areas_hist}")
+
+            basin_names = []
+            for basin in cap_hist_record.cap_event_areas_hist:
+                basin_names.append(basin.basins.basin_name)
+                assert basin.basins.basin_name in input_alert_dict['basin_names']
+            # there should be a record that corresponds with the alert level
+            
+            assert cap_hist_record.alert_levels.alert_level == input_alert_dict['alert_level']
+    session.rollback()
+
+
 def get_alert_level_dict(session: Session):
     """
     queries the database and returns a dictionary of alert levels where the 
@@ -124,3 +238,44 @@ def get_basin_dict(session: Session):
     for basin in basin_results:
         basin_dict[basin.basin_id] = basin.basin_name
     return basin_dict
+
+
+def create_fake_alert(alert_dict: typing.Dict) -> alerts_models.Alert_Basins_Write:
+    """
+    creates a fake alert object from a dictionary.  The dictionary is expected
+    to contain the following keys:
+    - alert_level: the alert level string value
+    - basin_names: a list of basin names that are associated with the alert level
+
+    :param alert_dict: a dictionary containing the alert level and basin names
+    :type alert_dict: typing.Dict
+    """
+    LOGGER.debug(f"alert_dict: {alert_dict}")
+    alert_area_list = []
+    for basin_name in alert_dict["basin_names"]:
+        LOGGER.debug(f"basin_name: {basin_name}")
+        alert_area = alerts_models.Alert_Areas_Write(
+            alert_level=alerts_models.Alert_Levels_Base(alert_level=alert_dict["alert_level"]),
+            basin=basin_models.BasinBase(basin_name=basin_name)
+        )
+        alert_area_list.append(alert_area)
+
+    fakeInst = faker.Faker("en_US")
+
+    desc = fakeInst.text()
+    met_cond = fakeInst.text()
+    hydro_cond = fakeInst.text()
+    auth = fakeInst.name()
+
+    alert = alerts_models.Alert_Basins_Write(
+        alert_description=desc,
+        alert_hydro_conditions=hydro_cond,
+        alert_meteorological_conditions=met_cond,
+        author_name=auth,
+        alert_status="active",
+        alert_created=datetime.datetime.now(datetime.timezone.utc),
+        alert_updated=datetime.datetime.now(datetime.timezone.utc),
+        alert_links=alert_area_list
+    )
+    LOGGER.debug(f"fake alert: {alert}")
+    return alert
