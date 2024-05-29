@@ -81,8 +81,6 @@ app.include_router(alert_routes, prefix=api_prefix_v1 + "/alerts", tags=["Alerts
 app.include_router(alert_levels_router, prefix=api_prefix_v1 + "/alert_levels", tags=["Alert Levels"])
 app.include_router(cap_router, prefix=api_prefix_v1 + "/cap", tags=["Common Alerting Protocol Events"])
 
-
-
 # Define the filter
 class EndpointFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
