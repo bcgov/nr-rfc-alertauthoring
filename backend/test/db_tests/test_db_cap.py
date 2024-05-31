@@ -293,7 +293,6 @@ def test_new_cap_for_alert(db_test_connection, existing_alert_list, updated_aler
     # TODO: verify that the cap status is set to ALERT
 
 
-
 @pytest.mark.parametrize(
         "existing_alert_list,updated_alert_list",
         [
@@ -394,6 +393,10 @@ def test_update_cap_for_alert(db_test_connection, existing_alert_list, updated_a
 
     assert len(existing_caps) == len(updated_alert_list)
     # TODO: verify that the cap status is set to UPDATE
+    for cap in existing_caps:
+        assert cap.cap_event_status.cap_event_status == "UPDATE"
+
+    session.rollback()
 
 
 

@@ -140,6 +140,29 @@ def update_cap_event(session: Session, alert: alerts_models.Alerts):
         # need a method to update existing cap - update
         update_cap_for_alert(session=session, alert=alert, cap_comps=updates)
         # need a method to cancel existing cap - cancel
+        cancel_cap_for_alert(session=session, alert=alert, cap_comps=cancels)
+
+def cancel_cap_for_alert(session: Session, alert: alerts_models.Alerts, cap_comps: cap_models.Cap_Comparison):
+    """
+    Updates the status of existing caps to cancel when the basins associated with
+    an alert drops to zero.  
+
+    For cancels the existing cap event in the database, stays the same as it was
+    however the status of the cap event is updated to cancel, and the existing 
+    state is stored in the cap_event_history table.
+
+    :param session: input database transaction / session
+    :type session: Session
+    :param alert: Incomming alert that is being cancelled
+    :type alert: alerts_models.Alerts
+    :param cap_comps: a cap comparison object that describes the cancels that need
+        to be issued.
+    :type cap_comps: cap_models.Cap_Comparison
+    """
+    LOGGER.debug(f"cap_comps: {cap_comps}")
+
+
+
 
 def update_cap_for_alert(session: Session, alert: alerts_models.Alerts, cap_comps: cap_models.Cap_Comparison):
     """
@@ -189,6 +212,9 @@ def update_cap_for_alert(session: Session, alert: alerts_models.Alerts, cap_comp
             LOGGER.debug(f"relation: {relation}")
             session.delete(relation)
 
+        # update the cap status to 'UPDATE'
+        cur_cap_event.cap_event_status.cap_event_status = 'UPDATE'
+
         # TODO: make sure the original cap events were created
         # LOGGER.debug(f"areas before update: {cur_cap_event.event_areas}")
         cap_areas_list = []
@@ -214,10 +240,6 @@ def update_cap_for_alert(session: Session, alert: alerts_models.Alerts, cap_comp
         LOGGER.debug(f"areas after update: {cur_cap_event.event_areas}")
         LOGGER.debug(f"cur_cap_event: {cur_cap_event}")
     session.flush()
-
-
-
-
 
 def new_cap_for_alert(
         session: Session, 
@@ -353,8 +375,6 @@ def __write_history_for_cap_comp(
             session.add(cap_event_area_hist)
             LOGGER.debug(f"cap_event_area_hist: {cap_event_area_hist}")
         session.flush()
-
-    
 
 def __get_cap_event(cap_events: List[cap_models.Cap_Event], alert_level: str):
     """
