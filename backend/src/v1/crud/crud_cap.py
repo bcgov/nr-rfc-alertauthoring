@@ -4,6 +4,7 @@ from typing import List
 
 from sqlmodel import Session, select
 
+import src.v1.crud.crud_alerts as crud_alerts
 import src.v1.models.alerts as alerts_models
 import src.v1.models.basins as basins_models
 import src.v1.models.cap as cap_models
@@ -11,7 +12,7 @@ import src.v1.models.cap as cap_models
 LOGGER = logging.getLogger(__name__)
 
 
-def get_cap_event_status(session: Session, status: str):
+def get_cap_event_status(session: Session, status: str) -> cap_models.Cap_Event_Status:
     """
     queries the cap event status lookup table for the record that corresponds
     with the supplied status string
@@ -39,7 +40,7 @@ def create_cap_event(session: Session,
                      alert: alerts_models.Alerts):
     """
     The alert that will be generated in the database  is recieved as a parameter.
-    The method will extract out the alerts and the alert_levels from the alert
+    The method will extract out the alert areas / basins and the alert_levels from the alert
     object, and create the necessary CAP Events for the new alert.
 
     :param session: a database session
@@ -47,8 +48,6 @@ def create_cap_event(session: Session,
     :param alert: An alert that is pending to be created in the database
     :type alert: alerts_models.Alert
     """
-
-
     LOGGER.debug(f"alert used to create cap: {alert}")
     alert_levels_created = {}
 
@@ -57,51 +56,16 @@ def create_cap_event(session: Session,
     # a safer more consistent query.
     cap_status_create_record = get_cap_event_status(session, 'ALERT')
 
-    for alert_link in alert.alert_links:
-        LOGGER.debug(f"alert_link to create cap: {alert_link}")
-        select_stmt = alert_lvl_rec = ( 
-            select(alerts_models.Alert_Levels)
-            .where(alerts_models.Alert_Levels.alert_level == alert_link.alert_level.alert_level))
-        alert_lvl_rec = session.exec(select_stmt).first()
-        LOGGER.debug(f"select_stmt: {select_stmt}")
-        LOGGER.debug(f"alert_lvl_rec: {alert_lvl_rec}")
-        
-        if alert_link.alert_level.alert_level not in alert_levels_created:
-            # if the alert level has not been created, create it here, otherwise
-            # add the basin the existing cap event for that alert level
-            cap_event_area = cap_models.Cap_Event_Areas(
-                basin_id=alert_link.basin_id,
-            )
+    # organize the alert links by alert level and the basin names that are associated
+    # into a cap comp object
+    cap_comp = CapCompare(session=session, alert_incomming=alert)
+    cap_delta = cap_comp.get_delta()
+    creates = cap_delta.getCreates()
+    LOGGER.debug(f"creates: {creates}")
 
-            # The line commented below feels like should work to build the relationship
-            # between cap event and alert level, however wasn't able to make it work
-            # workaround is to just populate the foreign key for alert_level_id
-            cap_event = cap_models.Cap_Event(
-                # alert_lvl_link=alert_link.alert_level,
-                alert_level_id=alert_link.alert_level.alert_level_id,
-                alert_id=alert.alert_id,
-                cap_event_status_id=cap_status_create_record.cap_event_status_id,
-                cap_event_created_date=datetime.datetime.now(datetime.timezone.utc),
-                cap_event_updated_date=datetime.datetime.now(datetime.timezone.utc),
-            )
-            alert_levels_created[alert_link.alert_level.alert_level] = cap_event
-            session.add(cap_event)
-            session.flush()
-            # now add the relationship
-            cap_event.event_areas.append(cap_event_area)
-            LOGGER.debug(f"cap_event: {cap_event}")
-        else:
-            cap_event_area = cap_models.Cap_Event_Areas(
-                basin_id=alert_link.basin_id,
-            )
-            cap_event = alert_levels_created[alert_link.alert_level.alert_level]
-            cap_event.event_areas.append(cap_event_area)
-            
-    session.add(cap_event)
-    return alert_levels_created.values()
-
-
-
+    # create the caps for the alert from the cap comp object
+    caps = new_cap_for_alert(session=session, alert=alert, cap_comps=creates)
+    return caps
     
 def get_cap_events_for_alert(session: Session, alert_id: int):
     """
@@ -167,29 +131,139 @@ def update_cap_event(session: Session, alert: alerts_models.Alerts):
     if creates or updates or cancels:
         record_history(session, alert)
 
+        LOGGER.debug(f"creates: {creates}")
+        LOGGER.debug(f"updates: {updates}")
+        LOGGER.debug(f"cancels: {cancels}")
 
-    LOGGER.debug(f"creates: {creates}")
-    LOGGER.debug(f"updates: {updates}")
-    LOGGER.debug(f"cancels: {cancels}")
+        # create new caps for new alert levels
+        new_cap_for_alert(session=session, alert=alert, cap_comps=creates)
+        # need a method to update existing cap - update
+        update_cap_for_alert(session=session, alert=alert, cap_comps=updates)
+        # need a method to cancel existing cap - cancel
 
-    # write the history record
-    record_history(session, alert)
+def update_cap_for_alert(session: Session, alert: alerts_models.Alerts, cap_comps: cap_models.Cap_Comparison):
+    """
+    This method will modify existing alerts who's associated basins have been 
+    modified.
 
+    :param session: input database transaction / session
+    :type session: Session
+    :param alert: the updated alert for which associated caps must be updated
+    :type alert: alerts_models.Alerts
+    :param cap_comps: a cap comparison object that describes the updates that 
+        need to be made to existing caps.
+    :type cap_comps: cap_models.Cap_Comparison
+    """
+    # TODO: should create an enumeration for cap event status references
+    # - retrieve the cap status record for an update, later attach to cap event
+    cap_event_status = get_cap_event_status(session, 'UPDATE')
+
+    # iterate over the caps comps that describe the alert levels and basins
+    # for updates
+    for cap_comp in cap_comps:
+        # get the alert level record for the cap alert level defined in 
+        # cap_comp
+        alert_level_record = crud_alerts.get_alert_level(
+            session, alert_lvl_str=cap_comp.alert_level.alert_level)
+        LOGGER.debug(f"alert_level_record: {alert_level_record}")
+
+        # retrieve the cap event for the alert level and cap
+        cap_query = select(cap_models.Cap_Event).where(
+            cap_models.Cap_Event.alert_id == alert.alert_id).where(
+                cap_models.Cap_Event.alert_level_id == alert_level_record.alert_level_id
+            )
+        LOGGER.debug(f"cap_query: {cap_query}")
+        cur_cap_event = session.exec(cap_query).all()
+        if len(cur_cap_event) > 1:
+            msg = (
+                f"more than one cap event found for the alert id: {alert.alert_id}" + 
+                f" and alert level: {alert_level_record.alert_level}.  There should " + 
+                "only ever be one cap event for a given alert level."
+            )
+            raise LookupError(msg)
+        
+        LOGGER.debug(f"cap: {cur_cap_event}")
+        # grab the record from the result set
+        cur_cap_event = cur_cap_event[0]
+        for relation in cur_cap_event.event_areas:
+            LOGGER.debug(f"relation: {relation}")
+            session.delete(relation)
+
+        # TODO: make sure the original cap events were created
+        # LOGGER.debug(f"areas before update: {cur_cap_event.event_areas}")
+        cap_areas_list = []
+
+        
+        for basin in cap_comp.basins:
+
+            basin_inst = basins_models.Basins(basin_name=basin.basin_name)
+            session.add(basin_inst)
+            cap_event_area = cap_models.Cap_Event_Areas(
+                cap_area_basin=basin_inst,
+                cap_event_id=cur_cap_event.cap_event_id
+            )
+            session.add(cap_event_area)
+            cap_areas_list.append(cap_event_area)
+            cur_cap_event.event_areas.append(cap_event_area)
         
 
 
-    #generate_caps_struct(session, alert)
-    # 2. compare generated caps against existing caps identify diffs
-    
+        # cur_cap_event.event_areas = None
+        # cur_cap_event.event_areas = cap_areas_list
+        session.refresh(cur_cap_event)
+        LOGGER.debug(f"areas after update: {cur_cap_event.event_areas}")
+        LOGGER.debug(f"cur_cap_event: {cur_cap_event}")
+    session.flush()
 
-    # 3. record the diffs to 
-    # 3. determine what the changes are:
-    #    - new area added to alert UPDATE 
-    #    - new area new alert level ALERT/UPDATE
-    #    - ...
-    #
-    # 4. before changes are made cache existing record to history
-    LOGGER.debug(f"alert: {alert}")
+
+
+
+
+def new_cap_for_alert(
+        session: Session, 
+        alert: alerts_models.Alerts,
+        cap_comps: cap_models.Cap_Comparison):
+    """
+    When a new alert level is added to an alert, the method will be called to 
+    create a new cap event for that alert level.  This method is different 
+    from the create_cap_event method.  The create_cap_event method is used when 
+    a brand new alert is created and all the alert levels in the cap are new.
+
+    :param session: a database session / transaction
+    :type session: Session
+    :param alert: the alert that is being updated
+    :type alert: alerts_models.Alerts
+    :param cap_comp: a cap comparison object that describes the new cap events 
+        that need to be added.
+    :type cap_comp: cap_models.Cap_Comparison
+    """
+    cap_event_status = get_cap_event_status(session, 'ALERT')
+    caps_created = []
+    for cap_comp in cap_comps:
+        alert_level_record = crud_alerts.get_alert_level(session, alert_lvl_str=cap_comp.alert_level.alert_level)
+
+        cur_cap_event = cap_models.Cap_Event(
+            alert_id=alert.alert_id,
+            alert_level_id=alert_level_record.alert_level_id,
+            cap_event_status_id=cap_event_status.cap_event_status_id,
+            cap_event_created_date=datetime.datetime.now(datetime.timezone.utc),
+            cap_event_updated_date=datetime.datetime.now(datetime.timezone.utc),
+        )
+        cap_areas_list = []
+        for basin in cap_comp.basins:
+            #basin_inst = basins_models.Basins(basin_name=basin.basin_name)
+            basin_query = select(basins_models.Basins).where(basins_models.Basins.basin_name==basin.basin_name)
+            basin_inst = session.exec(basin_query).first()
+
+            cap_event_area = cap_models.Cap_Event_Areas(
+                cap_area_basin=basin_inst
+            )
+            cap_areas_list.append(cap_event_area)
+        cur_cap_event.event_areas = cap_areas_list
+        session.add(cur_cap_event)
+        caps_created.append(cur_cap_event)
+    session.flush()
+    return caps_created
 
 def record_history(session: Session, alert: alerts_models.Alerts):
     """
@@ -253,9 +327,9 @@ def __write_history_for_cap_comp(
         cur_cap_event = __get_cap_event(caps_for_alert, update.alert_level.alert_level)
 
         # create a list of the basins that are in the new cap event
-        basin_list = []
-        for basin in cur_cap_event.event_areas:
-            basin_list.append(basins_models.Basins(basin_name=basin.cap_area_basin.basin_name))
+        # basin_list = []
+        # for basin in cur_cap_event.event_areas:
+        #     basin_list.append(basins_models.Basins(basin_name=basin.cap_area_basin.basin_name))
 
         # creating the history record
         cap_event_history = cap_models.Cap_Event_History(
