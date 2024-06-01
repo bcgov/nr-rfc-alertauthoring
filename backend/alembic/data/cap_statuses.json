@@ -1,7 +1,7 @@
 [
     {
         "id": 1,
-        "cap_event_status": "CREATE"
+        "cap_event_status": "ALERT"
     },
     {
         "id": 2,

@@ -213,13 +213,13 @@ def update_cap_for_alert(session: Session, alert: alerts_models.Alerts, cap_comp
             session.delete(relation)
 
         # update the cap status to 'UPDATE'
-        cur_cap_event.cap_event_status.cap_event_status = 'UPDATE'
+        cur_cap_event.cap_event_status_id = cap_event_status.cap_event_status_id
+        session.flush() # without the flush here the changes seem to be getting overwritten
+        # ^ which is really weird as the session is flushed before it gets returned.
 
-        # TODO: make sure the original cap events were created
-        # LOGGER.debug(f"areas before update: {cur_cap_event.event_areas}")
-        cap_areas_list = []
-
-        
+        # session.refresh(cur_cap_event)
+        LOGGER.debug(f"status after update: {cur_cap_event.cap_event_status.cap_event_status}")
+        LOGGER.debug(f"the fk: {cap_event_status.cap_event_status_id}")
         for basin in cap_comp.basins:
 
             basin_inst = basins_models.Basins(basin_name=basin.basin_name)
@@ -229,13 +229,8 @@ def update_cap_for_alert(session: Session, alert: alerts_models.Alerts, cap_comp
                 cap_event_id=cur_cap_event.cap_event_id
             )
             session.add(cap_event_area)
-            cap_areas_list.append(cap_event_area)
             cur_cap_event.event_areas.append(cap_event_area)
-        
 
-
-        # cur_cap_event.event_areas = None
-        # cur_cap_event.event_areas = cap_areas_list
         session.refresh(cur_cap_event)
         LOGGER.debug(f"areas after update: {cur_cap_event.event_areas}")
         LOGGER.debug(f"cur_cap_event: {cur_cap_event}")
@@ -674,3 +669,18 @@ class CapDelta:
                     if cap_comp1_dict[lvl] != cap_comp2_dict[lvl]:
                         equal = False
         return equal
+
+    def is_alert_level_in_cap_comp(self, cap_comps: List[cap_models.Cap_Comparison], alert_level: str):
+        """
+        gets a list of cap comp objects and returns true or false based on whether
+        the alert level is in the cap comp object.
+
+        :param cap_comp: _description_
+        :type cap_comp: _type_
+        :param alert_level: _description_
+        :type alert_level: _type_
+        """
+        for cap_comp in cap_comps:
+            if cap_comp.alert_level.alert_level == alert_level:
+                return True
+        return False

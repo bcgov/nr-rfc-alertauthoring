@@ -129,8 +129,12 @@ def db_sqllite_engine(alert_level_data, basin_data) -> Generator[Engine, None, N
         old_value = 'CREATE'
         new_value = 'ALERT'
         query = sqlmodel.select(Cap_Event_Status).where(Cap_Event_Status.cap_event_status==old_value)
-        record = session.exec(query).one()
-        record.cap_event_status = new_value
+        db_record = session.exec(query)
+        record = db_record.all()
+        if len(record):
+            LOGGER.debug(f"number of records: {len(record)}")
+            record = record[0]
+            record.cap_event_status = new_value
         session.commit()
 
     yield engine

@@ -334,22 +334,8 @@ def test_update_cap_for_alert(db_test_connection, existing_alert_list, updated_a
     input_alert = create_fake_alert(existing_alert_list)
     input_alert_db = crud_alerts.create_alert(session=session, alert=input_alert)
     caps = crud_cap.create_cap_event(session=session, alert=input_alert_db)
-    # session.flush()
-    # HERE.... something is wrong with the caps... relationships are not loading
-    # debugging to verify that relationships where added
 
     LOGGER.debug(f"caps created for alert: {caps}, {type(caps)}")
-
-    # LOGGER.debug(f"input_alert_db: {input_alert_db}, {type(input_alert_db)}")
-    # LOGGER.debug(f"alert id: {input_alert_db.alert_id}")
-    # LOGGER.debug(f"input_alert_db.alert_level_id: {input_alert_db.alert_level_id}")
-    # cap_query = select(cap_models.Cap_Event).where(
-    #     cap_models.Cap_Event.alert_id == input_alert_db.alert_id).where(
-    #     cap_models.Cap_Event.alert_level_id == input_alert_db.alert_level_id)
-    # cap_data = session.exec(cap_query).all()
-    # LOGGER.debug(f"cap_query: {cap_query}")
-    # LOGGER.debug(f"cap_query: {cap_data}")
-
 
     # update the alert previously created
     updated_alert = update_fake_alert(existing_alert=input_alert_db, alert_list=updated_alert_list)
@@ -361,6 +347,7 @@ def test_update_cap_for_alert(db_test_connection, existing_alert_list, updated_a
     cap_comp = crud_cap.CapCompare(session, updated_alert_db)
     cap_delta = cap_comp.get_delta()
     updates = cap_delta.getUpdates()
+    creates = cap_delta.getCreates()
 
     LOGGER.debug(f"updates {updates}")
 
@@ -392,9 +379,20 @@ def test_update_cap_for_alert(db_test_connection, existing_alert_list, updated_a
             assert event_area.cap_area_basin.basin_name in alert_lvl_dict[cap.alert_level.alert_level]['basin_names']
 
     assert len(existing_caps) == len(updated_alert_list)
-    # TODO: verify that the cap status is set to UPDATE
+    
+    # if the cap status is in cap_comparison object for update then should be UPDATE
+    # otherwise its a ALERT
+
     for cap in existing_caps:
-        assert cap.cap_event_status.cap_event_status == "UPDATE"
+        cap.alert_level.alert_level 
+        if cap_delta.is_alert_level_in_cap_comp(cap_comps=updates, alert_level=cap.alert_level.alert_level):
+            assert cap.cap_event_status.cap_event_status == "UPDATE"
+        elif cap_delta.is_alert_level_in_cap_comp(cap_comps=creates, alert_level=cap.alert_level.alert_level):
+            assert cap.cap_event_status.cap_event_status == "ALERT"
+        else:
+            assert cap.cap_event_status.cap_event_status == "CANCEL"
+
+        # Once implement cancel need to add to this logic
 
     session.rollback()
 
