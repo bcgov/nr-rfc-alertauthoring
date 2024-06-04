@@ -36,6 +36,10 @@ def update(old_value, new_value):
     session = sqlmodel.Session(bind=bind)
 
     query = sqlmodel.select(cap_model.Cap_Event_Status).where(cap_model.Cap_Event_Status.cap_event_status==old_value)
-    record = session.exec(query).one()
-    record.cap_event_status = new_value
-    session.commit()
+    record = session.exec(query).all()
+    if len(record) > 1:
+        raise ValueError(f"multiple records found for {old_value}, only one expected")
+    elif len(record) == 1:
+        record = record[0]
+        record.cap_event_status = new_value
+        session.commit()
