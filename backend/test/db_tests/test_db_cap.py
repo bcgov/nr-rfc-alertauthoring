@@ -13,7 +13,21 @@ from src.v1.models import cap as cap_models
 LOGGER = logging.getLogger(__name__)
 
 
-def test_create_cap_event(db_with_alert_and_data, alert_dict: typing.Dict):
+def test_create_cap_event(db_with_alert_and_data: typing.Tuple[typing.Any, typing.Any], alert_dict: typing.Dict):
+    """
+    Tests the creation of a cap event from an alert.  For example, a net new 
+    alert is created, this method tests that a cap event is created from that
+    net new alert
+
+    :param db_with_alert_and_data: database session and a dictionary describing an
+        alert that should exist inside that database session
+    :type db_with_alert_and_data: typing.List[Session, alerts_models.Alerts]
+    :param alert_dict: a dictionary that describes the alert that should contain
+        the same data as was used for the alert that was created in the database
+    :type alert_dict: typing.Dict
+    """
+    # TODO: parameterize the test so that it can be run with multiple alerts
+
     session = db_with_alert_and_data[0]
     alert_data = db_with_alert_and_data[1]
 
@@ -153,23 +167,14 @@ def test_edit_alert_cap_events(db_with_alert_and_caps):
 )
 def test_record_cap_event_history(db_test_connection, input_alert_list, updated_alert_list):
     session = db_test_connection
-    LOGGER.debug(f"sesion: {db_test_connection}")
 
-    # create two fake alerts
-    input_alert = create_fake_alert(input_alert_list)
-    updated_alert = create_fake_alert(updated_alert_list)
-    LOGGER.debug(f"input_alert: {input_alert}")
+    test_setup_dict = pre_test_setup(session=session, existing_alert_list=input_alert_list, incomming_alert_list=updated_alert_list)
+    input_alert_db = test_setup_dict['existing_alert']
+    updated_alert_db = test_setup_dict['incomming_alert']
 
-    # add the 'input_alert' alert to the database transaction, and generate caps for 
-    # that alert
-    input_alert_db = crud_alerts.create_alert(session=session, alert=input_alert)
     caps = crud_cap.create_cap_event(session=session, alert=input_alert_db)
     LOGGER.debug(f"caps for new alert: {caps}")
     
-    # now add updated version of the alert to the database transaction.
-    updated_alert_db = crud_alerts.update_alert(session=session, alert_id=input_alert_db.alert_id, updated_alert=updated_alert)
-    session.flush()
-
     LOGGER.debug(f"input alert: {input_alert_db}, {type(input_alert_db)}")
     LOGGER.debug(f"updated alert: {updated_alert_db}, {type(updated_alert_db)}")
 
@@ -240,27 +245,13 @@ def test_new_cap_for_alert(db_test_connection, existing_alert_list, updated_aler
     :type updated_alert_list: typing.List[typing.Dict]
     """
     session = db_test_connection
-    LOGGER.debug(f"input_alert_list: {existing_alert_list}")
-    LOGGER.debug(f"updated_alert_list: {updated_alert_list}")
-    
-    # create the fake alerts, and caps.  These represent the existing state before
-    # an update is performed
-    input_alert = create_fake_alert(existing_alert_list)
-    input_alert_db = crud_alerts.create_alert(session=session, alert=input_alert)
-    caps = crud_cap.create_cap_event(session=session, alert=input_alert_db)
-    LOGGER.debug(f"caps for new alert: {caps}")
 
-    # create the updated alert
-    updated_alert = create_fake_alert(updated_alert_list)
-    updated_alert_db = crud_alerts.create_alert(session=session, alert=updated_alert)
-
-    # generate a cap comp object
-    cap_comp = crud_cap.CapCompare(session, updated_alert_db)
-    cap_delta = cap_comp.get_delta()
+    test_setup_dict = pre_test_setup(session=session, existing_alert_list=existing_alert_list, incomming_alert_list=updated_alert_list)
+    input_alert_db = test_setup_dict['existing_alert']
+    updated_alert_db = test_setup_dict['incomming_alert']
+    cap_delta = test_setup_dict['cap_delta']
     creates = cap_delta.getCreates()
-
-    LOGGER.debug(f"creates {creates}")
-
+    
     # create a new cap event for an existing alert
     crud_cap.new_cap_for_alert(
         session=session, alert=updated_alert_db, cap_comps=creates)
@@ -290,6 +281,8 @@ def test_new_cap_for_alert(db_test_connection, existing_alert_list, updated_aler
             assert event_area.cap_area_basin.basin_name in alert_lvl_dict[cap.alert_level.alert_level]['basin_names']
 
     assert len(existing_caps) == len(updated_alert_list)
+
+
     # TODO: verify that the cap status is set to ALERT
 
 
@@ -328,28 +321,14 @@ def test_new_cap_for_alert(db_test_connection, existing_alert_list, updated_aler
 )
 def test_update_cap_for_alert(db_test_connection, existing_alert_list, updated_alert_list):
     session = db_test_connection
-    
-    # create the fake alerts, and caps.  These represent the existing state before
-    # an update is performed
-    input_alert = create_fake_alert(existing_alert_list)
-    input_alert_db = crud_alerts.create_alert(session=session, alert=input_alert)
-    caps = crud_cap.create_cap_event(session=session, alert=input_alert_db)
 
-    LOGGER.debug(f"caps created for alert: {caps}, {type(caps)}")
 
-    # update the alert previously created
-    updated_alert = update_fake_alert(existing_alert=input_alert_db, alert_list=updated_alert_list)
-    updated_alert_db = crud_alerts.update_alert(
-        session=session, alert_id=input_alert_db.alert_id, updated_alert=updated_alert)
-    LOGGER.debug(f"updated_alert: {updated_alert_db}")
-
-    # generate a cap comp object
-    cap_comp = crud_cap.CapCompare(session, updated_alert_db)
-    cap_delta = cap_comp.get_delta()
-    updates = cap_delta.getUpdates()
+    test_setup_dict = pre_test_setup(session=session, existing_alert_list=existing_alert_list, incomming_alert_list=updated_alert_list)
+    input_alert_db = test_setup_dict['existing_alert']
+    updated_alert_db = test_setup_dict['incomming_alert']
+    cap_delta = test_setup_dict['cap_delta']
     creates = cap_delta.getCreates()
-
-    LOGGER.debug(f"updates {updates}")
+    updates = cap_delta.getUpdates()
 
     # create a new cap event for an existing alert
     crud_cap.update_cap_for_alert(
@@ -396,7 +375,102 @@ def test_update_cap_for_alert(db_test_connection, existing_alert_list, updated_a
 
     session.rollback()
 
+@pytest.mark.parametrize(
+        "existing_alert_list,cancel_alert_list",
+        [
+            [
+                [
+                    {'alert_level': 'High Streamflow Advisory', 'basin_names': ['Central Coast', 'Eastern Vancouver Island', 'Skeena']}
+                ],
+                [
+                    {'alert_level': 'High Streamflow Advisory', 'basin_names': []},
+                ]
+            ],
+            [
+                [
+                    {'alert_level': 'High Streamflow Advisory', 'basin_names': ['Central Coast', 'Eastern Vancouver Island', 'Skeena']},
+                    {'alert_level': 'Flood Watch', 'basin_names': ['North Coast', 'Stikine']}
+                ],
+                [
+                    {'alert_level': 'High Streamflow Advisory', 'basin_names': []},
+                    {'alert_level': 'Flood Watch', 'basin_names': []}
+                ],
+            ],
+            [
+                [
+                    {'alert_level': 'High Streamflow Advisory', 'basin_names': ['Central Coast']},
+                    {'alert_level': 'Flood Watch', 'basin_names': ['North Coast', 'Stikine']}
+                ],
+                [
+                    {'alert_level': 'High Streamflow Advisory', 'basin_names': []},
+                    {'alert_level': 'Flood Watch', 'basin_names': []}
+                ],
+            ]
+        ]
+)
+def test_cancel_cap_for_alert(db_test_connection, existing_alert_list, cancel_alert_list):
+    """
+    _summary_
 
+    :param db_test_connection: _description_
+    :type db_test_connection: _type_
+    :param existing_alert_list: _description_
+    :type existing_alert_list: _type_
+    :param updated_alert_list: _description_
+    :type updated_alert_list: _type_
+    """
+    session = db_test_connection
+    test_setup_dict = pre_test_setup(session=session, existing_alert_list=existing_alert_list, incomming_alert_list=cancel_alert_list)
+    input_alert_db = test_setup_dict['existing_alert']
+    cancel_alert_db = test_setup_dict['incomming_alert']
+    cap_delta = test_setup_dict['cap_delta']
+
+    cancels = cap_delta.getCancels()
+    
+    assert cancel_alert_db.alert_id == input_alert_db.alert_id
+
+    # create a new cap event for an existing alert
+    crud_cap.cancel_cap_for_alert(
+        session=session, alert=cancel_alert_db, cap_comps=cancels)
+    
+    # now verify that the cancel operation was performed correctly
+    # in a nutshell the state in the database should be the same as the previous
+    # state, but only the status should be set to CANCEL vs UPDATE or ALERT
+    cap_query = select(cap_models.Cap_Event).where(cap_models.Cap_Event.alert_id == cancel_alert_db.alert_id)
+    cap_data_from_db = session.exec(cap_query).all()
+    LOGGER.debug(f"cap_data_from_db: {cap_data_from_db}")
+
+    # need to make sure the database record aligns with the data comming into
+    # the test in the parameter `existing_alert_list`.  Organizing the existing_alert_list
+    # by alert level to allow for easy lookup
+    existing_alert_dict = {}
+    for alert in existing_alert_list:
+        existing_alert_dict[alert['alert_level']] = alert['basin_names']
+
+    # now assert that the caps associated
+    for cap in cap_data_from_db:
+        # make sure the cap status was modified
+        assert cap.cap_event_status.cap_event_status == "CANCEL"
+
+        # make sure the alert id is correct
+        assert cap.alert_id == cancel_alert_db.alert_id
+
+        # make sure the alert level corresponds with an alert level that should have a cap
+        # associated with it
+        assert cap.alert_level.alert_level in existing_alert_dict
+
+        # make sure we have the same number or areas associated with the alert
+        assert len(cap.event_areas) == len(existing_alert_dict[cap.alert_level.alert_level])
+
+        # make sure the basins are the same
+        for event_area in cap.event_areas:
+            assert event_area.cap_area_basin.basin_name in existing_alert_dict[cap.alert_level.alert_level]
+        event_basin_areas = [event_area.cap_area_basin.basin_name for event_area in cap.event_areas]
+        for basin_name in existing_alert_dict[cap.alert_level.alert_level]:
+            assert basin_name in event_basin_areas
+
+
+# Utility Methods to help with setting up test conditions
 
 def get_alert_level_dict(session: Session):
     """
@@ -474,13 +548,13 @@ def create_fake_alert(alert_list: typing.List[typing.Dict]) -> alerts_models.Ale
     return alert
 
 
-#     update_fake_alert(session=session, input_alert_db, updated_alert_list)
 def update_fake_alert(
         existing_alert: alerts_models.Alerts,
         alert_list: typing.List[typing.Dict]) -> alerts_models.Alert_Basins_Write:
     """
     used to simulate the condition where an alert has been updated and now the 
-    caps associated with that alert need to be updated.
+    caps associated with that alert need to be updated.  Makes the necessary 
+    changes to the alert object, but doesn't update caps.
     """
     # create the alert area / alert level list to be added to the alert object
     # further down in the function 
@@ -510,5 +584,46 @@ def update_fake_alert(
         alert_links=alert_area_list
     )
     return updated_alert
+
+
+def pre_test_setup(session: Session, 
+                   existing_alert_list: typing.List[typing.Dict], 
+                   incomming_alert_list: typing.List[typing.Dict]) -> typing.Dict:
+    """
+    This is a utility method to help make it easier to define data that goes into
+    tests, and what the expected outcome is of that data.
+
+    The method recieves two pieces of information that describe the state of a 
+    hypothetical alert.  The first piece represents the state of that alert as it
+    would exist prior to an update.  The second piece represents the state of the
+    incomming changes to that alert.
+
+    The method will create both of the alerts in the database, however it will
+    only create caps for the data that represents the existing state of the alert.
+
+    This allows subsequent tests to be written that verify that the anticipated
+    changes to the caps are correct.
+    """
+    # create the fake alerts, and caps.  These represent the existing state before
+    # an update is performed
+    input_alert = create_fake_alert(existing_alert_list)
+    input_alert_db = crud_alerts.create_alert(session=session, alert=input_alert)
+    caps = crud_cap.create_cap_event(session=session, alert=input_alert_db)
+
+    LOGGER.debug(f"caps created for alert: {caps}, {type(caps)}")
+
+    # update the alert previously created
+    incomming_alert = update_fake_alert(existing_alert=input_alert_db, alert_list=incomming_alert_list)
+    incomming_alert_db = crud_alerts.update_alert(
+        session=session, alert_id=input_alert_db.alert_id, updated_alert=incomming_alert)
+    LOGGER.debug(f"cancel alert: {incomming_alert_db}")
+
+    # generate a cap comp object
+    cap_comp = crud_cap.CapCompare(session, incomming_alert_db)
+    cap_delta = cap_comp.get_delta()
+
+    return {'cap_delta': cap_delta,
+            'existing_alert': input_alert_db, 
+            'incomming_alert': incomming_alert_db}
 
 

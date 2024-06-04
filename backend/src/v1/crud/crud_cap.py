@@ -160,9 +160,38 @@ def cancel_cap_for_alert(session: Session, alert: alerts_models.Alerts, cap_comp
     :type cap_comps: cap_models.Cap_Comparison
     """
     LOGGER.debug(f"cap_comps: {cap_comps}")
+    cap_cancel_event_status = get_cap_event_status(session, 'CANCEL')
+    for cap_comp in cap_comps:
+        # getting the related alert level record, can retrieve the fk / pk relation
+        # from this record.
+        alert_level_record = crud_alerts.get_alert_level(
+            session, alert_lvl_str=cap_comp.alert_level.alert_level)
+        LOGGER.debug(f"alert_level_record: {alert_level_record}")
 
+        # retrieve the cap event for the alert level and cap
+        cap_query = select(cap_models.Cap_Event).where(
+            cap_models.Cap_Event.alert_id == alert.alert_id).where(
+                cap_models.Cap_Event.alert_level_id == alert_level_record.alert_level_id
+            )
+        LOGGER.debug(f"cap_query: {cap_query}")
+        cur_cap_event = session.exec(cap_query).all()
+        if len(cur_cap_event) > 1:
+            msg = (
+                f"more than one cap event found for the alert id: {alert.alert_id}" + 
+                f" and alert level: {alert_level_record.alert_level}.  There should " + 
+                "only ever be one cap event for a given alert level."
+            )
+            raise LookupError(msg)
+        
+        LOGGER.debug(f"cap: {cur_cap_event}")
 
+        # now just update the status of the alert to 'CANCEL'
+        cur_cap_event = cur_cap_event[0]
 
+        # update the cap status to 'CANCEL'
+        cur_cap_event.cap_event_status_id = cap_cancel_event_status.cap_event_status_id
+        session.flush() # without the flush here the changes seem to be getting overwritten
+        LOGGER.debug(f"{cur_cap_event=}")
 
 def update_cap_for_alert(session: Session, alert: alerts_models.Alerts, cap_comps: cap_models.Cap_Comparison):
     """
