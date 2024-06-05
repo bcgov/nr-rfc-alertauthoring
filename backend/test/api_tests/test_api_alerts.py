@@ -129,11 +129,7 @@ def test_alert_patch(test_client_fixture, alert_dict, db_with_alert, mock_access
     prefix = Configuration.API_V1_STR
     db_with_alert.flush()
 
-    # get the alert id
-    # cur_alert = select(alert_model.Alerts).where(alert_model.Alerts.alert_description == alert_dict["alert_description"])
-    # alert_id = cur_alert.alert_id
-    # LOGGER.debug(f"alert_id: {alert_id}")
-
+    # query for all alerts, and grab the first alert
     response = client.get(f"{prefix}/alerts/")
     resp_json = response.json()
     LOGGER.debug(f"resp_json: {resp_json}")
@@ -147,7 +143,7 @@ def test_alert_patch(test_client_fixture, alert_dict, db_with_alert, mock_access
     # update the dict author to the authorname from the simulated access token
     alert_dict["author_name"] = mock_access_token["display_name"]
 
-    # add a basin / alert level
+    # add a basin / alert level and send to api
     alert_dict["alert_links"].append(
         {
             "basin": {"basin_name": "Liard"},

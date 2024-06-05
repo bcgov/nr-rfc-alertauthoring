@@ -1,5 +1,5 @@
 import datetime
-from typing import TYPE_CHECKING, List, Optional, Required
+from typing import TYPE_CHECKING, List, Optional, Required, Self
 
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -8,8 +8,8 @@ from src.v1.models.basins import Basins
 
 # from src.v1.models.alerts as alert_models
 if TYPE_CHECKING:
-    from src.v1.models.alerts import Alert_Levels, Alert_Levels_Read
-
+    from src.v1.model.basins import BasinBase
+    from src.v1.models.alerts import Alert_Levels, Alert_Levels_Base, Alert_Levels_Read
 default_schema = Settings.DEFAULT_SCHEMA
 
 
@@ -35,7 +35,6 @@ class Cap_Event_Base(SQLModel):
         default_factory=datetime.datetime.utcnow, nullable=False
     )
 
-
 class Cap_Event_Read(Cap_Event_Base):
     cap_event_id: int = Field(default=None, primary_key=True)
 
@@ -58,7 +57,6 @@ class Cap_Event(Cap_Event_Read, table=True):
     event_areas: List["Cap_Event_Areas"] = Relationship(back_populates="event_links")
     alert_level: "Alert_Levels" = Relationship(back_populates="cap_link")
     cap_event_status: Optional["Cap_Event_Status"] = Relationship(back_populates="cap_event_status_lnk")
-
 
 class Cap_Event_Areas_Base(SQLModel):
     cap_event_area_id: int = Field(default=None, primary_key=True)
@@ -145,3 +143,12 @@ class Cap_Event_Status(SQLModel, table=True):
     # cap_event_status
     cap_event_status_lnk: Optional["Cap_Event"] = Relationship(back_populates="cap_event_status")
     cap_event_hist_status_lnk: Optional["Cap_Event_History"] = Relationship(back_populates="cap_event_status")
+
+class Cap_Comparison(SQLModel):
+    """ 
+    a model used to compare calculated (future) caps vs existing caps.  Only 
+    need to look at what the alert level is, and the associated areas.
+    """
+    alert_level: "Alert_Levels_Base" = ...
+    basins: List["BasinBase"]
+    # cap_event_id: Optional[int] = None

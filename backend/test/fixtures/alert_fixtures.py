@@ -77,14 +77,14 @@ def db_with_alert(
 
 
 @pytest.fixture(scope="function")
-def db_with_alert_and_data(db_test_connection, monkeypatch, alert_basin_write):
+def db_with_alert_and_data(db_test_connection, monkeypatch, alert_basin_write: alerts_models.Alert_Basins_Write):
     monkeypatch.setattr(src.db.session, "engine", db_test_connection.bind)
 
     alert = crud_alerts.create_alert(
         session=db_test_connection, alert=alert_basin_write
     )
     db_test_connection.flush()
-    yield [db_test_connection, alert]
+    yield (db_test_connection, alert)
     db_test_connection.rollback()
 
 

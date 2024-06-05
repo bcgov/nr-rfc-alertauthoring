@@ -25,6 +25,8 @@ LOGGER = logging.getLogger(__name__)
 # add fixture modules here
 pytest_plugins = [
     "fixtures.alert_fixtures",
+    "fixtures.data_fixtures",
+    "fixtures.cap_fixtures"
 ]
 
 # used for postgres testing
@@ -69,9 +71,8 @@ def db_pg_session(db_pg_connection: sqlmodel.Session):
     yield db_pg_connection
     db_pg_connection.rollback()
 
-
 @pytest.fixture(scope="session")
-def db_sqllite_engine(alert_level_data) -> Generator[Engine, None, None]:
+def db_sqllite_engine(alert_level_data, basin_data) -> Generator[Engine, None, None]:
     # should re-create the database every time the tests are run, the following
     # line ensure database that maybe hanging around as a result of a failed
     # test is deleted
@@ -102,14 +103,8 @@ def db_sqllite_engine(alert_level_data) -> Generator[Engine, None, None]:
         # loading basin data
         LOGGER.info("loading basin data into test database")
         session = sqlmodel.Session(engine)
-        basin_file = os.path.join(
-            os.path.dirname(__file__), "..", "alembic", "data", "basins.json"
-        )
-        LOGGER.debug(f"src file for basin data: {basin_file}")
-        with open(basin_file, "r") as json_file:
-            basins_data = json.load(json_file)
 
-        for basin in basins_data:
+        for basin in basin_data:
             basin = Basins(basin_name=basin["basin_name"])  # noqa: F405
             session.add(basin)
         # loading alert level data
@@ -129,8 +124,18 @@ def db_sqllite_engine(alert_level_data) -> Generator[Engine, None, None]:
             cap_status = Cap_Event_Status(cap_event_status=cap['cap_event_status'])
             session.add(cap_status)
 
+        # caps got entered incorrectly, there is a migration to address that.  This
+        # method fixes that for the sqllite tests.
+        old_value = 'CREATE'
+        new_value = 'ALERT'
+        query = sqlmodel.select(Cap_Event_Status).where(Cap_Event_Status.cap_event_status==old_value)
+        db_record = session.exec(query)
+        record = db_record.all()
+        if len(record):
+            LOGGER.debug(f"number of records: {len(record)}")
+            record = record[0]
+            record.cap_event_status = new_value
         session.commit()
-
 
     yield engine
 
@@ -140,26 +145,6 @@ def db_sqllite_engine(alert_level_data) -> Generator[Engine, None, None]:
         LOGGER.debug("remove the database: ./test_db.db'")
         # os.remove("./test_db.db")
 
-@pytest.fixture(scope="session")
-def alert_level_data() -> Generator[Alert_Levels_Read, None, None]:  # noqa: F405
-    """
-    reads the alert levels json file and loads to a List[Dict] structure.
-
-    :yield: List
-    :rtype: Generator[Alert_Levels_Read, None, None]
-    """
-
-    alert_level_data_file = os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "alembic",
-        "data",
-        "alert_levels.json",
-    )
-
-    with open(alert_level_data_file, "r") as json_file:
-        alert_level_data = json.load(json_file)
-    yield alert_level_data
 
 @pytest.fixture(scope="session")
 def db_engine(db_sqllite_engine, db_pg_engine):

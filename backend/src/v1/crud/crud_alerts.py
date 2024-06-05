@@ -6,6 +6,7 @@ from sqlmodel import Session, select
 
 import src.db.session
 import src.types
+import src.v1.crud.crud_cap as crud_cap
 import src.v1.models.alerts as alerts_models
 import src.v1.models.basins as basins_model
 
@@ -45,10 +46,13 @@ def create_alert_with_basins_and_level(
         )
         basin_data = session.exec(basin_query).one()
 
-        alert_level_select = select(alerts_models.Alert_Levels).where(
-            alerts_models.Alert_Levels.alert_level == basin_level["alert_level"]
-        )
-        alert_level_data = session.exec(alert_level_select).one()
+        # alert_level_select = select(alerts_models.Alert_Levels).where(
+        #     alerts_models.Alert_Levels.alert_level == basin_level["alert_level"]
+        # )
+        # alert_level_data = session.exec(alert_level_select).one()
+        alert_level_data = get_alert_level(session=session, 
+                                           alert_lvl_str=basin_level["alert_level"])
+
 
         junction_table = alerts_models.Alert_Areas(
             alert=alert,
@@ -87,6 +91,8 @@ def convert_to_alert(
     :param alert: the input alert object
     :type alert: alerts_models.Alert_Basins_Write
     """
+    LOGGER.debug(f"session type: {type(session)}, {type(session)}")
+
     alert_write: alerts_models.Alerts = alerts_models.Alerts(
         alert_description=alert.alert_description,
         alert_hydro_conditions=alert.alert_hydro_conditions,
@@ -99,14 +105,19 @@ def convert_to_alert(
         basin_sql = select(basins_model.Basins).where(
             basins_model.Basins.basin_name == alert_area_level.basin.basin_name
         )
-        basin = session.exec(basin_sql).first()
+        LOGGER.debug(f"basin_sql: {basin_sql}, {session}, {alert_area_level.basin.basin_name}")
+        results = session.exec(basin_sql)
+        basin = results.first()
 
         # get the alert level object
-        alert_lvl_sql = select(alerts_models.Alert_Levels).where(
-            alerts_models.Alert_Levels.alert_level
-            == alert_area_level.alert_level.alert_level
-        )
-        alert_lvl = session.exec(alert_lvl_sql).first()
+        # alert_lvl_sql = select(alerts_models.Alert_Levels).where(
+        #     alerts_models.Alert_Levels.alert_level
+        #     == alert_area_level.alert_level.alert_level
+        # )
+        # alert_lvl = session.exec(alert_lvl_sql).first()
+        alert_lvl = get_alert_level(
+            session=session,
+            alert_lvl_str=alert_area_level.alert_level.alert_level)
 
         LOGGER.debug(f"basin: {basin}")
         LOGGER.debug(f"alert level: {alert_lvl}")
@@ -323,17 +334,9 @@ def update_alert(
             current_alert.alert_links.append(alert_area)
             session.refresh(current_alert)
 
-        # finally deal with deletes
-        # identify records in basin_levels_existing that do not exist in basin_levels_incomming
-        # and delete those records
-        # for existing_record in basin_levels_existing:
-        #     if not in basin_levels_incomming:
-        #         # delete the record
-        #         LOGGER.info(f"deleting the record: {existing_record}")
-
-        current_alert.alert_updated = datetime.datetime.utcnow()
-        # don't think I need to add the session
-        # session.add(current_alert)
+        current_alert.alert_updated = datetime.datetime.now(datetime.timezone.utc)
+        # ---- Alert record update complete
+    
     LOGGER.debug(f"current alert before send: {current_alert}")
     return current_alert
 
@@ -540,3 +543,11 @@ def get_alert_levels(session: Session) -> list[alerts_models.Alert_Levels]:
     alert_levels = session.exec(select(alerts_models.Alert_Levels)).all()
     LOGGER.debug(f"alert_levels: {alert_levels}")
     return alert_levels
+
+
+def get_alert_level(session: Session, alert_lvl_str: str) -> alerts_models.Alert_Levels:
+    alert_lvl_sql = select(alerts_models.Alert_Levels).where(
+        alerts_models.Alert_Levels.alert_level == alert_lvl_str
+    )
+    alert_lvl = session.exec(alert_lvl_sql).first()
+    return alert_lvl

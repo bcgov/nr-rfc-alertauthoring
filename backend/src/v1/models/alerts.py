@@ -37,11 +37,17 @@ class AlertsRead(AlertsBase):
 
     alert_id: Optional[int] = Field(default=None, primary_key=True)
     alert_created: datetime.datetime = Field(
-        default_factory=datetime.datetime.utcnow, nullable=False
+        default_factory=lambda: datetime.datetime.now(datetime.timezone.utc), nullable=False
     )
     alert_updated: datetime.datetime = Field(
-        default_factory=datetime.datetime.utcnow, nullable=False
+        default_factory=lambda: datetime.datetime.now(datetime.timezone.utc), nullable=False
     )
+    # alert_created: datetime.datetime = Field(
+    #     default_factory=datetime.datetime.utcnow, nullable=False
+    # )
+    # alert_updated: datetime.datetime = Field(
+    #     default_factory=datetime.datetime.utcnow, nullable=False
+    # )
 
 class Alert_Areas_Read(SQLModel):
     alert_id: int = Field(
@@ -204,7 +210,8 @@ class Alert_Area_History(SQLModel, table=True):
     alert_history: "Alert_History" = Relationship(back_populates="alert_history_links")
 
 
-from .cap import Cap_Event_And_Areas, Cap_Event_History  # noqa: E402
+from .cap import Cap_Comparison, Cap_Event_And_Areas, Cap_Event_History  # noqa: E402
 
 Cap_Event_And_Areas.model_rebuild()
 Cap_Event_History.model_rebuild()
+Cap_Comparison.model_rebuild()
