@@ -119,7 +119,8 @@ def update_alert(
 
     # write history
     
-
+    # need to write the alert history here
+    #  TODO: --- ALERT HISTORY OPERATION goes here
 
     updated_alert = crud_alerts.update_alert(
         session=session, alert_id=alert_id, updated_alert=alert
