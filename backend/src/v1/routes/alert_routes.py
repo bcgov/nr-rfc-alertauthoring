@@ -130,7 +130,10 @@ def update_alert(
     updated_alert.author_name = token['display_name']
     session.add(updated_alert)
 
-    # now handle the cap emissions
+    
+    # write cap history
+    crud_cap.record_history(session, updated_alert)
+    # update cap events
     crud_cap.update_cap_event(session, updated_alert)
     return updated_alert
 

@@ -372,11 +372,6 @@ def __write_history_for_cap_comp(
         # the update cap comp object
         cur_cap_event = __get_cap_event(caps_for_alert, update.alert_level.alert_level)
 
-        # create a list of the basins that are in the new cap event
-        # basin_list = []
-        # for basin in cur_cap_event.event_areas:
-        #     basin_list.append(basins_models.Basins(basin_name=basin.cap_area_basin.basin_name))
-
         # creating the history record
         cap_event_history = cap_models.Cap_Event_History(
             alert_id=alert_id,
