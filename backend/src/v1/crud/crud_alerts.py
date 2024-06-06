@@ -133,9 +133,11 @@ def convert_to_alert(
 
 def create_history_record(session: Session, alert: alerts_models.Alerts):
     """
-    Writes the fields defined in the incomming alert record as a history record,
-    including management of the relationship between history record and the
-    alert areas (basins) and the alert levels
+    Writes the incomming alert to a history record.  This includes writing the 
+    history of the related alert level and basin records.
+
+    This method should be called before changes are made to the alert database 
+    record
 
     :param session: database session to use to communicate with the db
     :type session: Session
@@ -152,6 +154,7 @@ def create_history_record(session: Session, alert: alerts_models.Alerts):
         alert_meteorological_conditions=alert.alert_meteorological_conditions,
         author_name=alert.author_name,
         alert_status=alert.alert_status,
+        alert_history_created=datetime.datetime.now(datetime.timezone.utc),
     )
 
     # session.add(history_record)
@@ -168,8 +171,7 @@ def create_history_record(session: Session, alert: alerts_models.Alerts):
         )
         history_record.alert_history_links.append(alert_area_history)
     session.add(history_record)
-    # session.commit()
-    # session.refresh(history_record)
+    session.flush()
     return history_record
 
 
