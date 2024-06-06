@@ -112,7 +112,7 @@ def update_alert(
     #   - existing area / alert level updated - update-UPDATE
     #
     # record changes in the alert history table
-    crud_alerts.record_history(session, current_status_alert)
+    crud_alerts.create_history_record(session, current_status_alert)
 
     # has the alert record changed / yes
     #    - record the previous alert status in history
