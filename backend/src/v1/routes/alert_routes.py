@@ -64,14 +64,14 @@ def create_alert(
     LOGGER.debug(f"token: {token}")
     written_alert = crud_alerts.create_alert(session=session, alert=alert)
     caps = crud_cap.create_cap_event(session=session, alert=written_alert)
-    # not doing anything with the caps at this point 
+    # not doing anything with the caps at this point
     LOGGER.debug(f"cap created from the alert: {caps}")
     session.commit()
     return written_alert
 
 
 @router.patch(
-    "/{alert_id}" + '/',
+    "/{alert_id}" + "/",
     response_model=alerts_models.Alert_Basins,
 )
 def update_alert(
@@ -112,13 +112,14 @@ def update_alert(
     #   - existing area / alert level updated - update-UPDATE
     #
     # record changes in the alert history table
+    crud_alerts.record_history(session, current_status_alert)
 
     # has the alert record changed / yes
     #    - record the previous alert status in history
     #    - update the alert record with incomming changes
 
     # write history
-    
+
     # need to write the alert history here
     #  TODO: --- ALERT HISTORY OPERATION goes here
 
@@ -128,19 +129,19 @@ def update_alert(
     LOGGER.debug(f"updated_alert: {updated_alert}")
     # now update the author from the access token
     LOGGER.debug(f"token: {token}")
-    updated_alert.author_name = token['display_name']
+    updated_alert.author_name = token["display_name"]
     session.add(updated_alert)
 
-    
     # write cap history
     crud_cap.record_history(session, updated_alert)
     # update cap events
     crud_cap.update_cap_event(session, updated_alert)
     return updated_alert
 
+
 @router.get("/{alert_id}/caps", response_model=List[cap_models.Cap_Event_And_Areas])
 def get_caps_for_alert(
-        alert_id: int,
+    alert_id: int,
     session: Session = Depends(session.get_db),
     skip: int = 0,
     limit: int = 100,
