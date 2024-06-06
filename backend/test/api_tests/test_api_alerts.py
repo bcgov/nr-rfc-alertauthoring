@@ -49,7 +49,6 @@ def test_get_alerts(db_with_alert, test_client_fixture, alert_dict):
     assert len(alert_dict["alert_links"]) == len(alert_record["alert_links"])
 
 
-# db_with_alert
 def test_alert(test_client_fixture, db_with_alert, alert_dict):
     client = test_client_fixture
 
@@ -219,3 +218,5 @@ def test_get_alert_levels(test_client_fixture: fastapi.testclient, alert_level_d
     for alert_level in alert_level_data:
         LOGGER.debug(f"alert_level: {alert_level['alert_level']}")
         assert alert_level['alert_level'] in alert_level_strs
+
+    
