@@ -3,9 +3,14 @@ import logging
 from typing import List
 
 import pytest
+from helpers.alert_helpers import (
+    create_alertlvl_basin_dict,
+    create_fake_alert,
+    update_fake_alert,
+)
 from sqlmodel import Session, select
 from src.types import AlertAreaLevel
-from src.v1.crud import crud_alerts
+from src.v1.crud import crud_alerts, crud_cap
 from src.v1.models import alerts as alerts_models
 from src.v1.models import basins as basins_model
 
@@ -337,6 +342,54 @@ def test_add_new_alert_links(db_test_connection, alert_dict, alert_basin_write):
 
     # cleanup... delete the record that was created.
 
+
+@pytest.mark.parametrize(
+        "existing_alert_list,updated_alert",
+        [
+            [
+                [{'alert_level': 'High Streamflow Advisory', 'basin_names': ['Central Coast', 'Eastern Vancouver Island']}],
+                [{'alert_level': 'High Streamflow Advisory', 'basin_names': ['Central Coast']}]
+            ],
+
+        ]
+)
+def test_alert_history(db_test_connection, existing_alert_list, updated_alert):
+    session = db_test_connection
+
+    fake_alert = create_fake_alert(existing_alert_list)
+    LOGGER.debug(f"fake_alert: {fake_alert}")
+    input_alert = create_fake_alert(existing_alert_list)
+    input_alert_db = crud_alerts.create_alert(session=session, alert=input_alert)
+
+    # write the record to history
+    crud_alerts.create_history_record(session=session, alert=input_alert_db)
+
+    # now assert that the history record has been written
+    history_query = select(alerts_models.Alert_History).where(
+        alerts_models.Alert_History.alert_id == input_alert_db.alert_id
+    ).order_by(alerts_models.Alert_History.alert_history_created)
+
+    history_record = session.exec(history_query).first()
+
+    # verify that the history record contains the correct data
+    assert history_record.alert_description == input_alert_db.alert_description
+    assert history_record.alert_status == input_alert_db.alert_status
+    assert history_record.alert_hydro_conditions == input_alert_db.alert_hydro_conditions
+    assert history_record.alert_meteorological_conditions == input_alert_db.alert_meteorological_conditions
+    assert history_record.author_name == input_alert_db.author_name
+    assert history_record.alert_updated == input_alert_db.alert_updated
+
+    # create a dictionary of expected basins for easier assertion of history 
+    # alert area records.
+    alert_lvl_basin_dict = create_alertlvl_basin_dict(existing_alert_list)
+
+    # verify related records have been captured
+    for history_area in history_record.alert_history_links:
+        LOGGER.debug(f"history_area: {history_area}")
+        LOGGER.debug(f"history basins: {history_area.basins}")
+
+        assert history_area.alert_levels.alert_level in alert_lvl_basin_dict
+        assert history_area.basins.basin_name in alert_lvl_basin_dict[history_area.alert_levels.alert_level]
 
 # fraser and liard are net new, Skeena is an existing record with a new alert level
 @pytest.mark.parametrize(
