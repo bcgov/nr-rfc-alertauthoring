@@ -50,9 +50,9 @@ def create_alert_with_basins_and_level(
         #     alerts_models.Alert_Levels.alert_level == basin_level["alert_level"]
         # )
         # alert_level_data = session.exec(alert_level_select).one()
-        alert_level_data = get_alert_level(session=session, 
-                                           alert_lvl_str=basin_level["alert_level"])
-
+        alert_level_data = get_alert_level(
+            session=session, alert_lvl_str=basin_level["alert_level"]
+        )
 
         junction_table = alerts_models.Alert_Areas(
             alert=alert,
@@ -105,7 +105,9 @@ def convert_to_alert(
         basin_sql = select(basins_model.Basins).where(
             basins_model.Basins.basin_name == alert_area_level.basin.basin_name
         )
-        LOGGER.debug(f"basin_sql: {basin_sql}, {session}, {alert_area_level.basin.basin_name}")
+        LOGGER.debug(
+            f"basin_sql: {basin_sql}, {session}, {alert_area_level.basin.basin_name}"
+        )
         results = session.exec(basin_sql)
         basin = results.first()
 
@@ -116,8 +118,8 @@ def convert_to_alert(
         # )
         # alert_lvl = session.exec(alert_lvl_sql).first()
         alert_lvl = get_alert_level(
-            session=session,
-            alert_lvl_str=alert_area_level.alert_level.alert_level)
+            session=session, alert_lvl_str=alert_area_level.alert_level.alert_level
+        )
 
         LOGGER.debug(f"basin: {basin}")
         LOGGER.debug(f"alert level: {alert_lvl}")
@@ -133,10 +135,10 @@ def convert_to_alert(
 
 def create_history_record(session: Session, alert: alerts_models.Alerts):
     """
-    Writes the incomming alert to a history record.  This includes writing the 
+    Writes the incomming alert to a history record.  This includes writing the
     history of the related alert level and basin records.
 
-    This method should be called before changes are made to the alert database 
+    This method should be called before changes are made to the alert database
     record
 
     :param session: database session to use to communicate with the db
@@ -157,6 +159,8 @@ def create_history_record(session: Session, alert: alerts_models.Alerts):
         alert_history_created=datetime.datetime.now(datetime.timezone.utc),
     )
 
+    LOGGER.debug(f"recording alert history: {history_record}")
+
     # session.add(history_record)
     # session.flush()  # flush to populate the primary key
 
@@ -169,6 +173,7 @@ def create_history_record(session: Session, alert: alerts_models.Alerts):
             alert_level_id=alert_area.alert_level_id,
             alert_history=history_record,
         )
+        session.add(alert_area_history)
         history_record.alert_history_links.append(alert_area_history)
     session.add(history_record)
     session.flush()
@@ -259,14 +264,13 @@ def update_alert(
     current_alert = get_alert(session=session, alert_id=alert_id)
     LOGGER.debug(f"current alert: {current_alert}")
     LOGGER.debug(f"current alert: {current_alert.alert_description}")
-    
+
     # need to implement my own comparison
     if not is_alert_equal(current_alert, updated_alert):
         # write the history record
         # TODO: add a test that sends bad data causing the history record write
         #       to fail, then verify that it did not get written to the database
         LOGGER.debug("not the same!")
-        create_history_record(session=session, alert=current_alert)
 
         # now update the alert record
         attributes_to_update = [
@@ -338,7 +342,7 @@ def update_alert(
 
         current_alert.alert_updated = datetime.datetime.now(datetime.timezone.utc)
         # ---- Alert record update complete
-    
+
     LOGGER.debug(f"current alert before send: {current_alert}")
     return current_alert
 
@@ -409,10 +413,9 @@ def is_alert_equal(alert1, alert2, core_atributes_only=False):
         comparison_fields.append("alert_updated")
     for comp_field in comparison_fields:
         # both objects must have the comp_field or they are not equal
-        if ( hasattr(alert1, comp_field)
-             and hasattr(alert2, comp_field) ):
+        if hasattr(alert1, comp_field) and hasattr(alert2, comp_field):
             # both alerts have the property, now checking to see if they are not equal
-            if (getattr(alert1, comp_field) != getattr(alert2, comp_field)):
+            if getattr(alert1, comp_field) != getattr(alert2, comp_field):
                 is_equal = False
                 LOGGER.debug(
                     f"the field {comp_field} has these values {getattr(alert1, comp_field)}, and {getattr(alert2, comp_field)}"
@@ -447,10 +450,9 @@ def is_alert_equal(alert1, alert2, core_atributes_only=False):
                 LOGGER.debug(f"basin/lvls alert1: {alert_1_ids}")
                 LOGGER.debug(f"basin/lvls alert1: {alert_2_ids}")
         # if one has the attribute but the other does not then they are not equal
-        elif ( 
-                ( hasattr(alert1, "alert_links") and not hasattr(alert2, "alert_links") ) or 
-                ( not hasattr(alert1, "alert_links") and hasattr(alert2, "alert_links") )
-        ):
+        elif (
+            hasattr(alert1, "alert_links") and not hasattr(alert2, "alert_links")
+        ) or (not hasattr(alert1, "alert_links") and hasattr(alert2, "alert_links")):
             is_equal = False
     return is_equal
 
@@ -533,7 +535,7 @@ def get_latest_history(session: Session, alert_id: int):
 
 def get_alert_levels(session: Session) -> list[alerts_models.Alert_Levels]:
     """
-    retrieves all the valid alert levels as defined in the database 
+    retrieves all the valid alert levels as defined in the database
     alert levels table
 
     :param session: a SQLModel database session
