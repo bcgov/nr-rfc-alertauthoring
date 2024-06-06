@@ -344,16 +344,28 @@ def test_add_new_alert_links(db_test_connection, alert_dict, alert_basin_write):
 
 
 @pytest.mark.parametrize(
-        "existing_alert_list,updated_alert",
+    "existing_alert_list",
+    [
         [
-            [
-                [{'alert_level': 'High Streamflow Advisory', 'basin_names': ['Central Coast', 'Eastern Vancouver Island']}],
-                [{'alert_level': 'High Streamflow Advisory', 'basin_names': ['Central Coast']}]
-            ],
-
-        ]
+            {
+                "alert_level": "High Streamflow Advisory",
+                "basin_names": ["Central Coast", "Eastern Vancouver Island"],
+            },
+        ],
+        [
+            {
+                "alert_level": "High Streamflow Advisory",
+                "basin_names": ["Central Coast", "Eastern Vancouver Island"],
+            },
+            {"alert_level": "Flood Watch", "basin_names": ["Skeena"]},
+            {
+                "alert_level": "Flood Warning",
+                "basin_names": ["Northern Vancouver Island"],
+            },
+        ],
+    ],
 )
-def test_alert_history(db_test_connection, existing_alert_list, updated_alert):
+def test_alert_history(db_test_connection, existing_alert_list):
     session = db_test_connection
 
     fake_alert = create_fake_alert(existing_alert_list)
@@ -365,21 +377,28 @@ def test_alert_history(db_test_connection, existing_alert_list, updated_alert):
     crud_alerts.create_history_record(session=session, alert=input_alert_db)
 
     # now assert that the history record has been written
-    history_query = select(alerts_models.Alert_History).where(
-        alerts_models.Alert_History.alert_id == input_alert_db.alert_id
-    ).order_by(alerts_models.Alert_History.alert_history_created)
+    history_query = (
+        select(alerts_models.Alert_History)
+        .where(alerts_models.Alert_History.alert_id == input_alert_db.alert_id)
+        .order_by(alerts_models.Alert_History.alert_history_created)
+    )
 
     history_record = session.exec(history_query).first()
 
     # verify that the history record contains the correct data
     assert history_record.alert_description == input_alert_db.alert_description
     assert history_record.alert_status == input_alert_db.alert_status
-    assert history_record.alert_hydro_conditions == input_alert_db.alert_hydro_conditions
-    assert history_record.alert_meteorological_conditions == input_alert_db.alert_meteorological_conditions
+    assert (
+        history_record.alert_hydro_conditions == input_alert_db.alert_hydro_conditions
+    )
+    assert (
+        history_record.alert_meteorological_conditions
+        == input_alert_db.alert_meteorological_conditions
+    )
     assert history_record.author_name == input_alert_db.author_name
     assert history_record.alert_updated == input_alert_db.alert_updated
 
-    # create a dictionary of expected basins for easier assertion of history 
+    # create a dictionary of expected basins for easier assertion of history
     # alert area records.
     alert_lvl_basin_dict = create_alertlvl_basin_dict(existing_alert_list)
 
@@ -389,7 +408,11 @@ def test_alert_history(db_test_connection, existing_alert_list, updated_alert):
         LOGGER.debug(f"history basins: {history_area.basins}")
 
         assert history_area.alert_levels.alert_level in alert_lvl_basin_dict
-        assert history_area.basins.basin_name in alert_lvl_basin_dict[history_area.alert_levels.alert_level]
+        assert (
+            history_area.basins.basin_name
+            in alert_lvl_basin_dict[history_area.alert_levels.alert_level]
+        )
+
 
 # fraser and liard are net new, Skeena is an existing record with a new alert level
 @pytest.mark.parametrize(
@@ -501,8 +524,12 @@ def test_update_existing_basin_alert_level(
     )
 
     LOGGER.debug(f"updated_record: {updated_record}")
-    assert crud_alerts.is_alert_equal(updated_record, alert_basin_write, core_atributes_only=True)
-    assert crud_alerts.is_alert_equal(updated_record, alert_data, core_atributes_only=True)
+    assert crud_alerts.is_alert_equal(
+        updated_record, alert_basin_write, core_atributes_only=True
+    )
+    assert crud_alerts.is_alert_equal(
+        updated_record, alert_data, core_atributes_only=True
+    )
 
     # assert that the updated record contains what it should
     alert_query = (
@@ -573,7 +600,7 @@ def test_delete_alert_link(db_with_alert, alert_dict, alert_basin_write):
     # this query fails when run all tests.
     LOGGER.debug(f"alert_data_sql: {alert_data_sql}")
     alert_results = session.exec(alert_data_sql)
-    #LOGGER.debug(f"alert_results: {alert_results.all()}")
+    # LOGGER.debug(f"alert_results: {alert_results.all()}")
     # grab the last record
     alert_data = alert_results.all()[-1]
     # now call the update method, to update the database
@@ -603,8 +630,6 @@ def test_is_alert_equal(db_with_alert: Session, alert_data_only: alerts_models.A
     are_equal = crud_alerts.is_alert_equal(
         alert1=alert_data, alert2=second_alert_record
     )
-
-
 
     # verify that comparison returns true when comparing the same object
     assert are_equal is True
