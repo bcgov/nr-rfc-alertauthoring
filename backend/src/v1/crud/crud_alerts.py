@@ -6,7 +6,6 @@ from sqlmodel import Session, select
 
 import src.db.session
 import src.types
-import src.v1.crud.crud_cap as crud_cap
 import src.v1.models.alerts as alerts_models
 import src.v1.models.basins as basins_model
 

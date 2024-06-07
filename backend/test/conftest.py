@@ -26,8 +26,9 @@ LOGGER = logging.getLogger(__name__)
 pytest_plugins = [
     "fixtures.alert_fixtures",
     "fixtures.data_fixtures",
-    "fixtures.cap_fixtures"
+    "fixtures.cap_fixtures",
 ]
+
 
 # used for postgres testing
 @pytest.fixture(scope="session")
@@ -39,12 +40,15 @@ def set_env():
     os.environ["POSTGRES_PORT"] = str(constants.POSTGRES_PORT)
     os.environ["POSTGRES_SCHEMA"] = constants.POSTGRES_SCHEMA
 
+
 # used for postgres testing
 @pytest.fixture(scope="session")
 def db_pg_engine(set_env):
     LOGGER.debug(f"postgres param: {os.getenv('USE_POSTGRES')}")
     # if the env var USE_POSTGRES is not set, then use the sqlite database
-    if ( os.getenv("USE_POSTGRES_FOR_TESTS") is None) or (os.getenv("USE_POSTGRES_FOR_TESTS").lower() != "true"):
+    if (os.getenv("USE_POSTGRES_FOR_TESTS") is None) or (
+        os.getenv("USE_POSTGRES_FOR_TESTS").lower() != "true"
+    ):
         engine = None
     else:
         LOGGER.debug("creating postgres database")
@@ -59,7 +63,7 @@ def db_pg_engine(set_env):
 
     # session_local = sessionmaker(bind=engine)
     # test_db = session_local()
-    #test_db = sqlmodel.Session(engine)
+    # test_db = sqlmodel.Session(engine)
 
     yield engine
     if engine is not None:
@@ -71,6 +75,7 @@ def db_pg_session(db_pg_connection: sqlmodel.Session):
     yield db_pg_connection
     db_pg_connection.rollback()
 
+
 @pytest.fixture(scope="session")
 def db_sqllite_engine(alert_level_data, basin_data) -> Generator[Engine, None, None]:
     # should re-create the database every time the tests are run, the following
@@ -79,7 +84,9 @@ def db_sqllite_engine(alert_level_data, basin_data) -> Generator[Engine, None, N
 
     # only need to do something if we are going to use the sqllite database
     engine = None
-    if ( os.getenv("USE_POSTGRES_FOR_TESTS") is None) or (os.getenv("USE_POSTGRES_FOR_TESTS").lower() != "true"):
+    if (os.getenv("USE_POSTGRES_FOR_TESTS") is None) or (
+        os.getenv("USE_POSTGRES_FOR_TESTS").lower() != "true"
+    ):
         if os.path.exists("./test_db.db"):
             LOGGER.debug("remove the database: ./test_db.db'")
             os.remove("./test_db.db")
@@ -99,7 +106,7 @@ def db_sqllite_engine(alert_level_data, basin_data) -> Generator[Engine, None, N
         LOGGER.debug(f"engine type: {type(engine)}")
 
         # for sqllite database we need to load the data
-            
+
         # loading basin data
         LOGGER.info("loading basin data into test database")
         session = sqlmodel.Session(engine)
@@ -120,15 +127,21 @@ def db_sqllite_engine(alert_level_data, basin_data) -> Generator[Engine, None, N
             cap_statuses = json.load(js_fh)
 
         for cap in cap_statuses:
-            LOGGER.debug(f"adding the cap event status record: {cap['cap_event_status']}")
-            cap_status = Cap_Event_Status(cap_event_status=cap['cap_event_status'])
+            LOGGER.debug(
+                f"adding the cap event status record: {cap['cap_event_status']}"
+            )
+            cap_status = Cap_Event_Status(  # noqa: F405
+                cap_event_status=cap["cap_event_status"]
+            )
             session.add(cap_status)
 
         # caps got entered incorrectly, there is a migration to address that.  This
         # method fixes that for the sqllite tests.
-        old_value = 'CREATE'
-        new_value = 'ALERT'
-        query = sqlmodel.select(Cap_Event_Status).where(Cap_Event_Status.cap_event_status==old_value)
+        old_value = "CREATE"
+        new_value = "ALERT"
+        query = sqlmodel.select(Cap_Event_Status).where(  # noqa: F405
+            Cap_Event_Status.cap_event_status == old_value  # noqa: F405
+        )
         db_record = session.exec(query)
         record = db_record.all()
         if len(record):
@@ -157,6 +170,7 @@ def db_engine(db_sqllite_engine, db_pg_engine):
     yield engine
     engine.dispose()
 
+
 # db_pg_engine db_sqllite_engine
 @pytest.fixture(scope="session")
 # def db_test_connection(db_pg_engine):
@@ -168,6 +182,7 @@ def db_test_connection(db_engine):
     yield session
     session.rollback()
     session.close()
+
 
 @pytest.fixture(scope="function")
 def mock_access_token():
@@ -190,9 +205,10 @@ def mock_access_token():
     }
     yield token
 
+
 @pytest.fixture(scope="function")
 def test_app_with_auth(db_test_connection, mock_access_token):
-#def test_client_fixture(db_test_connection, mock_access_token) -> Generator[TestClient, None, None]:
+    # def test_client_fixture(db_test_connection, mock_access_token) -> Generator[TestClient, None, None]:
 
     token = mock_access_token
 
@@ -206,20 +222,19 @@ def test_app_with_auth(db_test_connection, mock_access_token):
     def get_current_user():
         LOGGER.debug("current user called")
         return token
-       
+
     app.dependency_overrides[src.db.session.get_db] = get_db
     app.dependency_overrides[oidcAuthorize.authorize] = lambda: authorize()
     app.dependency_overrides[oidcAuthorize.get_current_user] = (
-                lambda: get_current_user()
+        lambda: get_current_user()
     )
-
 
     yield app
     app.dependency_overrides = {}
 
 
 @pytest.fixture(scope="function")
-def test_client_fixture( test_app_with_auth) -> Generator[TestClient, None, None]:
+def test_client_fixture(test_app_with_auth) -> Generator[TestClient, None, None]:
     """returns a requests object of the current app,
     with the objects defined in the model created in it.
 
@@ -233,8 +248,9 @@ def test_client_fixture( test_app_with_auth) -> Generator[TestClient, None, None
 
 
 @pytest.fixture(scope="function")
-def test_client_fixture_w_alert_cap( test_app_with_auth) -> Generator[TestClient, None, None]:
+def test_client_fixture_w_alert_cap(
+    test_app_with_auth,
+) -> Generator[TestClient, None, None]:
 
     def get_db() -> Generator[sqlmodel.Session, None, None]:
         yield db_test_connection
-

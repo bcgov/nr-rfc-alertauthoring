@@ -1,16 +1,15 @@
 import datetime
 import logging
-from typing import Dict, List
+from typing import List
 
 import pytest
 from helpers.alert_helpers import (
     create_alertlvl_basin_dict,
     create_fake_alert,
-    update_fake_alert,
 )
 from sqlmodel import Session, select
 from src.types import AlertAreaLevel
-from src.v1.crud import crud_alerts, crud_cap
+from src.v1.crud import crud_alerts
 from src.v1.models import alerts as alerts_models
 from src.v1.models import basins as basins_model
 
