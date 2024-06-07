@@ -497,39 +497,41 @@ def get_latest_history(session: Session, alert_id: int):
     :rtype: model.Alert_History
     """
     # find the last history id, then use that to get the last history record
-    history_id_query = select(alerts_models.Alert_History.alert_history_id).order_by(
-        alerts_models.Alert_History.alert_history_id.desc()
-    )
-    history_id_record = session.exec(history_id_query).first()
-    LOGGER.debug(f"history_id_query: {history_id_record}")
-
-    history_query = (
-        select(
-            alerts_models.Alert_History,
-            alerts_models.Alert_Area_History,
-            alerts_models.Alert_Levels,
-            basins_model.Basins,
-        )
+    history_id_query = (
+        select(alerts_models.Alert_History)
         .where(alerts_models.Alert_History.alert_id == alert_id)
-        .where(
-            alerts_models.Alert_History.alert_history_id
-            == alerts_models.Alert_Area_History.alert_history_id
-        )
-        .where(
-            alerts_models.Alert_Area_History.alert_level_id
-            == alerts_models.Alert_Levels.alert_level_id
-        )
-        .where(
-            alerts_models.Alert_Area_History.basin_id == basins_model.Basins.basin_id
-        )
-        .where(alerts_models.Alert_History.alert_history_id == history_id_record)
+        .order_by(alerts_models.Alert_History.alert_history_id.desc())
     )
-    history_query = history_query.order_by(
-        alerts_models.Alert_History.alert_updated.desc()
-    )
-    LOGGER.debug(f"history query: {history_query}")
-    history_record_result = session.exec(history_query)
-    history_record = history_record_result.all()
+    history_record = session.exec(history_id_query).first()
+    LOGGER.debug(f"history_rec: {history_record}")
+
+    # history_query = (
+    #     select(
+    #         alerts_models.Alert_History,
+    #         alerts_models.Alert_Area_History,
+    #         alerts_models.Alert_Levels,
+    #         basins_model.Basins,
+    #     )
+    #     .where(alerts_models.Alert_History.alert_id == alert_id)
+    #     .where(
+    #         alerts_models.Alert_History.alert_history_id
+    #         == alerts_models.Alert_Area_History.alert_history_id
+    #     )
+    #     .where(
+    #         alerts_models.Alert_Area_History.alert_level_id
+    #         == alerts_models.Alert_Levels.alert_level_id
+    #     )
+    #     .where(
+    #         alerts_models.Alert_Area_History.basin_id == basins_model.Basins.basin_id
+    #     )
+    #     .where(alerts_models.Alert_History.alert_history_id == history_id_record)
+    # )
+    # history_query = history_query.order_by(
+    #     alerts_models.Alert_History.alert_updated.desc()
+    # )
+    # LOGGER.debug(f"history query: {history_query}")
+    # history_record_result = session.exec(history_query)
+    # history_record = history_record_result.first()
     return history_record
 
 
