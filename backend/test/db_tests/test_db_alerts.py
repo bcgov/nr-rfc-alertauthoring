@@ -3,6 +3,10 @@ import logging
 from typing import List
 
 import pytest
+from helpers.alert_helpers import (
+    create_alertlvl_basin_dict,
+    create_fake_alert,
+)
 from sqlmodel import Session, select
 from src.types import AlertAreaLevel
 from src.v1.crud import crud_alerts
@@ -141,6 +145,9 @@ def test_update_alert_parameter(
         alert_links=alert_record_results[0].alert_links,
     )
 
+    # before the record gets updated need to write the history record
+    crud_alerts.create_history_record(session=session, alert=alert_record_results[0])
+
     # pass the updated record with the new description to the update_alert
     # function, which should create a new history record and a new alert record
     updated_record = crud_alerts.update_alert(
@@ -233,6 +240,9 @@ def test_add_new_alert_links(db_test_connection, alert_dict, alert_basin_write):
         alert=alert_basin_write,
     )
     alert_basin_write.alert_links.append(alert_area_simi_high)
+
+    # create the history record
+    crud_alerts.create_history_record(session=session, alert=new_alert)
 
     # do the actual update that we are testing
     #   - write the new alert level / basin data to the database
@@ -338,169 +348,75 @@ def test_add_new_alert_links(db_test_connection, alert_dict, alert_basin_write):
     # cleanup... delete the record that was created.
 
 
-# fraser and liard are net new, Skeena is an existing record with a new alert level
 @pytest.mark.parametrize(
-    "new_basin_name,new_alert_level",
+    "existing_alert_list",
     [
-        ["Fraser River", None],
-        ["Liard", None],
-        ["Skeena", "Flood Warning"],
-        ["Fraser River", "Flood Watch"],
+        [
+            {
+                "alert_level": "High Streamflow Advisory",
+                "basin_names": ["Central Coast", "Eastern Vancouver Island"],
+            },
+        ],
+        [
+            {
+                "alert_level": "High Streamflow Advisory",
+                "basin_names": ["Central Coast", "Eastern Vancouver Island"],
+            },
+            {"alert_level": "Flood Watch", "basin_names": ["Skeena"]},
+            {
+                "alert_level": "Flood Warning",
+                "basin_names": ["Northern Vancouver Island"],
+            },
+        ],
     ],
 )
-def test_update_existing_basin_alert_level(
-    db_with_alert, alert_dict, alert_basin_write, new_basin_name, new_alert_level
-):
-    """
-    This method gets the two parameters:
-        * new_basin_name
-        * new_alert_level
+def test_alert_history(db_test_connection, existing_alert_list):
+    session = db_test_connection
 
-    The test will take the default alert record, change the basin name to the new_basin_name
-    and the alert_level to the new alert level, then make sure that the changes
-    exist in the database, and then also verify that the history of the record
-    has been tracked correctly.
+    fake_alert = create_fake_alert(existing_alert_list)
+    LOGGER.debug(f"fake_alert: {fake_alert}")
+    input_alert = create_fake_alert(existing_alert_list)
+    input_alert_db = crud_alerts.create_alert(session=session, alert=input_alert)
 
-    Should:
-        * update the existing record in the database
-        * create a history record that tracks the changes of the alert / alert levels
-          in the database
+    # write the record to history
+    crud_alerts.create_history_record(session=session, alert=input_alert_db)
 
-
-    :param db_with_alert: database session with the data that is described in
-        alert_dict in the database
-    :type db_with_alert: session
-    :param alert_dict: a dictionary representing the alert that exists in the
-        database session
-    :type alert_dict: dict
-    :param alert_basin_write: same data as the dict, except is in a sqlmodel
-        data structure
-    :type alert_basin_write: alerts_models.Alert_Basins_Write
-    :param alert_data: again same data but as a database model object
-    :type alert_data: alerts_models.Alerts
-    """
-    session = db_with_alert
-
-    # if the basin is new then we overwrite the first record with a new basin
-    alert_link_index = 0
-    # check if there is already a record, and if there is make sure we are updating
-    # that one instead of the default position 0
-    alert_link_cntr = 0
-    for alert_link in alert_dict["alert_links"]:
-        if alert_link["basin"]["basin_name"] == new_basin_name:
-            alert_link_index = alert_link_cntr
-            break
-        alert_link_cntr += 1
-
-    # going to update the sample record that exists in the database, created
-    # in the fixture db_with_alert
-    old_basin_name = alert_dict["alert_links"][alert_link_index]["basin"]["basin_name"]
-    old_alert_level = alert_dict["alert_links"][alert_link_index]["alert_level"][
-        "alert_level"
-    ]
-    if not new_basin_name:
-        # if the basin isn't provided then just set it to be old basin.. nothing shoul
-        # actually get changed
-        new_basin_name = old_basin_name
-    if not new_alert_level:
-        new_alert_level = old_alert_level
-
-    LOGGER.info(
-        f"updating the basin: {old_basin_name}, with the basin {new_basin_name}"
-    )
-    LOGGER.info(
-        f"updating the alert level: {old_alert_level}, with the basin {new_alert_level}"
+    # now assert that the history record has been written
+    history_query = (
+        select(alerts_models.Alert_History)
+        .where(alerts_models.Alert_History.alert_id == input_alert_db.alert_id)
+        .order_by(alerts_models.Alert_History.alert_history_created)
     )
 
-    # get the record for the recently added basin
-    alrt_link_index = 0
-    for alert_lnk in alert_basin_write.alert_links:
-        LOGGER.debug(f"alert_lnk: {alert_lnk}, {alert_lnk.basin.basin_name}")
-        if alert_lnk.basin.basin_name == old_basin_name:
-            break
-        alrt_link_index += 1
+    history_record = session.exec(history_query).first()
 
-    # modify the basin for an incomming record, simulates the data structure
-    # that would be comming from an api request
-    alert_basin_write.alert_links[alrt_link_index].basin.basin_name = new_basin_name
-    alert_basin_write.alert_links[alrt_link_index].alert_level.alert_level = (
-        new_alert_level
+    # verify that the history record contains the correct data
+    assert history_record.alert_description == input_alert_db.alert_description
+    assert history_record.alert_status == input_alert_db.alert_status
+    assert (
+        history_record.alert_hydro_conditions == input_alert_db.alert_hydro_conditions
     )
-
-    # update the alert description with a new timestamp
-    alert_basin_write.alert_description = (
-        f"updated descriptions {datetime.datetime.now()}"
+    assert (
+        history_record.alert_meteorological_conditions
+        == input_alert_db.alert_meteorological_conditions
     )
+    assert history_record.author_name == input_alert_db.author_name
+    assert history_record.alert_updated == input_alert_db.alert_updated
 
-    # getting the alert record that is going to be updated, only so we can retrieve
-    # the alert_id, that is required for the update_alert method that is being
-    # tested
-    alert_data_sql = select(alerts_models.Alerts).where(
-        alerts_models.Alerts.alert_description == alert_dict["alert_description"]
-    )
-    alert_data = session.exec(alert_data_sql).all()[-1]
+    # create a dictionary of expected basins for easier assertion of history
+    # alert area records.
+    alert_lvl_basin_dict = create_alertlvl_basin_dict(existing_alert_list)
 
-    # now call the update method, to update the database
-    updated_record = crud_alerts.update_alert(
-        session=session,
-        alert_id=alert_data.alert_id,
-        updated_alert=alert_basin_write,
-    )
+    # verify related records have been captured
+    for history_area in history_record.alert_history_links:
+        LOGGER.debug(f"history_area: {history_area}")
+        LOGGER.debug(f"history basins: {history_area.basins}")
 
-    LOGGER.debug(f"updated_record: {updated_record}")
-    assert crud_alerts.is_alert_equal(updated_record, alert_basin_write, core_atributes_only=True)
-    assert crud_alerts.is_alert_equal(updated_record, alert_data, core_atributes_only=True)
-
-    # assert that the updated record contains what it should
-    alert_query = (
-        select(
-            alerts_models.Alert_Areas, basins_model.Basins, alerts_models.Alert_Levels
+        assert history_area.alert_levels.alert_level in alert_lvl_basin_dict
+        assert (
+            history_area.basins.basin_name
+            in alert_lvl_basin_dict[history_area.alert_levels.alert_level]
         )
-        .where(alerts_models.Alert_Areas.alert_id == updated_record.alert_id)
-        .where(alerts_models.Alert_Areas.basin_id == basins_model.Basins.basin_id)
-        .where(
-            alerts_models.Alert_Areas.alert_level_id
-            == alerts_models.Alert_Levels.alert_level_id
-        )
-        .where(basins_model.Basins.basin_name == new_basin_name)
-    )
-    LOGGER.debug(f"sql: {alert_query}")
-    query_record = session.exec(alert_query).first()
-    assert query_record.Basins.basin_name == new_basin_name
-    assert query_record.Alert_Levels.alert_level == new_alert_level
-
-    # get the history record for this alert
-    history_record = crud_alerts.get_latest_history(
-        session=session, alert_id=updated_record.alert_id
-    )
-
-    # for alert_history_link in history_record.alert_history_links:
-    #     LOGGER.debug(f"area_lvl: {alert_history_link}")
-    LOGGER.debug(f"history_record: {history_record}")
-    # need to verify that the history record relationship to the history area
-    # is the same as the alert record, prior to the update.
-    hist_basin_lvls = []
-    for hist_rec in history_record:
-        hist_basin_lvls.append(
-            [hist_rec.Basins.basin_name, hist_rec.Alert_Levels.alert_level]
-        )
-
-    # now get the basin / levels from the original data:
-    original_basin_lvls = []
-    for alert_link in alert_dict["alert_links"]:
-        original_basin_lvls.append(
-            [
-                alert_link["basin"]["basin_name"],
-                alert_link["alert_level"]["alert_level"],
-            ]
-        )
-
-    # sort for comparison
-    original_basin_lvls.sort()
-    hist_basin_lvls.sort()
-    LOGGER.debug(f"orginal levels: {original_basin_lvls}")
-    LOGGER.debug(f"hist levels: {hist_basin_lvls}")
-    assert original_basin_lvls == hist_basin_lvls
 
 
 def test_delete_alert_link(db_with_alert, alert_dict, alert_basin_write):
@@ -520,7 +436,7 @@ def test_delete_alert_link(db_with_alert, alert_dict, alert_basin_write):
     # this query fails when run all tests.
     LOGGER.debug(f"alert_data_sql: {alert_data_sql}")
     alert_results = session.exec(alert_data_sql)
-    #LOGGER.debug(f"alert_results: {alert_results.all()}")
+    # LOGGER.debug(f"alert_results: {alert_results.all()}")
     # grab the last record
     alert_data = alert_results.all()[-1]
     # now call the update method, to update the database
@@ -550,8 +466,6 @@ def test_is_alert_equal(db_with_alert: Session, alert_data_only: alerts_models.A
     are_equal = crud_alerts.is_alert_equal(
         alert1=alert_data, alert2=second_alert_record
     )
-
-
 
     # verify that comparison returns true when comparing the same object
     assert are_equal is True

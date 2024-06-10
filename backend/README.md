@@ -46,7 +46,7 @@
 * activate the env `source $(poetry env info --path)/bin/activate`
 * start uvicorn 
 
-```uvicorn src.main:app --host 0.0.0.0 --port 3000 --workers 1 --server-header --date-header --limit-concurrency 100 --reload --log-config ./logger.conf```
+```uvicorn src.main:app --host 0.0.0.0 --port 3003 --workers 1 --server-header --date-header --limit-concurrency 100 --reload --log-config ./logger.conf```
 
 ### Unit Testing
 - Run `docker-compose up -d backend-py-test` command to run the unit tests from the root directory.

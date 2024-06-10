@@ -120,6 +120,7 @@ class Alert_Levels(Alert_Levels_Read, table=True):
     alert_level_links: List[Alert_Areas] = Relationship(back_populates="alert_level")
     cap_link: Cap_Event = Relationship(back_populates="alert_level")
     cap_hist_link: "Cap_Event_History" = Relationship(back_populates="alert_levels")
+    alert_hist_level_link: "Alert_Area_History" = Relationship(back_populates="alert_levels")
 
 class Alert_Areas_Write(SQLModel):
     basin: BasinBase
@@ -208,7 +209,8 @@ class Alert_Area_History(SQLModel, table=True):
         primary_key=True,
     )
     alert_history: "Alert_History" = Relationship(back_populates="alert_history_links")
-
+    basins: "Basins" = Relationship(back_populates="basin_alert_hist_links")
+    alert_levels: "Alert_Levels" = Relationship(back_populates="alert_hist_level_link")
 
 from .cap import Cap_Comparison, Cap_Event_And_Areas, Cap_Event_History  # noqa: E402
 
