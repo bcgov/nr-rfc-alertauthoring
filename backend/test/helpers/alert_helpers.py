@@ -3,15 +3,11 @@ import logging
 import typing
 
 import faker
+from src.types import AlertDataDict
 from src.v1.models import alerts as alerts_models
 from src.v1.models import basins as basin_models
 
 LOGGER = logging.getLogger(__name__)
-
-
-AlertDataDict = typing.TypedDict(
-    "AlertDataDict", {"alert_level": str, "basin_names": typing.List[str]}
-)
 
 
 def create_alertlvl_basin_dict(
@@ -78,7 +74,7 @@ def create_fake_alert(alert_list: AlertDataDict) -> alerts_models.Alert_Basins_W
         alert_hydro_conditions=hydro_cond,
         alert_meteorological_conditions=met_cond,
         author_name=auth,
-        alert_status="active",
+        alert_status=alerts_models.AlertStatus.active.value,
         alert_created=datetime.datetime.now(datetime.timezone.utc),
         alert_updated=datetime.datetime.now(datetime.timezone.utc),
         alert_links=alert_area_list,
@@ -132,5 +128,3 @@ def create_update_model(alert_list: AlertDataDict) -> alerts_models.Alert_Basins
         alert_links=alert_area_list,
     )
     return out_data
-
-
