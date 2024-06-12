@@ -84,12 +84,3 @@ def test_get_caps(db_with_alert: Session, test_client_with_alert_and_cap, alert_
                 )
 
 
-def test_alert_cancel():
-    """
-    This test will run through various scenarios where the status of an alert
-    is changed from 'active' to 'cancel'
-
-    The test will verify that when this takes place any caps that have been
-    created for the alert are set to cancelled as well
-    """
-    pass

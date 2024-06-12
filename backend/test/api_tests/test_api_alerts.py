@@ -368,3 +368,22 @@ def test_create_alert_history(
     cleanup.cleanup(alert_id=existing_alert["alert_id"])
 
     session.commit()
+
+
+def test_alert_cancel(
+    test_client_fixture: fastapi.testclient,
+    db_test_connection: Session,
+    existing_alert_list: typing.List[AlertDataDict],
+):
+    """
+    Setup, will create a alert, and then update that alert through the api, setting
+    its status to 'Cancelled'
+
+    The following will then be verified:
+        * caps exist for the alert prior to the update
+        * after the alert caps have all been cancelled
+        * the alert status is 'Cancelled'
+        * the alert history record has the correct status (previous status)
+    """
+    # TODO: implement this test
+    pass

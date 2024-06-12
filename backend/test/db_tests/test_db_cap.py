@@ -4,6 +4,7 @@ import typing
 import pytest
 from helpers.alert_helpers import create_fake_alert, update_fake_alert
 from sqlmodel import Session, select
+from src.types import AlertDataDict
 from src.v1.crud import crud_alerts, crud_cap
 from src.v1.models import alerts as alerts_models
 from src.v1.models import basins as basin_models
@@ -209,7 +210,9 @@ def test_edit_alert_cap_events(db_with_alert_and_caps):
     ],
 )
 def test_record_cap_event_history(
-    db_test_connection, input_alert_list, updated_alert_list
+    db_test_connection: Session,
+    input_alert_list: typing.List[AlertDataDict],
+    updated_alert_list: typing.List[AlertDataDict],
 ):
     session = db_test_connection
 
@@ -316,7 +319,11 @@ def test_record_cap_event_history(
         ],
     ],
 )
-def test_new_cap_for_alert(db_test_connection, existing_alert_list, updated_alert_list):
+def test_new_cap_for_alert(
+    db_test_connection: Session,
+    existing_alert_list: typing.List[AlertDataDict],
+    updated_alert_list: typing.List[AlertDataDict],
+):
     """
     _summary_
 
@@ -457,7 +464,9 @@ def test_new_cap_for_alert(db_test_connection, existing_alert_list, updated_aler
     ],
 )
 def test_update_cap_for_alert(
-    db_test_connection, existing_alert_list, updated_alert_list
+    db_test_connection: Session,
+    existing_alert_list: typing.List[AlertDataDict],
+    updated_alert_list: typing.List[AlertDataDict],
 ):
     session = db_test_connection
 
@@ -585,7 +594,9 @@ def test_update_cap_for_alert(
     ],
 )
 def test_cancel_cap_for_alert(
-    db_test_connection, existing_alert_list, cancel_alert_list
+    db_test_connection,
+    existing_alert_list: typing.List[AlertDataDict],
+    cancel_alert_list: typing.List[AlertDataDict],
 ):
     """
     _summary_
@@ -684,7 +695,9 @@ def test_cancel_cap_for_alert(
         ],
     ],
 )
-def test_alert_cancelled(db_test_connection, existing_alert_list):
+def test_alert_cancelled(
+    db_test_connection, existing_alert_list: typing.List[AlertDataDict]
+):
     """
     This test will cancel an alert and then call 'update_caps' method and verify
     that the related caps have been cancelled
@@ -729,6 +742,7 @@ def test_alert_cancelled(db_test_connection, existing_alert_list):
 
 # Utility Methods to help with setting up test conditions
 # ---------------------------------------------------------------------------
+# TODO: move these to a helper or utility module
 
 
 def get_alert_level_dict(session: Session):
