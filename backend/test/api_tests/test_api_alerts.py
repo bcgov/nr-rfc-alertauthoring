@@ -11,6 +11,7 @@ import pytest
 import src.v1.crud.crud_alerts as crud_alerts
 from sqlmodel import Session
 from src.core.config import Configuration
+from src.types import AlertDataDict
 from src.v1.models import alerts as alert_model
 
 LOGGER = logging.getLogger(__name__)
@@ -258,7 +259,7 @@ def test_get_alert_levels(
 def test_create_alert_history(
     test_client_fixture: fastapi.testclient,
     db_test_connection: Session,
-    existing_alert_list: typing.List[alert_helpers.AlertDataDict],
+    existing_alert_list: typing.List[AlertDataDict],
 ):
     """
     Create a alert through the API, then verify that it exists in the database.

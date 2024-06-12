@@ -103,30 +103,15 @@ def update_alert(
     current_status_alert = crud_alerts.get_alert(session, alert_id=alert_id)
     LOGGER.debug(f"current description: {current_status_alert}")
     LOGGER.debug(f"incomming description: {alert.alert_description}")
-    # get incomming related (basin and alert_level) data
-    # get existing related (basin and alert_level ) data
-    # compare incomming and existing data
-    # separate changes into:
-    #   - net new area / alert level added - create-ALERT
-    #   - existing area / alert level removed - deleted-CANCEL
-    #   - existing area / alert level updated - update-UPDATE
-    #
     # record changes in the alert history table
     crud_alerts.create_history_record(session, current_status_alert)
 
-    # has the alert record changed / yes
-    #    - record the previous alert status in history
-    #    - update the alert record with incomming changes
-
-    # write history
-
-    # need to write the alert history here
-    #  TODO: --- ALERT HISTORY OPERATION goes here
-
+    # update the alert
     updated_alert = crud_alerts.update_alert(
         session=session, alert_id=alert_id, updated_alert=alert
     )
     LOGGER.debug(f"updated_alert: {updated_alert}")
+    
     # now update the author from the access token
     LOGGER.debug(f"token: {token}")
     updated_alert.author_name = token["display_name"]

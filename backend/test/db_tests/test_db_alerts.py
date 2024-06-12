@@ -8,7 +8,7 @@ from helpers.alert_helpers import (
     create_fake_alert,
 )
 from sqlmodel import Session, select
-from src.types import AlertAreaLevel
+from src.types import AlertAreaLevel, AlertDataDict
 from src.v1.crud import crud_alerts
 from src.v1.models import alerts as alerts_models
 from src.v1.models import basins as basins_model
@@ -370,11 +370,23 @@ def test_add_new_alert_links(db_test_connection, alert_dict, alert_basin_write):
         ],
     ],
 )
-def test_alert_history(db_test_connection, existing_alert_list):
+def test_alert_history(
+    db_test_connection: Session, existing_alert_list: List[AlertDataDict]
+):
+    """
+    creates a fake alert, then creates a history record from it, and then
+    verifies that the alert history record that was written to the database contains
+    the same data as the original data that was used to create it.
+
+    :param db_test_connection: input database session
+    :type db_test_connection: Session
+    :param existing_alert_list: a list of AlertDataDict dictionaries that are used
+        to create a fake alert record, and then record the record in the the alert
+        history table.
+    :type existing_alert_list: AlertDataDict
+    """
     session = db_test_connection
 
-    fake_alert = create_fake_alert(existing_alert_list)
-    LOGGER.debug(f"fake_alert: {fake_alert}")
     input_alert = create_fake_alert(existing_alert_list)
     input_alert_db = crud_alerts.create_alert(session=session, alert=input_alert)
 

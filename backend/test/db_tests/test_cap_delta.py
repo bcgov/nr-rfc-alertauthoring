@@ -15,12 +15,24 @@ LOGGER = logging.getLogger(__name__)
     "cap_comp_1_dict,cap_comp_2_dict,expected_result",
     [
         [{"Level1": ["basin1"]}, {"Level1": ["basin1", "basin2"]}, False],
-        [{"Level1": ["basin2", "basin3", "basin4"]}, {"Level1": ["basin3", "basin2", "basin4"]}, True],
-        [{"Level1": ["basin3", "basin4"]}, {"Level1": ["basin3", "basin2", "basin4"]}, False],
-        [{"Level1": ["basin2", "basin3", "basin4"]}, {"Level2": ["basin3", "basin2", "basin4"]}, False],
+        [
+            {"Level1": ["basin2", "basin3", "basin4"]},
+            {"Level1": ["basin3", "basin2", "basin4"]},
+            True,
+        ],
+        [
+            {"Level1": ["basin3", "basin4"]},
+            {"Level1": ["basin3", "basin2", "basin4"]},
+            False,
+        ],
+        [
+            {"Level1": ["basin2", "basin3", "basin4"]},
+            {"Level2": ["basin3", "basin2", "basin4"]},
+            False,
+        ],
         [{"Level1": ["basin4"]}, {"Level1": ["basin4"]}, True],
-        [{"Level1": []}, {"Level1": ["basin4"]}, False]
-    ]
+        [{"Level1": []}, {"Level1": ["basin4"]}, False],
+    ],
 )
 def test_is_cap_comp_equal(cap_comp_1_dict, cap_comp_2_dict, expected_result):
     """
@@ -37,7 +49,9 @@ def test_is_cap_comp_equal(cap_comp_1_dict, cap_comp_2_dict, expected_result):
     cap_comp_2 = cap_comp_from_dict(cap_comp_2_dict)
     delta_obj = crud_cap.CapDelta(
         existing_cap_struct=cap_comp_1,
-        new_cap_struct=cap_comp_2)
+        new_cap_struct=cap_comp_2,
+        incomming_alert_status=alerts_models.AlertStatus.active,
+    )
     actual_result = delta_obj.is_cap_comp_equal(cap_comp_1, cap_comp_2)
     assert actual_result == expected_result
 
@@ -48,11 +62,37 @@ def test_is_cap_comp_equal(cap_comp_1_dict, cap_comp_2_dict, expected_result):
         [{"Level1": ["basin1"]}, {"Level1": ["basin1", "basin2"]}, []],
         [{"Level1": ["basin1"]}, {"Level1": ["basin1"], "Level2": ["basin2"]}, []],
         [{"Level1": ["basin1"]}, {"Level2": ["basin2"]}, [{"Level1": ["basin1"]}]],
-        [{"Level2": ["basin2"], "Level3": ["basin3"]}, {"Level1": ["basin1"]}, [{"Level2": ["basin2"]}, {"Level3": ["basin3"]}]],
-        [{"Level2": ["basin2", "basin4", "basin3"], "Level3": ["basin7", "basin9"]}, {"Level1": ["basin1"]}, [{"Level2": ["basin2", "basin4", "basin3"]}, {"Level3": ["basin7", "basin9"]}]],
-        [{"Level2": ["basin2", "basin4", "basin3"], "Level3": ["basin7", "basin9"]}, {}, [{"Level2": ["basin2", "basin4", "basin3"]}, {"Level3": ["basin7", "basin9"]}]],
-        [{"Level2": ["basin2", "basin4"]}, {"Level2": ["basin2", "basin4", "basin3"]}, {}],
-        [{"Level1": ["basin2", "basin4"]}, {"Level2": ["basin2", "basin4", "basin3"]}, [{"Level1": ["basin2", "basin4"]}]]
+        [
+            {"Level2": ["basin2"], "Level3": ["basin3"]},
+            {"Level1": ["basin1"]},
+            [{"Level2": ["basin2"]}, {"Level3": ["basin3"]}],
+        ],
+        [
+            {"Level2": ["basin2", "basin4", "basin3"], "Level3": ["basin7", "basin9"]},
+            {"Level1": ["basin1"]},
+            [
+                {"Level2": ["basin2", "basin4", "basin3"]},
+                {"Level3": ["basin7", "basin9"]},
+            ],
+        ],
+        [
+            {"Level2": ["basin2", "basin4", "basin3"], "Level3": ["basin7", "basin9"]},
+            {},
+            [
+                {"Level2": ["basin2", "basin4", "basin3"]},
+                {"Level3": ["basin7", "basin9"]},
+            ],
+        ],
+        [
+            {"Level2": ["basin2", "basin4"]},
+            {"Level2": ["basin2", "basin4", "basin3"]},
+            {},
+        ],
+        [
+            {"Level1": ["basin2", "basin4"]},
+            {"Level2": ["basin2", "basin4", "basin3"]},
+            [{"Level1": ["basin2", "basin4"]}],
+        ],
     ],
 )
 def test_cap_delta_cancels(existing_cap_dict, new_caps_dict, cancel_list):
@@ -72,11 +112,12 @@ def test_cap_delta_cancels(existing_cap_dict, new_caps_dict, cancel_list):
     for cancel_dict in cancel_list:
         expected_cap_comp.extend(cap_comp_from_dict(cancel_dict))
 
-
     delta_obj = crud_cap.CapDelta(
         existing_cap_struct=existing_cap_comp,
-        new_cap_struct=new_cap_comp)
-    
+        new_cap_struct=new_cap_comp,
+        incomming_alert_status=alerts_models.AlertStatus.active,
+    )
+
     actual_cancels = delta_obj.getCancels()
     LOGGER.debug(f"actual_cancels: {actual_cancels}")
     LOGGER.debug(f"expected cancels: {expected_cap_comp}")
@@ -88,11 +129,26 @@ def test_cap_delta_cancels(existing_cap_dict, new_caps_dict, cancel_list):
 @pytest.mark.parametrize(
     "existing_cap_dict,new_caps_dict,update_list",
     [
-        [{"Level1": ["basin1"]}, {"Level1": ["basin1", "basin2"]}, [{"Level1": ["basin1", "basin2"]}]],
+        [
+            {"Level1": ["basin1"]},
+            {"Level1": ["basin1", "basin2"]},
+            [{"Level1": ["basin1", "basin2"]}],
+        ],
         [{"Level1": ["basin1"]}, {"Level1": ["basin1"]}, []],
-        [{"Level1": ["basin1", 'basin2']}, {"Level1": ["basin1"]}, [{"Level1": ["basin1"]}]],
+        [
+            {"Level1": ["basin1", "basin2"]},
+            {"Level1": ["basin1"]},
+            [{"Level1": ["basin1"]}],
+        ],
         [{}, {"Level1": ["basin1"]}, []],
-        [{"Level1": ["basin1", 'basin2', 'basin55'], "Level2": {"basin3", "basin4"}}, {"Level1": ["basin1", 'basin2'], "Level2": {"basin3", "basin4", "basin5"}}, [{"Level1": ["basin1", 'basin2']}, {"Level2": {"basin3", "basin4", "basin5"}} ]],
+        [
+            {"Level1": ["basin1", "basin2", "basin55"], "Level2": {"basin3", "basin4"}},
+            {"Level1": ["basin1", "basin2"], "Level2": {"basin3", "basin4", "basin5"}},
+            [
+                {"Level1": ["basin1", "basin2"]},
+                {"Level2": {"basin3", "basin4", "basin5"}},
+            ],
+        ],
     ],
 )
 def test_cap_delta_updates(existing_cap_dict, new_caps_dict, update_list):
@@ -114,7 +170,7 @@ def test_cap_delta_updates(existing_cap_dict, new_caps_dict, update_list):
     :param new_caps_dict: same as existing_cap_dict, except this represents the new state
         as a result of edits to the related alert
     :type new_caps_dict: dict
-    :param create_list: a list of dictionaries describing the updates that should be 
+    :param create_list: a list of dictionaries describing the updates that should be
         issued.
     :type create_list: list
     """
@@ -123,7 +179,9 @@ def test_cap_delta_updates(existing_cap_dict, new_caps_dict, update_list):
 
     delta_obj = crud_cap.CapDelta(
         existing_cap_struct=existing_cap_comp,
-        new_cap_struct=new_cap_comp)
+        new_cap_struct=new_cap_comp,
+        incomming_alert_status=alerts_models.AlertStatus.active,
+    )
     actual_updates = delta_obj.getUpdates()
     LOGGER.debug(f"actual_updates: {actual_updates}")
 
@@ -149,12 +207,38 @@ def test_cap_delta_updates(existing_cap_dict, new_caps_dict, update_list):
     "existing_cap_dict,new_caps_dict,create_list",
     [
         [{"Level1": ["basin1"]}, {"Level1": ["basin1", "basin2"]}, []],
-        [{"Level1": ["basin1"]}, {"Level1": ["basin1"], "Level2": ["basin2"]}, [{"Level2": ["basin2"]}]],
+        [
+            {"Level1": ["basin1"]},
+            {"Level1": ["basin1"], "Level2": ["basin2"]},
+            [{"Level2": ["basin2"]}],
+        ],
         [{"Level1": ["basin1"]}, {"Level2": ["basin2"]}, [{"Level2": ["basin2"]}]],
-        [{"Level1": ["basin1"]}, {"Level2": ["basin2"], "Level3": ["basin3"]}, [{"Level2": ["basin2"]}, {"Level3": ["basin3"]}]],
-        [{"Level1": ["basin1"]}, {"Level2": ["basin2", "basin4", "basin3"], "Level3": ["basin7", "basin9"]}, [{"Level2": ["basin2", "basin4", "basin3"]}, {"Level3": ["basin7", "basin9"]}]],
-        [{}, {"Level2": ["basin2", "basin4", "basin3"], "Level3": ["basin7", "basin9"]}, [{"Level2": ["basin2", "basin4", "basin3"]}, {"Level3": ["basin7", "basin9"]}]],
-        [{"Level2": ["basin2", "basin4", "basin3"]}, {"Level2": ["basin2", "basin4"]}, {}]
+        [
+            {"Level1": ["basin1"]},
+            {"Level2": ["basin2"], "Level3": ["basin3"]},
+            [{"Level2": ["basin2"]}, {"Level3": ["basin3"]}],
+        ],
+        [
+            {"Level1": ["basin1"]},
+            {"Level2": ["basin2", "basin4", "basin3"], "Level3": ["basin7", "basin9"]},
+            [
+                {"Level2": ["basin2", "basin4", "basin3"]},
+                {"Level3": ["basin7", "basin9"]},
+            ],
+        ],
+        [
+            {},
+            {"Level2": ["basin2", "basin4", "basin3"], "Level3": ["basin7", "basin9"]},
+            [
+                {"Level2": ["basin2", "basin4", "basin3"]},
+                {"Level3": ["basin7", "basin9"]},
+            ],
+        ],
+        [
+            {"Level2": ["basin2", "basin4", "basin3"]},
+            {"Level2": ["basin2", "basin4"]},
+            {},
+        ],
     ],
 )
 def test_cap_delta_adds(existing_cap_dict, new_caps_dict, create_list):
@@ -177,7 +261,7 @@ def test_cap_delta_adds(existing_cap_dict, new_caps_dict, create_list):
 
     [level, [basin list]]
 
-    fixture provides detail about the 
+    fixture provides detail about the
 
     # things to test
     - basin added
@@ -194,11 +278,13 @@ def test_cap_delta_adds(existing_cap_dict, new_caps_dict, create_list):
     expected_cap_comp = []
     for create_dict in create_list:
         expected_cap_comp.extend(cap_comp_from_dict(create_dict))
-    #expected_cap_comp = cap_comp_from_dict(create_list)
-    
+    # expected_cap_comp = cap_comp_from_dict(create_list)
+
     delta_obj = crud_cap.CapDelta(
         existing_cap_struct=existing_cap_comp,
-        new_cap_struct=new_cap_comp)
+        new_cap_struct=new_cap_comp,
+        incomming_alert_status=alerts_models.AlertStatus.active,
+    )
     actual_creates = delta_obj.getCreates()
     LOGGER.debug(f"expected_creates: {actual_creates}")
     # LOGGER.debug("creates: " + str(creates))
@@ -226,11 +312,16 @@ def cap_comp_from_dict(cap_comp_dict) -> List[caps_models.Cap_Comparison]:
         for basin in cap_comp_dict[alert_level]:
             basin_model = basins_models.BasinBase(basin_name=basin)
             basins.append(basin_model)
-        cap_comp = caps_models.Cap_Comparison(alert_level=alert_lvl_model, basins=basins)
+        cap_comp = caps_models.Cap_Comparison(
+            alert_level=alert_lvl_model, basins=basins
+        )
         cap_comps.append(cap_comp)
     return cap_comps
 
-def cap_comp_to_dict(cap_comp: List[caps_models.Cap_Comparison]) -> List[Dict[str, List[str]]]:
+
+def cap_comp_to_dict(
+    cap_comp: List[caps_models.Cap_Comparison],
+) -> List[Dict[str, List[str]]]:
     """
     create a cap comparison object from a dictionary
 
@@ -249,5 +340,5 @@ def cap_comp_to_dict(cap_comp: List[caps_models.Cap_Comparison]) -> List[Dict[st
             basins.append(basin.basin_name)
         basins.sort()
         cap_comps.append({alert_level: basins})
-    #cap_comps.sort()
+    # cap_comps.sort()
     return cap_comps
