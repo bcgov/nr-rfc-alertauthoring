@@ -100,26 +100,35 @@ def update_alert(
     """
     LOGGER.debug(f"token: {token}")
     LOGGER.debug(f"alertid: {alert_id}")
+
+    # get the alert from the database that is going to be updated
     current_status_alert = crud_alerts.get_alert(session, alert_id=alert_id)
     LOGGER.debug(f"current description: {current_status_alert}")
     LOGGER.debug(f"incomming description: {alert.alert_description}")
-    # record changes in the alert history table
+
+    # record the current state of the alert as a history record
     crud_alerts.create_history_record(session, current_status_alert)
 
-    # update the alert
+    # update the alert with the new data
     updated_alert = crud_alerts.update_alert(
         session=session, alert_id=alert_id, updated_alert=alert
     )
     LOGGER.debug(f"updated_alert: {updated_alert}")
-    
+
     # now update the author from the access token
     LOGGER.debug(f"token: {token}")
     updated_alert.author_name = token["display_name"]
     session.add(updated_alert)
 
-    # write cap history
+    # record the current state of the cap events that are relted to the alert that
+    # is being updated.
     crud_cap.record_history(session, updated_alert)
-    # update cap events
+
+    # update cap events.  This operation will break the caps into three categories
+    #  - new caps (for the addition of a new alert level associated with the alert)
+    #  - updated caps (existing alert levels with areas added or removed)
+    #  - cancels (for alert levels that no longer have areas associated with them,
+    #             OR if the alert itself has been set to 'CANCEL')
     crud_cap.update_cap_event(session, updated_alert)
     return updated_alert
 
