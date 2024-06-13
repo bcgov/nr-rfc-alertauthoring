@@ -601,12 +601,14 @@ def test_cancel_cap_for_alert(
     """
     _summary_
 
-    :param db_test_connection: _description_
-    :type db_test_connection: _type_
-    :param existing_alert_list: _description_
-    :type existing_alert_list: _type_
-    :param updated_alert_list: _description_
-    :type updated_alert_list: _type_
+    :param db_test_connection: a database session
+    :type db_test_connection: Session
+    :param existing_alert_list: A list of AlertDataDict struct that provide the 
+        alert level and associated basins to create
+    :type existing_alert_list: List[AlertDataDict]
+    :param updated_alert_list: same as above except this list describes how the 
+        alert should be updated
+    :type updated_alert_list: List[AlertDataDict]
     """
     session = db_test_connection
     test_setup_dict = pre_test_setup(

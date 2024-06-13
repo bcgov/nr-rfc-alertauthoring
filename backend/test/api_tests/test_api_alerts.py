@@ -8,11 +8,14 @@ import fastapi.testclient
 import helpers.alert_helpers as alert_helpers
 import helpers.db_helpers as db_helpers
 import pytest
+import sqlmodel
 import src.v1.crud.crud_alerts as crud_alerts
+import src.v1.crud.crud_cap as crud_cap
 from sqlmodel import Session
 from src.core.config import Configuration
 from src.types import AlertDataDict
 from src.v1.models import alerts as alert_model
+from src.v1.models import cap as cap_models
 
 LOGGER = logging.getLogger(__name__)
 
@@ -370,6 +373,28 @@ def test_create_alert_history(
     session.commit()
 
 
+@pytest.mark.parametrize(
+    "existing_alert_list",
+    [
+        [
+            {
+                "alert_level": "High Streamflow Advisory",
+                "basin_names": ["Central Coast", "Eastern Vancouver Island"],
+            },
+        ],
+        [
+            {
+                "alert_level": "High Streamflow Advisory",
+                "basin_names": ["Central Coast", "Eastern Vancouver Island"],
+            },
+            {"alert_level": "Flood Watch", "basin_names": ["Skeena"]},
+            {
+                "alert_level": "Flood Warning",
+                "basin_names": ["Northern Vancouver Island"],
+            },
+        ],
+    ],
+)
 def test_alert_cancel(
     test_client_fixture: fastapi.testclient,
     db_test_connection: Session,
@@ -380,10 +405,72 @@ def test_alert_cancel(
     its status to 'Cancelled'
 
     The following will then be verified:
-        * caps exist for the alert prior to the update
-        * after the alert caps have all been cancelled
-        * the alert status is 'Cancelled'
-        * the alert history record has the correct status (previous status)
+        * caps exist prior to the update
+        * after the alert update (set to cancel), all caps are cancelled
     """
-    # TODO: implement this test
-    pass
+    session = db_test_connection
+    client = test_client_fixture
+    prefix = Configuration.API_V1_STR
+
+    # create a fake alert in the database
+    alert = alert_helpers.create_fake_alert(existing_alert_list)
+    alert_db = crud_alerts.create_alert(session=session, alert=alert)
+    alert_dict = alert.model_dump()
+
+    # create the associated caps for the alert in the database
+    caps = crud_cap.create_cap_event(session=session, alert=alert_db)
+
+    # commit the changes so they are visible to the database session that
+    # will be created for the api
+    session.commit()
+
+    # verify that the caps were in fact created, caps are unique to alert levels
+    # so the number of alert levels in the input should align with the number of
+    # caps created
+    distinct_alert_levels = set(
+        [
+            existing_alert_dict["alert_level"]
+            for existing_alert_dict in existing_alert_list
+        ]
+    )
+    assert len(caps) == len(distinct_alert_levels)
+
+    # now update the alert through the api setting its status to cancel
+    cancelled_alert_list = existing_alert_list[0:]  # create copy of list
+    cancelled_alert = alert_helpers.create_fake_alert(cancelled_alert_list)
+    cancelled_alert.alert_status = alert_model.AlertStatus("cancelled").value
+
+    LOGGER.debug(
+        f"alert_status {cancelled_alert.alert_status}: {type(cancelled_alert.alert_status)}"
+    )
+    cancelled_alert_dict = cancelled_alert.model_dump()
+
+    # now send the updated cancelled_alert to the api
+    # response = client.post(f"{prefix}/alerts/", json=alert_dict)
+
+    alert_dict_json = json.dumps(alert_dict)
+    LOGGER.debug(f"alert_dict_json: {alert_dict_json}")
+    response = client.patch(
+        f"{prefix}/alerts/{alert_db.alert_id}/", json=cancelled_alert_dict
+    )
+
+    assert response.status_code == 200
+
+    response_data = response.json()
+    LOGGER.debug(f"response_data: {response_data}")
+
+    cap_query = sqlmodel.select(cap_models.Cap_Event).where(
+        cap_models.Cap_Event.alert_id == response_data["alert_id"]
+    )
+
+    # query for the cancel record
+    caps = session.exec(cap_query).all()
+    for cap in caps:
+        LOGGER.debug(f"cap: {cap}")
+        assert cap.cap_event_status.cap_event_status == "CANCEL"
+
+    # now cleanup the caps and the alert
+    cleanup = db_helpers.db_cleanup(session=session)
+    cleanup.cleanup(alert_id=response_data["alert_id"])
+
+    session.commit()
