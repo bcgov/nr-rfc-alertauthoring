@@ -21,8 +21,8 @@ class db_cleanup:
         :param alert_id: the alert id that needs to be cleaned from the database
         :type alert_id: int
         """
-        self.delete_cap_events(alert_id=alert_id)
         self.delete_cap_event_history(alert_id=alert_id)
+        self.delete_cap_events(alert_id=alert_id)
         self.delete_alert_history(alert_id=alert_id)
         self.delete_alerts(alert_id=alert_id)
 
@@ -116,6 +116,7 @@ class db_cleanup:
             for cap_area in cap_areas:
                 self.session.delete(cap_area)
             self.session.delete(cap)
+            self.session.flush()
 
         self.session.flush()
 
