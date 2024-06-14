@@ -96,7 +96,7 @@ block-beta
   new_alert --> cap_event_2
 ```
 
-### Advisory Edited - Alert Level Changed 3
+### Advisory Edited - Alert Level Changed 3 (area alert level change / move)
 
 In the Alert, the basin ***Nechako*** is being upgrade from ***Flood Watch*** to 
 ***Flood Warning***.  A new CAP_EVENT will be generated for the alert level 
@@ -106,18 +106,20 @@ In the Alert, the basin ***Nechako*** is being upgrade from ***Flood Watch*** to
 block-beta
   columns 3
   space
-  new_alert("ALERT EDITED\nalert-id: 1\n----Basins / Alert Levels----\n- Fraser / High Streamflow\n- Upper Fraser / Flood Warning\n- Nechako / Flood Watch\n")
+  new_alert("ALERT EDITED\nalert-id: 1\n----Basins / Alert Levels----\n- Fraser / High Streamflow\n- Upper Fraser / Flood Watch\n- Nechako / Flood Warning\n")
   space
   space:3
   cap_event_1("CAP EVENT - UPDATED\ncap-event-id: 10\ncap-event-status: UPDATE\nbasins:'Fraser'\nalert_level:'High Streamflow'")
-  cap_event_2("CAP EVENT UPDATED\ncap-event-id: 11\ncap-event-status: UPDATE\nbasin:'Upper Fraser'\nalert_level:'Flood Warning'")
-  cap_event_3("CAP EVENT CREATED\ncap-event-id: 12\ncap-event-status: ALERT\nbasin: 'Nechako'\nalert_level:'Flood Watch'")
+  cap_event_2("CAP EVENT UPDATED\ncap-event-id: 11\ncap-event-status: UPDATE\nbasin:'Upper Fraser'\nalert_level:'Flood Watch'")
+  cap_event_3("CAP EVENT CREATED\ncap-event-id: 12\ncap-event-status: ALERT\nbasin: 'Nechako'\nalert_level:'Flood Warning'")
 
   new_alert --> cap_event_1
   new_alert --> cap_event_2
   new_alert --> cap_event_3
 
 ```
+
+* *An Alert object can only ever have three different caps associated with it, one for each of the different alert levels*
 
 ### Advisory Edited - Basin Removed 1
 
@@ -148,6 +150,8 @@ block-beta
   new_alert --> cap_event_3
 
 ```
+
+* *the cancelled CAP event will show the previous attributes associated with the CAP, prior to the cancel*
 
 ### Advisory Edited - Basin Removed 2
 
@@ -215,14 +219,43 @@ block-beta
   space
   space:3
   cap_event_1("CAP EVENT - UPDATE\ncap-event-id: 10\ncap-event-status: UPDATE\nbasins:'Middle Fraser', 'South Thompson'\nalert_level:'High Streamflow'")
-  cap_event_2("CAP EVENT - UPDATE\ncap-event-id: 11\ncap-event-status: UPDATE\nbasin:'Upper Fraser'\nalert_level:'Flood Watch'")
-  cap_event_3("CAP EVENT - ALERT\ncap-event-id: 13\ncap-event-status: ALERT\nbasin: 'Upper Fraser'\nalert_level:'Flood Warning'")
+  cap_event_2("CAP EVENT - UPDATE\ncap-event-id: 11\ncap-event-status: UPDATE\nbasin:'Upper Fraser'\nalert_level:'Flood Warning'")
+  cap_event_3("CAP EVENT - ALERT (unmodified)\ncap-event-id: 13\ncap-event-status: ALERT\nbasin: 'Upper Fraser'\nalert_level:'Flood Watch'")
 
   original_alert --> new_alert
   new_alert --> cap_event_1
   new_alert --> cap_event_2
   new_alert --> cap_event_3
 ```
+
+### Alert / Advisory is cancelled
+
+ALERT objects have a status set to either 'ACTIVE' or 'CANCELLED'.  If the 'Alert'
+is set to 'CANCELLED, then all the CAP Events that are associated with an Alert
+will be have their `cap-event-status` set to `CANCEL`
+
+
+```mermaid
+block-beta
+  columns 3
+  space
+  original_alert("ORIGINAL ALERT\nalert-id: 1\n----Basins / Alert Levels----\n-Fraser / High Streamflow\n-Upper Fraser / Flood Watch")
+  space:5
+  new_alert("ALERT CANCELLED\nalert-id: 1\n----Basins / Alert Levels----\n - Fraser / Flood Watch\n - Upper Fraser / Flood Warning\n - Middle Fraser / High Streamflow\n - South Thompson / High Streamflow")
+  space
+  space:3
+  cap_event_1("CAP EVENT - CANCEL\ncap-event-id: 10\ncap-event-status: CANCEL\nbasins:'Middle Fraser', 'South Thompson'\nalert_level:'High Streamflow'")
+  cap_event_2("CAP EVENT - CANCEL\ncap-event-id: 11\ncap-event-status: CANCEL\nbasin:'Upper Fraser'\nalert_level:'Flood Warning'")
+  cap_event_3("CAP EVENT - CANCEL (unmodified)\ncap-event-id: 13\ncap-event-status: CANCEL\nbasin: 'Upper Fraser'\nalert_level:'Flood Watch'")
+
+  original_alert --> new_alert
+  new_alert --> cap_event_1
+  new_alert --> cap_event_2
+  new_alert --> cap_event_3
+```
+
+When an 'Alert' gets cancelled, the CAP attributes are all left unchanged, and 
+only the `cap-event-status` attribute is updated to `cancel`
 
 ## Data Flow Summary
 

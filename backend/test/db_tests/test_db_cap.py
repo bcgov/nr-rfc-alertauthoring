@@ -4,6 +4,7 @@ import typing
 import pytest
 from helpers.alert_helpers import create_fake_alert, update_fake_alert
 from sqlmodel import Session, select
+from src.types import AlertDataDict
 from src.v1.crud import crud_alerts, crud_cap
 from src.v1.models import alerts as alerts_models
 from src.v1.models import basins as basin_models
@@ -209,7 +210,9 @@ def test_edit_alert_cap_events(db_with_alert_and_caps):
     ],
 )
 def test_record_cap_event_history(
-    db_test_connection, input_alert_list, updated_alert_list
+    db_test_connection: Session,
+    input_alert_list: typing.List[AlertDataDict],
+    updated_alert_list: typing.List[AlertDataDict],
 ):
     session = db_test_connection
 
@@ -316,7 +319,11 @@ def test_record_cap_event_history(
         ],
     ],
 )
-def test_new_cap_for_alert(db_test_connection, existing_alert_list, updated_alert_list):
+def test_new_cap_for_alert(
+    db_test_connection: Session,
+    existing_alert_list: typing.List[AlertDataDict],
+    updated_alert_list: typing.List[AlertDataDict],
+):
     """
     _summary_
 
@@ -457,7 +464,9 @@ def test_new_cap_for_alert(db_test_connection, existing_alert_list, updated_aler
     ],
 )
 def test_update_cap_for_alert(
-    db_test_connection, existing_alert_list, updated_alert_list
+    db_test_connection: Session,
+    existing_alert_list: typing.List[AlertDataDict],
+    updated_alert_list: typing.List[AlertDataDict],
 ):
     session = db_test_connection
 
@@ -585,17 +594,21 @@ def test_update_cap_for_alert(
     ],
 )
 def test_cancel_cap_for_alert(
-    db_test_connection, existing_alert_list, cancel_alert_list
+    db_test_connection,
+    existing_alert_list: typing.List[AlertDataDict],
+    cancel_alert_list: typing.List[AlertDataDict],
 ):
     """
     _summary_
 
-    :param db_test_connection: _description_
-    :type db_test_connection: _type_
-    :param existing_alert_list: _description_
-    :type existing_alert_list: _type_
-    :param updated_alert_list: _description_
-    :type updated_alert_list: _type_
+    :param db_test_connection: a database session
+    :type db_test_connection: Session
+    :param existing_alert_list: A list of AlertDataDict struct that provide the 
+        alert level and associated basins to create
+    :type existing_alert_list: List[AlertDataDict]
+    :param updated_alert_list: same as above except this list describes how the 
+        alert should be updated
+    :type updated_alert_list: List[AlertDataDict]
     """
     session = db_test_connection
     test_setup_dict = pre_test_setup(
@@ -662,7 +675,76 @@ def test_cancel_cap_for_alert(
             assert basin_name in event_basin_areas
 
 
+@pytest.mark.parametrize(
+    "existing_alert_list",
+    [
+        [
+            {
+                "alert_level": "High Streamflow Advisory",
+                "basin_names": ["Central Coast", "Eastern Vancouver Island"],
+            },
+        ],
+        [
+            {
+                "alert_level": "High Streamflow Advisory",
+                "basin_names": ["Central Coast", "Eastern Vancouver Island"],
+            },
+            {"alert_level": "Flood Watch", "basin_names": ["Skeena"]},
+            {
+                "alert_level": "Flood Warning",
+                "basin_names": ["Northern Vancouver Island"],
+            },
+        ],
+    ],
+)
+def test_alert_cancelled(
+    db_test_connection, existing_alert_list: typing.List[AlertDataDict]
+):
+    """
+    This test will cancel an alert and then call 'update_caps' method and verify
+    that the related caps have been cancelled
+
+    :param db_test_connection: incomming database session
+    :type db_test_connection: Session
+    :param existing_alert_list: _description_
+    :type existing_alert_list: _type_
+    """
+    session = db_test_connection
+
+    # create an initial alert record
+    existing_alert = create_fake_alert(existing_alert_list)
+    LOGGER.debug(f"fake_alert: {existing_alert}")
+    existing_alert_db = crud_alerts.create_alert(session=session, alert=existing_alert)
+
+    # create the related caps for this alert
+    caps = crud_cap.create_cap_event(session=session, alert=existing_alert_db)
+
+    # modify the alert record
+    updated_alert = existing_alert
+    updated_alert.alert_status = alerts_models.AlertStatus.cancelled.value
+    updated_record_db = crud_alerts.update_alert(
+        session=session,
+        alert_id=existing_alert_db.alert_id,
+        updated_alert=updated_alert,
+    )
+    assert updated_record_db.alert_status == alerts_models.AlertStatus.cancelled.value
+    # update the caps
+    crud_cap.update_cap_event(session=session, alert=updated_record_db)
+
+    # verify that the caps associated with the alert have all been cancelled.
+    cap_query = select(cap_models.Cap_Event).where(
+        cap_models.Cap_Event.alert_id == updated_record_db.alert_id
+    )
+    cap_data = session.exec(cap_query).all()
+    for cap in cap_data:
+        LOGGER.debug(f"cap: {cap}")
+        # assert cap.cap_event_status.cap_event_status ==
+        assert cap.cap_event_status.cap_event_status == "CANCEL"
+
+
 # Utility Methods to help with setting up test conditions
+# ---------------------------------------------------------------------------
+# TODO: move these to a helper or utility module
 
 
 def get_alert_level_dict(session: Session):

@@ -1,5 +1,6 @@
 # coding: utf-8
 import datetime
+from enum import Enum
 from typing import List, Optional
 
 from sqlalchemy import UniqueConstraint
@@ -12,6 +13,15 @@ from src.v1.models.basins import BasinBase, Basins, BasinsRead
 from src.v1.models.cap import Cap_Event
 
 default_schema = Settings.DEFAULT_SCHEMA
+
+
+# used to centralize the location of possible alert statuses
+# ideally this should be a lookup table in the database, but for now its easier
+# to cludge and store as strings in frontend.  These values are embedded into
+# the create-alert component, and the edit-alert component
+class AlertStatus(str, Enum):
+    active = "active"
+    cancelled = "cancelled"
 
 
 class AlertsBase(SQLModel):
@@ -37,10 +47,12 @@ class AlertsRead(AlertsBase):
 
     alert_id: Optional[int] = Field(default=None, primary_key=True)
     alert_created: datetime.datetime = Field(
-        default_factory=lambda: datetime.datetime.now(datetime.timezone.utc), nullable=False
+        default_factory=lambda: datetime.datetime.now(datetime.timezone.utc),
+        nullable=False,
     )
     alert_updated: datetime.datetime = Field(
-        default_factory=lambda: datetime.datetime.now(datetime.timezone.utc), nullable=False
+        default_factory=lambda: datetime.datetime.now(datetime.timezone.utc),
+        nullable=False,
     )
     # alert_created: datetime.datetime = Field(
     #     default_factory=datetime.datetime.utcnow, nullable=False
@@ -48,6 +60,7 @@ class AlertsRead(AlertsBase):
     # alert_updated: datetime.datetime = Field(
     #     default_factory=datetime.datetime.utcnow, nullable=False
     # )
+
 
 class Alert_Areas_Read(SQLModel):
     alert_id: int = Field(
@@ -61,6 +74,7 @@ class Alert_Areas_Read(SQLModel):
         foreign_key=f"{default_schema}.alert_levels.alert_level_id",
         primary_key=True,
     )
+
 
 class Alert_Areas(Alert_Areas_Read, table=True):
     """
@@ -81,6 +95,7 @@ class Alert_Areas(Alert_Areas_Read, table=True):
     alert_level: "Alert_Levels" = Relationship(back_populates="alert_level_links")
     alert: "Alerts" = Relationship(back_populates="alert_links")
 
+
 class Alerts(AlertsRead, table=True):
     """
     The definition for the database table that will store alerts
@@ -96,15 +111,19 @@ class Alerts(AlertsRead, table=True):
 
     alert_links: List["Alert_Areas"] = Relationship(back_populates="alert")
 
+
 class AlertsWithAreaLevels(AlertsRead, table=False):
     basin: Alert_Areas_Read | None = None
+
 
 class Alert_Levels_Base(SQLModel):
     alert_level: str
 
+
 class Alert_Levels_Read(Alert_Levels_Base):
     alert_level_id: int
     alert_level: str
+
 
 class Alert_Levels(Alert_Levels_Read, table=True):
     """
@@ -113,6 +132,7 @@ class Alert_Levels(Alert_Levels_Read, table=True):
     :param SQLModel: _description_
     :type SQLModel: _type_
     """
+
     __table_args__ = {"schema": default_schema}
     alert_level_id: int = Field(default=None, primary_key=True)
     alert_level: str = Field(nullable=False)
@@ -120,15 +140,20 @@ class Alert_Levels(Alert_Levels_Read, table=True):
     alert_level_links: List[Alert_Areas] = Relationship(back_populates="alert_level")
     cap_link: Cap_Event = Relationship(back_populates="alert_level")
     cap_hist_link: "Cap_Event_History" = Relationship(back_populates="alert_levels")
-    alert_hist_level_link: "Alert_Area_History" = Relationship(back_populates="alert_levels")
+    alert_hist_level_link: "Alert_Area_History" = Relationship(
+        back_populates="alert_levels"
+    )
+
 
 class Alert_Areas_Write(SQLModel):
     basin: BasinBase
     alert_level: Alert_Levels_Base
 
+
 class Alert_Areas_Read(SQLModel):
     basin: BasinsRead
     alert_level: Alert_Levels_Read
+
 
 class Alert_Basins(AlertsRead):
     alert_id: int
@@ -211,6 +236,7 @@ class Alert_Area_History(SQLModel, table=True):
     alert_history: "Alert_History" = Relationship(back_populates="alert_history_links")
     basins: "Basins" = Relationship(back_populates="basin_alert_hist_links")
     alert_levels: "Alert_Levels" = Relationship(back_populates="alert_hist_level_link")
+
 
 from .cap import Cap_Comparison, Cap_Event_And_Areas, Cap_Event_History  # noqa: E402
 

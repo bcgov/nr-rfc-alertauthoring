@@ -21,8 +21,8 @@ class db_cleanup:
         :param alert_id: the alert id that needs to be cleaned from the database
         :type alert_id: int
         """
-        self.delete_cap_events(alert_id=alert_id)
         self.delete_cap_event_history(alert_id=alert_id)
+        self.delete_cap_events(alert_id=alert_id)
         self.delete_alert_history(alert_id=alert_id)
         self.delete_alerts(alert_id=alert_id)
 
@@ -45,14 +45,21 @@ class db_cleanup:
         alert_areas = self.session.exec(alert_area_query).all()
         for alert_area in alert_areas:
             self.session.delete(alert_area)
+            self.session.delete(alert_area.alert)
+        self.session.flush()
 
-        # get the alert records that relate to the alert id
+        # The code above should delete the alert and the alert area records
+        # Below is a check to make sure that the alert records are deleted
         alerts_query = select(alerts_models.Alerts).where(
             alerts_models.Alerts.alert_id == alert_id
         )
         alerts = self.session.exec(alerts_query).all()
         for alert in alerts:
             LOGGER.info(f"Deleting alert record for alert id: {alert.alert_id}")
+            alert.alert_links = []
+            self.session.add(alert)
+            self.session.refresh(alert)
+
             self.session.delete(alert)
         self.session.flush()
 
@@ -109,6 +116,7 @@ class db_cleanup:
             for cap_area in cap_areas:
                 self.session.delete(cap_area)
             self.session.delete(cap)
+            self.session.flush()
 
         self.session.flush()
 
