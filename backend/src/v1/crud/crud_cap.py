@@ -220,8 +220,9 @@ def update_cap_for_alert(
     session: Session, alert: alerts_models.Alerts, cap_comps: cap_models.Cap_Comparison
 ):
     """
-    This method will modify existing alerts who's associated basins have been
-    modified.
+    This method will modify existing caps who's associated basins have been
+    modified.  This method will use the cap comparison object to determine
+    what has changed and only update things that have changed.
 
     :param session: input database transaction / session
     :type session: Session
