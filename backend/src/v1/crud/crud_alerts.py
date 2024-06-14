@@ -271,7 +271,7 @@ def update_alert(
         #       to fail, then verify that it did not get written to the database
         LOGGER.debug("not the same!")
 
-        # now update the alert record
+        # update the alert record...
         attributes_to_update = [
             "alert_description",
             "alert_hydro_conditions",
@@ -279,7 +279,7 @@ def update_alert(
             "author_name",
             "alert_status",
         ]
-        # update core attributes if different
+        # update core attributes if they are different
         for atrib in attributes_to_update:
             update_value = getattr(updated_alert, atrib)
             if getattr(current_alert, atrib) != update_value:
@@ -287,15 +287,17 @@ def update_alert(
                 setattr(current_alert, atrib, update_value)
                 session.add(current_alert)
                 session.flush()
-        # Dealing with the related basin / alert levels
-        # -- get the alert areas / levels incomming
+
+        # update the basins and alert levels
+        #   determining what needs to be updated
+        #   -- get the alert areas / levels incomming
         basin_levels_incomming = []
         for alert_link in updated_alert.alert_links:
             basin_levels_incomming.append(
                 [alert_link.basin.basin_name, alert_link.alert_level.alert_level]
             )
 
-        # -- remove the alert areas that are not in the incomming alert but are in existing
+        #   -- remove the alert areas that are not in the incomming alert but are in existing
         basin_levels_existing = []
         for alert_link in current_alert.alert_links:
             cur_bas_lvl = [
@@ -310,7 +312,8 @@ def update_alert(
                 session.delete(alert_link)
                 session.flush()  # have to flush or won't update the orm relationship
         session.refresh(current_alert)
-        # determine what needs to be added
+
+        # determine alert levels / basins that need to be added to the alert
         alert_area_to_add = []
         for alert_link in updated_alert.alert_links:
             cur_bas_lvl = [
@@ -324,9 +327,9 @@ def update_alert(
                     + f"{alert_link.basin.basin_name} {alert_link.alert_level.alert_level}"
                 )
                 alert_area_to_add.append(cur_bas_lvl)
-            # elif cur_bas_lvl not in basin_levels_incomming
 
-        # add alert areas that are in incomming but not in existing.
+        # Having determined what needs to be added to the alert, doing the actual
+        # add in the database
         for alert_link in alert_area_to_add:
             basin_name = alert_link[0]
             alert_level = alert_link[1]
@@ -339,8 +342,8 @@ def update_alert(
             current_alert.alert_links.append(alert_area)
             session.refresh(current_alert)
 
+        # update the last updated timestamp
         current_alert.alert_updated = datetime.datetime.now(datetime.timezone.utc)
-        # ---- Alert record update complete
 
     LOGGER.debug(f"current alert before send: {current_alert}")
     return current_alert

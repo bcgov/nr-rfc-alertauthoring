@@ -40,7 +40,9 @@ def get_cap_event_status(session: Session, status: str) -> cap_models.Cap_Event_
     return cap_status_create_record
 
 
-def create_cap_event(session: Session, alert: alerts_models.Alerts):
+def create_cap_event(
+    session: Session, alert: alerts_models.Alerts
+) -> List[cap_models.Cap_Event]:
     """
     The alert that will be generated in the database  is recieved as a parameter.
     The method will extract out the alert areas / basins and the alert_levels from the alert

@@ -214,8 +214,29 @@ def test_record_cap_event_history(
     input_alert_list: typing.List[AlertDataDict],
     updated_alert_list: typing.List[AlertDataDict],
 ):
+    """
+    Recieves an initial alert definition, and then an updated alert definition.
+
+    The test does the following:
+        * Creates the initial alert
+        * Records the history of the alert
+        * queries the database for the history records associated with the initial
+          alert, then verifies the attributes in the history record are the same
+          as the initial alert
+
+    :param db_test_connection: a database session
+    :type db_test_connection: Session
+    :param input_alert_list: a list of alert definitions that represent the state of
+        of the alert that should be created.
+    :type input_alert_list: typing.List[AlertDataDict]
+    :param updated_alert_list: a list of alert definitions that represent the updated
+        state of the alerts
+    :type updated_alert_list: typing.List[AlertDataDict]
+    """
     session = db_test_connection
 
+    # creating a cap_delta, a alerts_models.Alert_Basins_Write, and a
+    # alerts_models.Alerts object
     test_setup_dict = pre_test_setup(
         session=session,
         existing_alert_list=input_alert_list,
@@ -224,33 +245,41 @@ def test_record_cap_event_history(
     input_alert_db = test_setup_dict["existing_alert"]
     updated_alert_db = test_setup_dict["incomming_alert"]
 
-    caps = crud_cap.create_cap_event(session=session, alert=input_alert_db)
-    LOGGER.debug(f"caps for new alert: {caps}")
+    # update cap events for the incomming alert
+    crud_cap.update_cap_event(session=session, alert=input_alert_db)
 
-    LOGGER.debug(f"input alert: {input_alert_db}, {type(input_alert_db)}")
-    LOGGER.debug(f"updated alert: {updated_alert_db}, {type(updated_alert_db)}")
+    # query for  the existing caps associated with the alert
+    caps_query = select(cap_models.Cap_Event).where(
+        cap_models.Cap_Event.alert_id == input_alert_db.alert_id
+    )
+    caps = session.exec(caps_query).all()
 
     # now create the cap event history records
     crud_cap.record_history(session, updated_alert_db)
 
-    # finally verify the data in the cap history records created
+    # verify the data in the cap history records
     for cap_event in caps:
-        cap_hist_query = select(alerts_models.Cap_Event_History).where(
-            alerts_models.Cap_Event_History.cap_event_id == cap_event.cap_event_id
+        # query for the history records associated with the current cap event
+        cap_hist_query = (
+            select(alerts_models.Cap_Event_History)
+            .where(
+                alerts_models.Cap_Event_History.cap_event_id == cap_event.cap_event_id
+            )
+            .order_by(
+                alerts_models.Cap_Event_History.cap_event_hist_created_date.desc()
+            )
         )
         cap_hist_records = session.exec(cap_hist_query).all()
 
+        LOGGER.debug(
+            "number of cap history records associated with cap event id "
+            + f" {cap_event.cap_event_id} : {len(cap_hist_records)}"
+        )
+
         # if there are no changes, then there will not be any history records and
-        # this loop will not be entered
+        # this loop will not be entered.  There can be multiple history records if
+        # multiple area / alert levels have changed
         for cap_hist_record in cap_hist_records:
-            LOGGER.debug(f"cap_hist_records: {cap_hist_record}")
-            LOGGER.debug(
-                f"cap_hist_records alert_level: {cap_hist_record.alert_levels}"
-            )
-            LOGGER.debug(f"cap_hist_records status: {cap_hist_record.cap_event_status}")
-            LOGGER.debug(
-                f"cap_hist_records areas: {cap_hist_record.cap_event_areas_hist}"
-            )
 
             basin_names = []
             for basin in cap_hist_record.cap_event_areas_hist:
@@ -260,9 +289,10 @@ def test_record_cap_event_history(
                     for alert in input_alert_list
                     if alert["alert_level"] == cap_hist_record.alert_levels.alert_level
                 ][0]
+                # verify that the cap history contains the same basins as the original
+                # alert from which it was generated
                 assert basin.basins.basin_name in input_alert_dict["basin_names"]
-            # there should be a record that corresponds with the alert level
-
+            # verify that the alert level is one that exists for the original alert
             assert (
                 cap_hist_record.alert_levels.alert_level
                 == input_alert_dict["alert_level"]
@@ -603,10 +633,10 @@ def test_cancel_cap_for_alert(
 
     :param db_test_connection: a database session
     :type db_test_connection: Session
-    :param existing_alert_list: A list of AlertDataDict struct that provide the 
+    :param existing_alert_list: A list of AlertDataDict struct that provide the
         alert level and associated basins to create
     :type existing_alert_list: List[AlertDataDict]
-    :param updated_alert_list: same as above except this list describes how the 
+    :param updated_alert_list: same as above except this list describes how the
         alert should be updated
     :type updated_alert_list: List[AlertDataDict]
     """
