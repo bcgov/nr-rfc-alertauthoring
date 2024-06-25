@@ -143,3 +143,4 @@ frontend/hydro_alerting/junk.js
 junk/
 frontend/hydro_alerting/Caddyfile_mine
 frontend/hydro_alerting/Caddyfile_mine2
+test_db.db-journal
