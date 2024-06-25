@@ -474,3 +474,265 @@ def test_alert_cancel(
     cleanup.cleanup(alert_id=response_data["alert_id"])
 
     session.commit()
+
+    # [
+    #     {
+    #         "alert_level": "High Streamflow Advisory",
+    #         "basin_names": ["Central Coast", "Eastern Vancouver Island"],
+    #     },
+    #     {"alert_level": "Flood Watch", "basin_names": ["Skeena", "South Thompson"]},
+    #     {
+    #         "alert_level": "Flood Warning",
+    #         "basin_names": ["Northern Vancouver Island", "Liard"],
+    #     },
+    # ],
+
+
+@pytest.mark.parametrize(
+    "existing_alert_list,updated_alert_list",
+    [
+        [
+            [
+                {
+                    "alert_level": "High Streamflow Advisory",
+                    "basin_names": ["Central Coast", "Eastern Vancouver Island"],
+                }
+            ],
+            [
+                {
+                    "alert_level": "High Streamflow Advisory",
+                    "basin_names": [
+                        "Central Coast",
+                        "Eastern Vancouver Island",
+                        "Skagit",
+                    ],
+                }
+            ],
+        ],
+        [
+            [
+                {
+                    "alert_level": "High Streamflow Advisory",
+                    "basin_names": ["Central Coast", "Eastern Vancouver Island"],
+                }
+            ],
+            [
+                {
+                    "alert_level": "High Streamflow Advisory",
+                    "basin_names": ["Central Coast", "Eastern Vancouver Island"],
+                },
+                {
+                    "alert_level": "Flood Watch",
+                    "basin_names": ["Skagit"],
+                },
+            ],
+        ],
+        [
+            [
+                {
+                    "alert_level": "Flood Warning",
+                    "basin_names": ["Central Coast", "Eastern Vancouver Island"],
+                }
+            ],
+            [
+                {
+                    "alert_level": "Flood Watch",
+                    "basin_names": [
+                        "Central Coast",
+                        "Eastern Vancouver Island",
+                        "Skagit",
+                    ],
+                }
+            ],
+        ],
+        [
+            [
+                {
+                    "alert_level": "Flood Warning",
+                    "basin_names": ["Peace", "Northwest"],
+                }
+            ],
+            [
+                {
+                    "alert_level": "High Streamflow Advisory",
+                    "basin_names": [
+                        "Central Coast",
+                        "Eastern Vancouver Island",
+                        "Skagit",
+                    ],
+                }
+            ],
+        ],
+        [
+            [
+                {
+                    "alert_level": "Flood Warning",
+                    "basin_names": ["Peace", "Northwest"],
+                }
+            ],
+            [
+                {
+                    "alert_level": "High Streamflow Advisory",
+                    "basin_names": ["Peace"],
+                }
+            ],
+        ],
+        [
+            [
+                {
+                    "alert_level": "Flood Warning",
+                    "basin_names": ["Peace", "Northwest"],
+                }
+            ],
+            [
+                {
+                    "alert_level": "Flood Warning",
+                    "basin_names": [],
+                }
+            ],
+        ],
+        [
+            [
+                {
+                    "alert_level": "Flood Warning",
+                    "basin_names": ["Peace", "Northwest"],
+                }
+            ],
+            [
+                {
+                    "alert_level": "Flood Warning",
+                    "basin_names": [],
+                },
+                {
+                    "alert_level": "High Streamflow Advisory",
+                    "basin_names": ["Peace"],
+                },
+            ],
+        ],
+        [
+            [
+                {
+                    "alert_level": "High Streamflow Advisory",
+                    "basin_names": ["Peace"],
+                }
+            ],
+            [
+                {
+                    "alert_level": "High Streamflow Advisory",
+                    "basin_names": [],
+                },
+                {
+                    "alert_level": "Flood Warning",
+                    "basin_names": [
+                        "Skeena",
+                        "Northwest",
+                        "Fraser River",
+                        "South Thompson",
+                    ],
+                },
+                {
+                    "alert_level": "Flood Watch",
+                    "basin_names": ["Peace", "North Coast"],
+                },
+            ],
+        ],
+    ],
+)
+def test_alert_update_cap_history(
+    test_client_fixture: fastapi.testclient,
+    db_test_connection: Session,
+    existing_alert_list: typing.List[AlertDataDict],
+    updated_alert_list: typing.List[AlertDataDict],
+):
+    try:
+        written_original_alert = None
+        session = db_test_connection
+        client = test_client_fixture
+        prefix = Configuration.API_V1_STR
+
+        # using the data in existing_alert_list create an Alert_Basins_Write object
+        # then send that to the api to create the alert
+        original_alert = alert_helpers.create_fake_alert(existing_alert_list)
+        original_alert_dict = original_alert.model_dump()
+        LOGGER.debug(f"alert to create: {original_alert_dict}")
+        response = client.post(f"{prefix}/alerts/", json=original_alert_dict)
+        written_original_alert = response.json()
+        LOGGER.debug(f"resp_data: {written_original_alert}")
+
+        # update the alert with random data
+        # commented out because it was hard to debug random data.  Could
+        # be reimplemented
+        # updated_alert_list = alert_helpers.update_random_alert_data_dict(
+        #     alert_list=existing_alert_list, update=True
+        # )
+        LOGGER.debug(f"random data: {updated_alert_list}")
+        LOGGER.debug(f"source data: {existing_alert_list}")
+
+        # create new a Alert_Basins_Write object from the data.
+        written_original_alert_model = alert_model.Alert_Basins_Write(
+            **written_original_alert
+        )
+        updated_alert = alert_helpers.update_fake_alert(
+            existing_alert=written_original_alert_model, alert_list=updated_alert_list
+        )
+        updated_alert_dict = updated_alert.model_dump()
+        # do the actual update of the alert through the api
+        response = client.patch(
+            f"{prefix}/alerts/{written_original_alert['alert_id']}/",
+            json=updated_alert_dict,
+        )
+        assert response.status_code in [201, 200]
+        updated_alert = response.json()
+
+        session.flush()
+        # query database for the cap history records
+        cap_history_query = (
+            sqlmodel.select(cap_models.Cap_Event_History).where(
+                cap_models.Cap_Event_History.alert_id == updated_alert["alert_id"]
+            )
+            # .order_by(cap_models.Cap_Event_History.cap_event_hist_created_date.desc())
+        )
+        LOGGER.debug(f"query: {cap_history_query}")
+        cap_history_records = session.exec(cap_history_query).all()
+        LOGGER.debug(f"cap_history_records: {cap_history_records}")
+        LOGGER.debug(f"existing_alert_list: {existing_alert_list}")
+
+        # verify we have a cap event history record
+        assert cap_history_records
+
+        # verify its the correct record, associated with the alert
+        for cap_hist_rec in cap_history_records:
+            assert cap_hist_rec.alert_id == updated_alert["alert_id"]
+        # should have the same number of history records as there are alert levels
+        # in the existing_alert_list
+        LOGGER.debug(f"length of cap_history_records: {len(cap_history_records)}")
+        assert len(cap_history_records) == len(existing_alert_list)
+
+        # make sure all the alerts in existing_alert_list are in the cap history and
+        # vise versa
+        hist_alert_lvls = [
+            hist.alert_levels.alert_level for hist in cap_history_records
+        ]
+        for alert in existing_alert_list:
+            assert alert["alert_level"] in hist_alert_lvls
+
+        existing_alert_lvls = [alert["alert_level"] for alert in existing_alert_list]
+        for alert_lvl in hist_alert_lvls:
+            assert alert_lvl in existing_alert_lvls
+
+        # per alert level make sure the basins align with the basins from existing_alert_list
+        for hist in cap_history_records:
+            hist_basins = [
+                basin.basins.basin_name for basin in hist.cap_event_areas_hist
+            ]
+            for alert in existing_alert_list:
+                if alert["alert_level"] == hist.alert_levels.alert_level:
+                    for basin in alert["basin_names"]:
+                        LOGGER.debug(f"basin: {basin}")
+                        assert basin in hist_basins
+    finally:
+        if written_original_alert:
+            cleanup = db_helpers.db_cleanup(session=session)
+            cleanup.cleanup(alert_id=written_original_alert["alert_id"])
+
+            session.commit()
