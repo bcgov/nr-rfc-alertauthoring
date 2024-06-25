@@ -697,39 +697,53 @@ def test_alert_update_cap_history(
         LOGGER.debug(f"cap_history_records: {cap_history_records}")
         LOGGER.debug(f"existing_alert_list: {existing_alert_list}")
 
-        # verify we have a cap event history record
-        assert cap_history_records
+        # if the existing caps remain unchanged, and there is only the 
+        # addition of a new cap, then no history record will be written
+        if cap_history_records:
 
-        # verify its the correct record, associated with the alert
-        for cap_hist_rec in cap_history_records:
-            assert cap_hist_rec.alert_id == updated_alert["alert_id"]
-        # should have the same number of history records as there are alert levels
-        # in the existing_alert_list
-        LOGGER.debug(f"length of cap_history_records: {len(cap_history_records)}")
-        assert len(cap_history_records) == len(existing_alert_list)
+            # verify its the correct record, associated with the alert
+            for cap_hist_rec in cap_history_records:
+                assert cap_hist_rec.alert_id == updated_alert["alert_id"]
+            # should have the same number of history records as there are alert levels
+            # in the existing_alert_list
+            LOGGER.debug(f"length of cap_history_records: {len(cap_history_records)}")
+            assert len(cap_history_records) == len(existing_alert_list)
 
-        # make sure all the alerts in existing_alert_list are in the cap history and
-        # vise versa
-        hist_alert_lvls = [
-            hist.alert_levels.alert_level for hist in cap_history_records
-        ]
-        for alert in existing_alert_list:
-            assert alert["alert_level"] in hist_alert_lvls
-
-        existing_alert_lvls = [alert["alert_level"] for alert in existing_alert_list]
-        for alert_lvl in hist_alert_lvls:
-            assert alert_lvl in existing_alert_lvls
-
-        # per alert level make sure the basins align with the basins from existing_alert_list
-        for hist in cap_history_records:
-            hist_basins = [
-                basin.basins.basin_name for basin in hist.cap_event_areas_hist
+            # make sure all the alerts in existing_alert_list are in the cap history and
+            # vise versa
+            hist_alert_lvls = [
+                hist.alert_levels.alert_level for hist in cap_history_records
             ]
             for alert in existing_alert_list:
-                if alert["alert_level"] == hist.alert_levels.alert_level:
-                    for basin in alert["basin_names"]:
-                        LOGGER.debug(f"basin: {basin}")
-                        assert basin in hist_basins
+                assert alert["alert_level"] in hist_alert_lvls
+
+            existing_alert_lvls = [alert["alert_level"] for alert in existing_alert_list]
+            for alert_lvl in hist_alert_lvls:
+                assert alert_lvl in existing_alert_lvls
+
+            # per alert level make sure the basins align with the basins from existing_alert_list
+            for hist in cap_history_records:
+                hist_basins = [
+                    basin.basins.basin_name for basin in hist.cap_event_areas_hist
+                ]
+                for alert in existing_alert_list:
+                    if alert["alert_level"] == hist.alert_levels.alert_level:
+                        for basin in alert["basin_names"]:
+                            LOGGER.debug(f"basin: {basin}")
+                            assert basin in hist_basins
+        else:
+            # no history records have been created the existing alert then
+            # all the alerts in the existing_alert should exist in the updated
+            # alert, without any changes
+            for existing_alert in existing_alert_list:
+                updated_alert_levels = [alert['alert_level'] for alert in updated_alert_list]
+                assert existing_alert["alert_level"] in updated_alert_levels
+                # now check the basins
+
+                for basin in existing_alert["basin_names"]:
+                    # get the updated alert record that aligns with the existing alert
+                    updated_alert = [alert for alert in updated_alert_list if alert['alert_level'] == existing_alert['alert_level']][0]
+                    assert basin in updated_alert['basin_names']
     finally:
         if written_original_alert:
             cleanup = db_helpers.db_cleanup(session=session)
