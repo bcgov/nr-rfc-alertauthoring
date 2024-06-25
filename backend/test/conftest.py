@@ -214,6 +214,7 @@ def test_app_with_auth(db_test_connection, mock_access_token):
 
     def get_db() -> Generator[sqlmodel.Session, None, None]:
         yield db_test_connection
+        db_test_connection.commit()
 
     def authorize() -> Generator[bool, None, None]:
         LOGGER.debug("override the authroizations")
