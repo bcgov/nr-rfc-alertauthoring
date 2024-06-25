@@ -11,6 +11,7 @@ class db_cleanup:
 
     def __init__(self, session):
         self.session = session
+        self.session.rollback()
 
     def cleanup(self, alert_id: int):
         """
