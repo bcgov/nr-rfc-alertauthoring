@@ -16,6 +16,7 @@ router = APIRouter()
 LOGGER = logging.getLogger(__name__)
 
 
+# get all the alerts
 @router.get("/", response_model=List[alerts_models.Alert_Basins])
 def read_alerts(
     db: Session = Depends(session.get_db), skip: int = 0, limit: int = 100
@@ -33,6 +34,7 @@ def read_alerts(
     return alerts
 
 
+# get a specific alert
 @router.get("/{alert_id}", response_model=alerts_models.Alert_Basins)
 def read_alert(
     alert_id: int,
@@ -50,6 +52,7 @@ def read_alert(
     return alert
 
 
+# create an alert
 @router.post(
     "/",
     status_code=201,
@@ -66,10 +69,11 @@ def create_alert(
     caps = crud_cap.create_cap_event(session=session, alert=written_alert)
     # not doing anything with the caps at this point
     LOGGER.debug(f"cap created from the alert: {caps}")
-    session.commit()
+    # session.commit()
     return written_alert
 
 
+# update an alert
 @router.patch(
     "/{alert_id}" + "/",
     response_model=alerts_models.Alert_Basins,
@@ -119,6 +123,7 @@ def update_alert(
     LOGGER.debug(f"token: {token}")
     updated_alert.author_name = token["display_name"]
     session.add(updated_alert)
+    session.flush()
 
     # record the current state of the cap events that are relted to the alert that
     # is being updated.
