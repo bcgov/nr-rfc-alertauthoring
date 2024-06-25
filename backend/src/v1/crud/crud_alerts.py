@@ -340,6 +340,7 @@ def update_alert(
                 alert=current_alert,
             )
             current_alert.alert_links.append(alert_area)
+            session.flush()
             session.refresh(current_alert)
 
         # update the last updated timestamp
@@ -369,7 +370,7 @@ def create_area_alert_record(
         basin_sql = select(basins_model.Basins).where(
             basins_model.Basins.basin_name == basin_name
         )
-        basin_similk = session.exec(basin_sql).first()
+        basin_data = session.exec(basin_sql).first()
 
         alert_lvl_sql = select(alerts_models.Alert_Levels).where(
             alerts_models.Alert_Levels.alert_level == alert_level
@@ -377,13 +378,13 @@ def create_area_alert_record(
         alert_lvl = session.exec(alert_lvl_sql).first()
 
         alert_area = alerts_models.Alert_Areas(
-            alert_level=alert_lvl, basin=basin_similk, alert=alert
+            alert_level=alert_lvl, basin=basin_data, alert=alert
         )
     else:
-        basin_similk = basins_model.BasinBase(basin_name=basin_name)
+        basin_data = basins_model.BasinBase(basin_name=basin_name)
         alert_lvl = alerts_models.Alert_Levels_Base(alert_level=alert_level)
         alert_area = alerts_models.Alert_Areas_Write(
-            alert_level=alert_lvl, basin=basin_similk
+            alert_level=alert_lvl, basin=basin_data
         )
     return alert_area
 
