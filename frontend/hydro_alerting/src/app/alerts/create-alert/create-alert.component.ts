@@ -75,8 +75,8 @@ export class CreateAlertComponent implements OnInit {
     let new_alert: AlertCreate = {
       alert_description: this.create_alert_form.value.alert_description,
       alert_status: this.create_alert_form.value.alert_status,
-      alert_hydro_conditions: this.create_alert_form.value.meteorologicalDataEditor,
-      alert_meteorological_conditions: this.create_alert_form.value.hydrologicalDataEditor,
+      alert_hydro_conditions: this.create_alert_form.value.hydrologicalDataEditor,
+      alert_meteorological_conditions: this.create_alert_form.value.meteorologicalDataEditor,
       alert_links: basinAlertLevelData,
       // should get this from the id token
       author_name: this.authzService.payload.display_name
