@@ -99,36 +99,43 @@ def convert_to_alert(
         author_name=alert.author_name,
         alert_status=alert.alert_status,
     )
+    session.add(alert_write)
+    session.flush()
     for alert_area_level in alert.alert_links:
-        # get the basin object
-        basin_sql = select(basins_model.Basins).where(
-            basins_model.Basins.basin_name == alert_area_level.basin.basin_name
-        )
-        LOGGER.debug(
-            f"basin_sql: {basin_sql}, {session}, {alert_area_level.basin.basin_name}"
-        )
-        results = session.exec(basin_sql)
-        basin = results.first()
+        # don't try to write blank objects
+        if (
+            alert_area_level.basin.basin_name
+            and alert_area_level.alert_level.alert_level
+        ):
+            # get the basin object
+            basin_sql = select(basins_model.Basins).where(
+                basins_model.Basins.basin_name == alert_area_level.basin.basin_name
+            )
+            LOGGER.debug(
+                f"basin_sql: {basin_sql}, {session}, {alert_area_level.basin.basin_name}"
+            )
+            results = session.exec(basin_sql)
+            basin = results.first()
 
-        # get the alert level object
-        # alert_lvl_sql = select(alerts_models.Alert_Levels).where(
-        #     alerts_models.Alert_Levels.alert_level
-        #     == alert_area_level.alert_level.alert_level
-        # )
-        # alert_lvl = session.exec(alert_lvl_sql).first()
-        alert_lvl = get_alert_level(
-            session=session, alert_lvl_str=alert_area_level.alert_level.alert_level
-        )
+            # get the alert level object
+            # alert_lvl_sql = select(alerts_models.Alert_Levels).where(
+            #     alerts_models.Alert_Levels.alert_level
+            #     == alert_area_level.alert_level.alert_level
+            # )
+            # alert_lvl = session.exec(alert_lvl_sql).first()
+            alert_lvl = get_alert_level(
+                session=session, alert_lvl_str=alert_area_level.alert_level.alert_level
+            )
 
-        LOGGER.debug(f"basin: {basin}")
-        LOGGER.debug(f"alert level: {alert_lvl}")
+            LOGGER.debug(f"basin: {basin}")
+            LOGGER.debug(f"alert level: {alert_lvl}")
 
-        # using the alert/basin/alert_level to create a junction table
-        # entry
-        alert_area = alerts_models.Alert_Areas(
-            alert_level=alert_lvl, basin=basin, alert=alert_write
-        )
-        alert_write.alert_links.append(alert_area)
+            # using the alert/basin/alert_level to create a junction table
+            # entry
+            alert_area = alerts_models.Alert_Areas(
+                alert_level=alert_lvl, basin=basin, alert=alert_write
+            )
+            alert_write.alert_links.append(alert_area)
     return alert_write
 
 
