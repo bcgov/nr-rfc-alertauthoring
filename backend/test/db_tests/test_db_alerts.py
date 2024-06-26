@@ -4,6 +4,7 @@ from typing import List
 
 import pytest
 from helpers.alert_helpers import (
+    AlertAreaLevel_to_AlertDataDict,
     create_alertlvl_basin_dict,
     create_fake_alert,
 )
@@ -16,43 +17,91 @@ from src.v1.models import basins as basins_model
 LOGGER = logging.getLogger(__name__)
 
 
+@pytest.mark.parametrize(
+    "test_levels",
+    [
+        [
+            {"alert_level": "High Streamflow Advisory", "basin": "Central Coast"},
+            {
+                "alert_level": "High Streamflow Advisory",
+                "basin": "Eastern Vancouver Island",
+            },
+        ],
+        [
+            {"alert_level": "High Streamflow Advisory", "basin": "Central Coast"},
+            {
+                "alert_level": "High Streamflow Advisory",
+                "basin": "Eastern Vancouver Island",
+            },
+            {"alert_level": "Flood Watch", "basin": "Skeena"},
+            {"alert_level": "Flood Warning", "basin": "Northern Vancouver Island"},
+        ],
+        [
+            {"basin": "Central Coast", "alert_level": "High Streamflow Advisory"},
+            {"basin": "Skeena", "alert_level": "Flood Watch"},
+            {"basin": "Northern Vancouver Island", "alert_level": "Flood Warning"},
+            {
+                "basin": "Eastern Vancouver Island",
+                "alert_level": "High Streamflow Advisory",
+            },
+            {"basin": "Western Vancouver Island", "alert_level": "Flood Watch"},
+            {"basin": "Central Vancouver Island", "alert_level": "Flood Warning"},
+        ],
+    ],
+)
 def test_create_alert_with_basins_and_level(
-    db_test_connection: Session,
-) -> List[AlertAreaLevel]:
-    # tests the crud functions in the crud_alerts.py file
-    test_levels: List[AlertAreaLevel] = [
-        {"basin": "Central Coast", "alert_level": "High Streamflow Advisory"},
-        {"basin": "Skeena", "alert_level": "Flood Watch"},
-        {"basin": "Northern Vancouver Island", "alert_level": "Flood Warning"},
-        {
-            "basin": "Eastern Vancouver Island",
-            "alert_level": "High Streamflow Advisory",
-        },
-        {"basin": "Western Vancouver Island", "alert_level": "Flood Watch"},
-        {"basin": "Central Vancouver Island", "alert_level": "Flood Warning"},
-    ]
-
+    db_test_connection: Session, test_levels: List[AlertAreaLevel]
+):
     session = db_test_connection
-    # create an alert to set
-    alert = alerts_models.Alerts(
-        alert_created=datetime.datetime.utcnow(),
-        alert_updated=datetime.datetime.utcnow(),
-        author_name="test_author",
-        alert_status="active",
-        alert_hydro_conditions="testing conditions",
-        alert_meteorological_conditions="testing meteor conditions",
-        alert_description="testing alert description",
-    )
-    # add alert to db
-    alert = crud_alerts.create_alert_with_basins_and_level(
-        session=session, alert=alert, basin_levels=test_levels
-    )
-    # verify that its there
+
+    # create the fake alert with the data from the paramaterization
+    alert_data_dict = AlertAreaLevel_to_AlertDataDict(test_levels)
+    input_alert = create_fake_alert(alert_data_dict)
+    input_alert_dict = input_alert.model_dump()
+    input_alert_db = crud_alerts.create_alert(session=session, alert=input_alert)
+
+    # verify that the data exists in the database
     alert_select = select(alerts_models.Alerts).where(
-        alerts_models.Alerts.alert_updated == alert.alert_updated
+        alerts_models.Alerts.alert_id == input_alert_db.alert_id
     )
-    alert_result = session.exec(alert_select).one()
-    assert alert_result.alert_created == alert.alert_created
+    alert_result = session.exec(alert_select).all()
+
+    assert len(alert_result) == 1
+    alert_result_record = alert_result[0]
+
+    # verify that the following parameters are the same between the data that was
+    # used to create the alert, and the alert in the database
+    params_to_check = [
+        "alert_description",
+        "alert_status",
+        "alert_hydro_conditions",
+        "alert_meteorological_conditions",
+        "author_name",
+    ]
+    for param in params_to_check:
+        assert getattr(alert_result_record, param) == input_alert_dict[param]
+
+    # organize the input_alert_dict into a dictionary to make it easier to compare
+    # the alert level and area data between what is in the database and what was
+    # sent to the request to create the record in the database.
+    input_alert_lvl_area_dict = {}
+    for alert_link in input_alert_dict["alert_links"]:
+        lvl = alert_link["alert_level"]["alert_level"]
+        if lvl not in input_alert_lvl_area_dict:
+            input_alert_lvl_area_dict[lvl] = []
+        input_alert_lvl_area_dict[lvl].append(alert_link["basin"]["basin_name"])
+
+    # now make sure all the levels and areas are set correctly
+    for alert_link in alert_result_record.alert_links:
+        LOGGER.debug(f"alert_link: {alert_link}")
+
+        # get the alert level, create the hierarchical struct for the alert levels / basins
+        # then do the assertions
+        assert alert_link.alert_level.alert_level in input_alert_lvl_area_dict
+        assert (
+            alert_link.basin.basin_name
+            in input_alert_lvl_area_dict[alert_link.alert_level.alert_level]
+        )
 
 
 def test_create_alert(db_test_connection: Session, alert_basin_write_data):

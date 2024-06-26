@@ -40,7 +40,9 @@ def get_cap_event_status(session: Session, status: str) -> cap_models.Cap_Event_
     return cap_status_create_record
 
 
-def create_cap_event(session: Session, alert: alerts_models.Alerts):
+def create_cap_event(
+    session: Session, alert: alerts_models.Alerts
+) -> List[cap_models.Cap_Event]:
     """
     The alert that will be generated in the database  is recieved as a parameter.
     The method will extract out the alert areas / basins and the alert_levels from the alert
@@ -136,7 +138,6 @@ def update_cap_event(session: Session, alert: alerts_models.Alerts):
 
     # only write history records if there are changes
     if creates or updates or cancels:
-        record_history(session, alert)
 
         LOGGER.debug(f"creates: {creates}")
         LOGGER.debug(f"updates: {updates}")
@@ -218,8 +219,9 @@ def update_cap_for_alert(
     session: Session, alert: alerts_models.Alerts, cap_comps: cap_models.Cap_Comparison
 ):
     """
-    This method will modify existing alerts who's associated basins have been
-    modified.
+    This method will modify existing caps who's associated basins have been
+    modified.  This method will use the cap comparison object to determine
+    what has changed and only update things that have changed.
 
     :param session: input database transaction / session
     :type session: Session
@@ -408,6 +410,7 @@ def __write_history_for_cap_comp(
         cur_cap_event = __get_cap_event(caps_for_alert, update.alert_level.alert_level)
 
         # creating the history record
+        # TODO: Should only update
         cap_event_history = cap_models.Cap_Event_History(
             alert_id=alert_id,
             cap_event_id=cur_cap_event.cap_event_id,
@@ -482,9 +485,8 @@ class CapCompare:
         :param alert: input alert object containing the new alert state.
         :type alert:
         """
-        levels = (
-            {}
-        )  # used to keep track of which events are associated with what alert level
+        levels = {}
+        # used to keep track of which events are associated with what alert level
         for alert_level_area in self.alert.alert_links:
             # basin = alert_level_area.basin
             LOGGER.debug(f"alert_level_area: {alert_level_area}")
@@ -508,7 +510,7 @@ class CapCompare:
             else:
                 levels[current_level_str].basins.append(basinBase)
         LOGGER.debug(f"levels: {levels}")
-        self.new_alert_cap_comp = levels.values()
+        self.new_alert_cap_comp = list(levels.values())
 
     def generate_existing_cap_comp_from_alert(self) -> List[cap_models.Cap_Comparison]:
         """
@@ -540,7 +542,7 @@ class CapCompare:
                     )
                 else:
                     levels[cap.alert_level.alert_level].basins.append(basinBase)
-        self.existing_alert_cap_comp = levels.values()
+        self.existing_alert_cap_comp = list(levels.values())
 
     def get_delta(self):
         """
