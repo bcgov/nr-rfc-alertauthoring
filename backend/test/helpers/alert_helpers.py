@@ -6,7 +6,7 @@ import random
 import typing
 
 import faker
-from src.types import AlertDataDict
+from src.types import AlertAreaLevel, AlertDataDict
 from src.v1.models import alerts as alerts_models
 from src.v1.models import basins as basin_models
 
@@ -57,7 +57,9 @@ def create_alert_area_list(
     return alert_area_list
 
 
-def create_fake_alert(alert_list: AlertDataDict) -> alerts_models.Alert_Basins_Write:
+def create_fake_alert(
+    alert_list: typing.List[AlertDataDict],
+) -> alerts_models.Alert_Basins_Write:
     """
     creates a fake alert object from a dictionary.  The dictionary is expected
     to contain the following keys:
@@ -87,6 +89,35 @@ def create_fake_alert(alert_list: AlertDataDict) -> alerts_models.Alert_Basins_W
     )
     LOGGER.debug(f"fake alert: {alert}")
     return alert
+
+
+def AlertAreaLevel_to_AlertDataDict(
+    input_alert_area_levels: typing.List[AlertAreaLevel],
+) -> typing.List[AlertDataDict]:
+    """
+    in order to accomodate older tests that used the AlertAreaLevel data model to
+    define the alert areas, and alert levels for test conditions, this function
+    will convert from the AlertAreaLevel data model to the Alert_Areas_Write data
+    to allow other methods in this library to be used to parameterize testing.
+
+    :param input_alert_area_levels: a list of AlertAreaLevel data models to be converted
+        to Alert_Areas_Write models
+    :type input_alert_area_levels: typing.List[AlertAreaLevel]
+    :return: _description_
+    :rtype: typing.List[alerts_models.Alert_Areas_Write]
+    """
+    tmp_dict = {}
+    for alert_area_level in input_alert_area_levels:
+        if alert_area_level["alert_level"] not in tmp_dict:
+            tmp_dict[alert_area_level["alert_level"]] = {
+                "alert_level": alert_area_level["alert_level"],
+                "basin_names": [alert_area_level["basin"]],
+            }
+        else:
+            tmp_dict[alert_area_level["alert_level"]]["basin_names"].append(
+                alert_area_level["basin"]
+            )
+    return list(tmp_dict.values())
 
 
 def update_random_alert_data_dict(
