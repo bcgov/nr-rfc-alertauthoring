@@ -76,6 +76,7 @@ def test_create_alert_with_basins_and_level(
         "alert_status",
         "alert_hydro_conditions",
         "alert_meteorological_conditions",
+        "additional_information",
         "author_name",
     ]
     for param in params_to_check:
@@ -110,6 +111,7 @@ def test_create_alert(db_test_connection: Session, alert_basin_write_data):
     written_alert = crud_alerts.create_alert(session=session, alert=alert)
     assert written_alert.alert_description == alert.alert_description
     assert written_alert.alert_status == alert.alert_status
+    assert written_alert.additional_information == alert.additional_information
     assert written_alert.alert_hydro_conditions == alert.alert_hydro_conditions
     assert (
         written_alert.alert_meteorological_conditions
@@ -189,6 +191,7 @@ def test_update_alert_parameter(
         alert_meteorological_conditions=alert_record_dict[
             "alert_meteorological_conditions"
         ],
+        additional_information=alert_record_dict["additional_information"],
         author_name=alert_record_dict["author_name"],
         alert_status=alert_record_dict["alert_status"],
         alert_links=alert_record_results[0].alert_links,
