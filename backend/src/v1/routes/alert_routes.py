@@ -24,7 +24,9 @@ def read_alerts(
     """
     Retrieve existing alerts.
     """
+    LOGGER.debug("incomming alert list request")
     alerts = crud_alerts.get_alerts(db)
+    LOGGER.debug(f"alerts: {alerts}")
     for alert in alerts:
         LOGGER.info(f"alerts: {alert}")
         LOGGER.info(f"alerts: {alert.alert_links}")

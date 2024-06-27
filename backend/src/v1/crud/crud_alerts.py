@@ -285,6 +285,7 @@ def update_alert(
             "alert_description",
             "alert_hydro_conditions",
             "alert_meteorological_conditions",
+            "additional_information",
             "author_name",
             "alert_status",
         ]
