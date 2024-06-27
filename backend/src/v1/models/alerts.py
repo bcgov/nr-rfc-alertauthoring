@@ -30,6 +30,7 @@ class AlertsBase(SQLModel):
     #       can accomodate a lot of text
     alert_hydro_conditions: str = Field(nullable=False)
     alert_meteorological_conditions: str = Field(nullable=False)
+    additional_information: str = Field(nullable=True)
     author_name: str = Field(nullable=True)
 
     # TODO: could further normalize and create a status table...
