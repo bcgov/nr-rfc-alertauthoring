@@ -52,6 +52,7 @@ def test_get_alerts(db_with_alert, test_client_fixture, alert_dict):
         "alert_description",
         "alert_hydro_conditions",
         "alert_meteorological_conditions",
+        "additional_information",
     ]
     for current_property in properties_to_check:
         assert alert_dict[current_property] == alert_record[current_property]
@@ -324,6 +325,7 @@ def test_create_alert_history(
         "alert_description",
         "alert_hydro_conditions",
         "alert_meteorological_conditions",
+        "additional_information",
         "alert_status",
         "author_name",
     ]
@@ -474,18 +476,6 @@ def test_alert_cancel(
     cleanup.cleanup(alert_id=response_data["alert_id"])
 
     session.commit()
-
-    # [
-    #     {
-    #         "alert_level": "High Streamflow Advisory",
-    #         "basin_names": ["Central Coast", "Eastern Vancouver Island"],
-    #     },
-    #     {"alert_level": "Flood Watch", "basin_names": ["Skeena", "South Thompson"]},
-    #     {
-    #         "alert_level": "Flood Warning",
-    #         "basin_names": ["Northern Vancouver Island", "Liard"],
-    #     },
-    # ],
 
 
 @pytest.mark.parametrize(
@@ -697,7 +687,7 @@ def test_alert_update_cap_history(
         LOGGER.debug(f"cap_history_records: {cap_history_records}")
         LOGGER.debug(f"existing_alert_list: {existing_alert_list}")
 
-        # if the existing caps remain unchanged, and there is only the 
+        # if the existing caps remain unchanged, and there is only the
         # addition of a new cap, then no history record will be written
         if cap_history_records:
 
@@ -717,7 +707,9 @@ def test_alert_update_cap_history(
             for alert in existing_alert_list:
                 assert alert["alert_level"] in hist_alert_lvls
 
-            existing_alert_lvls = [alert["alert_level"] for alert in existing_alert_list]
+            existing_alert_lvls = [
+                alert["alert_level"] for alert in existing_alert_list
+            ]
             for alert_lvl in hist_alert_lvls:
                 assert alert_lvl in existing_alert_lvls
 
@@ -736,14 +728,20 @@ def test_alert_update_cap_history(
             # all the alerts in the existing_alert should exist in the updated
             # alert, without any changes
             for existing_alert in existing_alert_list:
-                updated_alert_levels = [alert['alert_level'] for alert in updated_alert_list]
+                updated_alert_levels = [
+                    alert["alert_level"] for alert in updated_alert_list
+                ]
                 assert existing_alert["alert_level"] in updated_alert_levels
                 # now check the basins
 
                 for basin in existing_alert["basin_names"]:
                     # get the updated alert record that aligns with the existing alert
-                    updated_alert = [alert for alert in updated_alert_list if alert['alert_level'] == existing_alert['alert_level']][0]
-                    assert basin in updated_alert['basin_names']
+                    updated_alert = [
+                        alert
+                        for alert in updated_alert_list
+                        if alert["alert_level"] == existing_alert["alert_level"]
+                    ][0]
+                    assert basin in updated_alert["basin_names"]
     finally:
         if written_original_alert:
             cleanup = db_helpers.db_cleanup(session=session)

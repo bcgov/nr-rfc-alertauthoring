@@ -96,6 +96,7 @@ def convert_to_alert(
         alert_description=alert.alert_description,
         alert_hydro_conditions=alert.alert_hydro_conditions,
         alert_meteorological_conditions=alert.alert_meteorological_conditions,
+        additional_information=alert.additional_information,
         author_name=alert.author_name,
         alert_status=alert.alert_status,
     )
@@ -160,6 +161,7 @@ def create_history_record(session: Session, alert: alerts_models.Alerts):
         alert_description=alert.alert_description,
         alert_hydro_conditions=alert.alert_hydro_conditions,
         alert_meteorological_conditions=alert.alert_meteorological_conditions,
+        additional_information=alert.additional_information,
         author_name=alert.author_name,
         alert_status=alert.alert_status,
         alert_history_created=datetime.datetime.now(datetime.timezone.utc),
@@ -283,6 +285,7 @@ def update_alert(
             "alert_description",
             "alert_hydro_conditions",
             "alert_meteorological_conditions",
+            "additional_information",
             "author_name",
             "alert_status",
         ]

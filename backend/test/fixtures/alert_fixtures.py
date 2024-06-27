@@ -19,6 +19,7 @@ def alert_data_only(alert_dict) -> Generator[alerts_models.Alerts, None, None]:
         alert_updated=datetime.datetime(2024, 2, 3, 0, 32, 50, 468722),
         author_name=alert_dict["author_name"],
         alert_status=alert_dict["alert_status"],
+        additional_information=alert_dict["additional_information"],
         alert_hydro_conditions=alert_dict["alert_hydro_conditions"],
         alert_meteorological_conditions=alert_dict["alert_meteorological_conditions"],
         alert_description=alert_dict["alert_description"],
@@ -68,16 +69,16 @@ def db_with_alert(
     #     basin_levels=alert_basin_write,
     # )
 
-    crud_alerts.create_alert(
-        session=db_test_connection, alert=alert_basin_write
-    )
+    crud_alerts.create_alert(session=db_test_connection, alert=alert_basin_write)
     yield db_test_connection
 
     db_test_connection.rollback()
 
 
 @pytest.fixture(scope="function")
-def db_with_alert_and_data(db_test_connection, monkeypatch, alert_basin_write: alerts_models.Alert_Basins_Write):
+def db_with_alert_and_data(
+    db_test_connection, monkeypatch, alert_basin_write: alerts_models.Alert_Basins_Write
+):
     monkeypatch.setattr(src.db.session, "engine", db_test_connection.bind)
 
     alert = crud_alerts.create_alert(
@@ -111,6 +112,7 @@ def alert_dict():
         "author_name": "tony",
         "alert_description": f"testing alert description {alert_date}",
         "alert_hydro_conditions": "testing hydro conditions",
+        "additional_information": "testing additional information",
         "alert_meteorological_conditions": "testing meteorological conditions",
         "alert_links": [
             {
@@ -154,13 +156,14 @@ def alert_dict():
         ],
     }
     yield alert_dict
- 
+
 
 @pytest.fixture(scope="function")
-def test_client_with_alert_and_cap(test_app_with_auth, db_with_alert_and_caps, monkeypatch, alert_dict):
+def test_client_with_alert_and_cap(
+    test_app_with_auth, db_with_alert_and_caps, monkeypatch, alert_dict
+):
     session = db_with_alert_and_caps[0]
     alert = db_with_alert_and_caps[1]
-
 
     LOGGER.debug(f"alert id in database sent to client: {alert.alert_id}")
     # alert_from_session = db_with_alert_and_data[1]
@@ -173,10 +176,11 @@ def test_client_with_alert_and_cap(test_app_with_auth, db_with_alert_and_caps, m
         LOGGER.debug(f"get_db called, return type: {type(session)}")
         monkeypatch.setattr(session, "commit", session_commit_patch)
         yield session
+
     LOGGER.debug("here")
     test_app_with_auth.dependency_overrides[src.db.session.get_db] = get_db
     # query does NOT return the alert object that aligns with the alert_dict
     yield [TestClient(test_app_with_auth), session]
     session.rollback()
 
-    # the client session will automatically call 
+    # the client session will automatically call
