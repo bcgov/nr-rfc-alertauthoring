@@ -77,6 +77,16 @@
                 </mat-quill>
                 <mat-hint align="end" class="md-caption">Describe the hydrological conditions that contributed to this alert</mat-hint>
             </mat-form-field>
+            <mat-form-field floatLabel='always' class="alert-elements">
+                <mat-label>Additional Information</mat-label>
+                <mat-quill 
+                    formControlName=addInfoDataEditor
+                    [ngModelOptions]="{standalone: true}"
+                >
+                </mat-quill>
+                <mat-hint align="end" class="md-caption">Additional Information relating to the alert</mat-hint>
+            </mat-form-field>
+
             <br>
             <div class="alert-buttons">
                 <button mat-raised-button color="primary" (click)="submit_edits()">Submit Changes</button>

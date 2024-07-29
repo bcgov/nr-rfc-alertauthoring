@@ -59,6 +59,10 @@ export class EditAlertComponent implements OnInit {
   @ViewChild('hydrologicalDataEditor', {
     static: true
   }) hydrologicalDataEditor: MatQuill | undefined
+  @ViewChild('addInfoDataEditor', {
+    static: true
+  }) addInfoDataEditor: MatQuill | undefined
+
 
   test_param: string = "test";
 
@@ -81,6 +85,7 @@ export class EditAlertComponent implements OnInit {
       alert_status: ["",],
       meteorologicalDataEditor: [""],
       hydrologicalDataEditor: [""],
+      addInfoDataEditor: [""],
       alert_updated_date: [],
       alert_created_date: [],
     });
@@ -107,7 +112,8 @@ export class EditAlertComponent implements OnInit {
         this.edit_alert_form.controls['alert_status'].setValue(alert.alert_status);
         this.edit_alert_form.setControl('meteorologicalDataEditor', new FormControl(alert.alert_meteorological_conditions))
         this.edit_alert_form.setControl('hydrologicalDataEditor', new FormControl(alert.alert_hydro_conditions))
-        
+        this.edit_alert_form.setControl('addInfoDataEditor', new FormControl(alert.additional_information))
+
         this.basinLvlDataService.setBasinAlertlvlComponentData(alert.alert_links);
         this.alert = of(alert);
       });
@@ -129,6 +135,7 @@ export class EditAlertComponent implements OnInit {
       alert_status: this.edit_alert_form.value.alert_status,
       alert_hydro_conditions: this.edit_alert_form.value.meteorologicalDataEditor,
       alert_meteorological_conditions: this.edit_alert_form.value.hydrologicalDataEditor,
+      additional_information: this.edit_alert_form.value.addInfoDataEditor,
       alert_links: this.basinLvlDataService.getAllBasinAlertLvlData(),
       author_name: this.authzService.payload.display_name,
     }
@@ -155,7 +162,7 @@ export class EditAlertComponent implements OnInit {
       console.log(`alert description: ${alert.alert_description}`);
       this.edit_alert_form.get('meteorologicalDataEditor')!.patchValue(alert.alert_meteorological_conditions);
       this.edit_alert_form.get('hydrologicalDataEditor')!.patchValue(alert.alert_hydro_conditions);
-      this.edit_alert_form.get('hydrologicalDataEditor')!.patchValue(alert.alert_hydro_conditions);
+      this.edit_alert_form.get('addInfoDataEditor')!.patchValue(alert.additional_information);
       this.edit_alert_form.get('alert_status')!.patchValue(alert.alert_status);
       this.edit_alert_form.get('alert_description')!.patchValue(alert.alert_description);
     });

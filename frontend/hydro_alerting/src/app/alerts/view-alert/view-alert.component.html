@@ -61,6 +61,12 @@
                     [modules]="{toolbar: false}" [readOnly]="true">
                 </mat-quill>
             </mat-form-field>
+            <mat-form-field floatLabel='always' class="alert-elements">
+                <mat-label>Additional Information</mat-label>
+                <mat-quill [(ngModel)]="addinfo_data_contents" [ngModelOptions]="{standalone: true}"
+                    [modules]="{toolbar: false}" [readOnly]="true">
+                </mat-quill>
+            </mat-form-field>
             <div id="start_edit" *ngIf="this.is_authorized">
                 <button mat-raised-button color="primary" (click)="route_to_edit()">Edit</button>
             </div>
