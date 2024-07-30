@@ -56,6 +56,7 @@ export class CreateAlertComponent implements OnInit {
       alert_status: ["",],
       meteorologicalDataEditor: [""],
       hydrologicalDataEditor: [""],
+      additionalInformationDataEditor: [""],
     });
     basinAlertLevelService.reset();
   }
@@ -77,6 +78,7 @@ export class CreateAlertComponent implements OnInit {
       alert_status: this.create_alert_form.value.alert_status,
       alert_hydro_conditions: this.create_alert_form.value.hydrologicalDataEditor,
       alert_meteorological_conditions: this.create_alert_form.value.meteorologicalDataEditor,
+      additional_information: this.create_alert_form.value.additionalInformationDataEditor,
       alert_links: basinAlertLevelData,
       // should get this from the id token
       author_name: this.authzService.payload.display_name
@@ -93,6 +95,7 @@ export class CreateAlertComponent implements OnInit {
     this.create_alert_form.get('alert_description')!.reset();
     this.create_alert_form.get('meteorologicalDataEditor')!.reset();
     this.create_alert_form.get('hydrologicalDataEditor')!.reset();
+    this.create_alert_form.get('additionalInformationDataEditor')!.reset();
     this.create_alert_form.get('alert_status')!.reset();
   }
 

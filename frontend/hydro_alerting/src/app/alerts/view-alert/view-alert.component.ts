@@ -47,6 +47,7 @@ export class ViewAlertComponent {
 
   meteorological_data_contents: string = "";
   hydrological_data_contents: string = "";
+  addinfo_data_contents?: string = "";
 
   // used to keep track if session has been authenticated
   authenticated: boolean = false;
@@ -81,6 +82,7 @@ export class ViewAlertComponent {
         console.log('alert: ' + JSON.stringify(alert));
         this.meteorological_data_contents = alert.alert_meteorological_conditions;
         this.hydrological_data_contents = alert.alert_hydro_conditions;
+        this.addinfo_data_contents = alert.additional_information;
         this.alert_description = alert.alert_description;
         this.alert_author = alert.author_name;
         this.alert = of(alert);

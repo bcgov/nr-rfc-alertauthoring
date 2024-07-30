@@ -17,6 +17,7 @@ export interface AlertCreate {
     alert_description: string;
     alert_hydro_conditions: string;
     alert_meteorological_conditions: string;
+    additional_information?: string;
     alert_status: string;
     alert_links?: AlertAreaLevels[] | undefined;
     author_name: string;
