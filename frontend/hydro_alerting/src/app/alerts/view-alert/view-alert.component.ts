@@ -16,6 +16,8 @@ import {AuthzService} from '../../services/authz.service';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
 
 import {ViewBasinLevelComponent} from '../../basin-alerts/view-basin-level/view-basin-level.component';
 
@@ -102,13 +104,18 @@ export class ViewAlertComponent {
    * @returns date string in the format of "ddd MMM D, YYYY HH:MM:ss"
    */
   format_date(date: string) {
+    // require('dayjs/locale/utc')
     //console.log("date: " + date);
     dayjs.extend(customParseFormat);
-    let date_djs = dayjs(date, "YYYY-MM-DDTHH:MM:SS.SSSSSS");
-    // console.log("date_djs: " + date_djs);
-    // TODO: all dates are in UTC atm... long term likely want to convert to 
-    //       local time zone
-    let date_str = date_djs.format('HH:MM:ss ddd MMM D, YYYY');
+    dayjs.extend(utc);
+    dayjs.extend(timezone);
+    // dateformat out of api: 2024-08-02T18:38:31.323767
+    //                        2024-08-02T18:39:54.078208
+    //"YYYY-MM-DDTHH:mm:ss.SSSSSS"
+    // parse utc date
+    let date_djs = dayjs.utc(date, "YYYY-MM-DDTHH:mm:ss.SSSSSS");
+    // render as local date
+    let date_str = date_djs.local().format('YYYY-MM-DDTHH:MM:SS.SSSSSS');
     return date_str;
   }
 

@@ -195,6 +195,7 @@ def create_alert(
 
     alert_write: alerts_models.Alerts = convert_to_alert(session, alert)
     create_time_stamp = datetime.datetime.now(datetime.timezone.utc)
+    LOGGER.debug(f"create_time_stamp: {create_time_stamp}")
     alert_write.alert_created = create_time_stamp
     alert_write.alert_updated = create_time_stamp
 
