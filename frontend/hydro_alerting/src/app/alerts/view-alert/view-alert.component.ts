@@ -109,13 +109,15 @@ export class ViewAlertComponent {
     dayjs.extend(customParseFormat);
     dayjs.extend(utc);
     dayjs.extend(timezone);
+
+    let date_format_string = "YYYY-MM-DDTHH:mm:ss.SSSSSS";
     // dateformat out of api: 2024-08-02T18:38:31.323767
     //                        2024-08-02T18:39:54.078208
     //"YYYY-MM-DDTHH:mm:ss.SSSSSS"
     // parse utc date
-    let date_djs = dayjs.utc(date, "YYYY-MM-DDTHH:mm:ss.SSSSSS");
+    let date_djs = dayjs.utc(date, date_format_string);
     // render as local date
-    let date_str = date_djs.local().format('YYYY-MM-DDTHH:MM:SS.SSSSSS');
+    let date_str = date_djs.local().format(date_format_string);
     return date_str;
   }
 
