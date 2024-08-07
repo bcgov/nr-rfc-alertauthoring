@@ -116,9 +116,14 @@ export class ViewAlertComponent {
     //"YYYY-MM-DDTHH:mm:ss.SSSSSS"
     // parse utc date
     let date_djs = dayjs.utc(date, date_format_string);
+
     // render as local date
-    let date_str = date_djs.local().format(date_format_string);
-    return date_str;
+    // let date_str = date_djs.local().format(date_format_string);
+    // return date_str;
+
+    // return as a date and have the browser render the date
+    let return_date = date_djs.local().toDate();
+    return return_date;
   }
 
   /**
