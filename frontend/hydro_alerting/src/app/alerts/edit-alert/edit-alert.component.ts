@@ -8,9 +8,13 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButton } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { ReactiveFormsModule } from '@angular/forms';
+
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone'
+import utc from 'dayjs/plugin/utc';
 dayjs.extend(timezone); // use plugin
+dayjs.extend(customParseFormat);
+dayjs.extend(utc);
 
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { MatSelectModule } from '@angular/material/select';
@@ -64,7 +68,6 @@ export class EditAlertComponent implements OnInit {
   }) addInfoDataEditor: MatQuill | undefined
 
 
-  test_param: string = "test";
 
   constructor(
     private route: ActivatedRoute,
@@ -100,15 +103,20 @@ export class EditAlertComponent implements OnInit {
       }))
       .subscribe((alert: Alert) => {
         console.log('alert: ' + JSON.stringify(alert));
-        dayjs.extend(customParseFormat);
-        this.test_param = "test";
+    
         // convert the date to a Date object to send to the ui
-        this.alert_create_date = dayjs(alert.alert_created, "YYYY-MM-DDTHH:MM:SS.SSSSSS").toDate();
-        this.edit_alert_form.controls['alert_created_date'].setValue(dayjs().toDate());
+        let date_format_string = "YYYY-MM-DDTHH:mm:ss.SSSSSS";
+        let update_utc_date = dayjs.utc(alert.alert_updated, date_format_string);
+        let create_utc_date = dayjs.utc(alert.alert_created, date_format_string);
+
+        // example of what the incomming date string looks like: 2024-08-02T18:22:32.040834
+        console.log(`original date: ${alert.alert_updated}`);
+        console.log(`update_utc_date: ${update_utc_date.local().format(date_format_string)}`);
+        this.edit_alert_form.controls['alert_created_date'].setValue(create_utc_date.local().toDate());
+        this.edit_alert_form.controls['alert_updated_date'].setValue(update_utc_date.local().toDate());
 
         // example of setting a property on the form object
         this.edit_alert_form.controls['alert_description'].setValue(alert.alert_description);
-        this.edit_alert_form.controls['alert_updated_date'].setValue(dayjs().toDate());
         this.edit_alert_form.controls['alert_status'].setValue(alert.alert_status);
         this.edit_alert_form.setControl('meteorologicalDataEditor', new FormControl(alert.alert_meteorological_conditions))
         this.edit_alert_form.setControl('hydrologicalDataEditor', new FormControl(alert.alert_hydro_conditions))
