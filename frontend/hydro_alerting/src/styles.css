@@ -2,17 +2,9 @@
 @import "quill/dist/quill.core.css";
 @import "quill/dist/quill.bubble.css";
 @import 'quill/dist/quill.snow.css'; 
-@import './custom-theme.scss';
+@import './bc-theme.css';
 
 body {
     font-family: 'Arial';
     font-size: 16px;
 }
-
-
-
-/* .container{
-    margin: 20px;
-    max-width: 600px;
-} */
-

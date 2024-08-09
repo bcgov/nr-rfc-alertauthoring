@@ -1,0 +1,59 @@
+
+.leaflet-container {
+    height: 100%;
+    width: 100%;
+}
+
+.map-container {
+    height: 600px;
+    width: 900px;
+}
+
+.legendcircle {
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+    -webkit-border-radius: 25px;
+    -moz-border-radius: 25px;
+    border-radius: 25px;
+    min-width:10px;
+    max-width:10px;
+
+}
+
+
+
+.legend {
+    padding: 6px 8px;
+    font: 14px Arial, Helvetica, sans-serif;
+    background-color: white;
+    background-color: rgba(255,255,255,0.5);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    line-height: 24px;
+    color: white;
+    background: white;
+  }
+  
+  
+  .legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin: 0 8px 0 0;
+    opacity: 0.7;
+    min-width:18px;
+    max-width:18px;
+    background-color: rgba(255, 255, 255, .5);
+    background: white;
+    background-size: 18px;
+  }
+  
+  .legend i.icon {
+    background-size: 18px;
+    background-color: rgba(255, 255, 255, .5);
+  }
+  
+
+
+

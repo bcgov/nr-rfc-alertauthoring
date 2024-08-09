@@ -7,8 +7,10 @@
         <div class="keys">
             <h1> Viewing Alert Id: {{alert_as.alert_id}} </h1>
         </div>
-        
 
+        <div class="keys2">
+            <app-view-map [alertLevel]="alert_as.alert_links"></app-view-map>
+        </div>
 
         <div [formGroup]="single_alert_form" class=container>
             <!-- <mat-form-field floatLabel='always' class="alert-elements">
@@ -26,8 +28,6 @@
                 </div>
                 <div></div>
             </div>
-
-
             <mat-form-field FloatLabel='always' class="alert-elements">
                 <mat-label>Alert Description</mat-label>
                 <!-- [(ngModel)]="" -->

@@ -32,6 +32,17 @@
     flex-direction: column;
 }
 
+.keys2 {
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    display: flex;
+    flex-flow: column wrap;
+    margin: 0px;
+    height: 100%;
+  
+}
+
 
 
 .alert-buttons {
