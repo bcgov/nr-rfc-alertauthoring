@@ -1,7 +1,7 @@
 import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, Input } from '@angular/core';
 import { Map, map, tileLayer, popup, Control, DomUtil } from 'leaflet';
 import { featureLayer } from "esri-leaflet";
-import { AlertAreaLevels } from '../types/alert';
+import { AlertAreaLevels } from '../../types/alert';
 
 
 @Component({

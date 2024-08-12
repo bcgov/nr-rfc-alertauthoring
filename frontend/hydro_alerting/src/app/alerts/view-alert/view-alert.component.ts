@@ -13,7 +13,7 @@ import { MatQuillModule } from '../../mat-quill/mat-quill-module'
 import { ContentChange, SelectionChange, QuillEditorComponent } from 'ngx-quill'
 import {AuthzService} from '../../services/authz.service';
 
-import { ViewMapComponent } from '../../view-map/view-map.component';
+import { ViewMapComponent } from '../../map/view-map/view-map.component';
 
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
