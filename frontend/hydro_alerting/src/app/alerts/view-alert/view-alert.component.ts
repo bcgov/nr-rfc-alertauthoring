@@ -10,8 +10,10 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import Quill from 'quill'
 import { MatQuillModule } from '../../mat-quill/mat-quill-module'
-import { EditorChangeContent, EditorChangeSelection, QuillEditorComponent } from 'ngx-quill'
+import { ContentChange, SelectionChange, QuillEditorComponent } from 'ngx-quill'
 import {AuthzService} from '../../services/authz.service';
+
+import { ViewMapComponent } from '../../view-map/view-map.component';
 
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
@@ -34,6 +36,7 @@ import {ViewBasinLevelComponent} from '../../basin-alerts/view-basin-level/view-
     QuillEditorComponent,
     MatQuillModule,
     ViewBasinLevelComponent,
+    ViewMapComponent,
     ],
   templateUrl: './view-alert.component.html',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
