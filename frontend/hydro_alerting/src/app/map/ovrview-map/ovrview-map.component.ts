@@ -53,7 +53,7 @@ export class OvrviewMapComponent implements OnInit, AfterViewInit {
 
   private readBasinAlertLevels(): void {
     console.log(`basin info: ${this.basins}`)
-    if (this.basins.length > 0) {
+    if (this.basins.length <= 0) {
       this.alertLevels.subscribe((alertCreate: AlertCreate[]) => {
         /// getting the data from the observable
         for (let i = 0; i < alertCreate.length; i++) {
