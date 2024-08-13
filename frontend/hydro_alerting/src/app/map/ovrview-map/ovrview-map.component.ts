@@ -53,18 +53,20 @@ export class OvrviewMapComponent implements OnInit, AfterViewInit {
 
   private readBasinAlertLevels(): void {
     console.log(`basin info: ${this.basins}`)
-    this.alertLevels.subscribe((alertCreate: AlertCreate[]) => {
-      /// getting the data from the observable
-      for (let i = 0; i < alertCreate.length; i++) {
-        let alert: AlertCreate = alertCreate[i];
-        if (alert.alert_links) {
-          for (let j = 0; j < alert.alert_links.length; j++) {
-            this.basins.push(alert.alert_links[j].basin.basin_name);
-            this.alert_levels.push(alert.alert_links[j].alert_level.alert_level);
+    if (this.basins.length > 0) {
+      this.alertLevels.subscribe((alertCreate: AlertCreate[]) => {
+        /// getting the data from the observable
+        for (let i = 0; i < alertCreate.length; i++) {
+          let alert: AlertCreate = alertCreate[i];
+          if (alert.alert_links) {
+            for (let j = 0; j < alert.alert_links.length; j++) {
+              this.basins.push(alert.alert_links[j].basin.basin_name);
+              this.alert_levels.push(alert.alert_links[j].alert_level.alert_level);
+            }
           }
-        } 
-      }
+        }
     });
+    }
   }
 
 
@@ -73,7 +75,9 @@ export class OvrviewMapComponent implements OnInit, AfterViewInit {
     // for the overview map was erroring out with the error: 
     // "Map container is already initialized"  Manually setting the outerHTML
     // seems to resolve this issue.
+    this.readBasinAlertLevels();
     let container: any = DomUtil.get("map");
+  
     
     if (JSON.stringify(container) != JSON.stringify({})) {
       DomUtil.empty(container);
