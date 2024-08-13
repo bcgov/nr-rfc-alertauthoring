@@ -13,7 +13,7 @@ import { MapUtil } from "../map_defaults";
 })
 export class ViewMapComponent implements OnInit, AfterViewInit {
   @Input() alertLevel?: AlertAreaLevels[];
-  @ViewChild('map')
+  // @ViewChild('map')
 
   alert_levels: any = {};
   alert_levels_list: string[] = [];
@@ -68,8 +68,8 @@ export class ViewMapComponent implements OnInit, AfterViewInit {
   }
 
   private initializeMap() {
-
-    this._map = this.mapUtil.getMapObj();
+    console.log("init map: " + JSON.stringify(this._map) + '-' + this._map);
+    this._map = this.mapUtil.getMapObj(this._map);
     let legend = this.mapUtil.defineLegend(this._map);
     legend.addTo(this._map);
     let basins_fl = this.mapUtil.addBasins(this._map, this.styleMap)

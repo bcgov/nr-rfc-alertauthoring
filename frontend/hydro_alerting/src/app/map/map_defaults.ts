@@ -16,10 +16,13 @@ export class MapUtil {
         }
     }
 
-    getMapObj() : any {
+    getMapObj(mapObj: Map) : any {
         console.log("getting here...");
         console.log(`zoom level: ${this.default_zoom_level}`);
-        let mapObj: Map = map('map').setView(this.default_zoom_coords, this.default_zoom_level);
+        console.log("map object is: " + mapObj);
+
+        mapObj = map('map').setView(this.default_zoom_coords, this.default_zoom_level);
+        mapObj.invalidateSize();
         let osMap = tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
           maxZoom: 19,
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

@@ -1,9 +1,10 @@
-import { Component, OnInit, AfterViewInit, Input } from '@angular/core';
+import { Component, OnInit, AfterViewInit, Input, ElementRef, ViewChild, Inject } from '@angular/core';
 import { Alert, AlertAreaLevels } from '../../types/alert';
 import { Map, map, tileLayer, popup, Control, DomUtil } from 'leaflet';
 import { Observable } from 'rxjs';
 import { MapUtil } from "../map_defaults";
 import {AlertCreate} from '../../types/alert';
+import { DOCUMENT } from '@angular/common'; 
 
 
 @Component({
@@ -15,25 +16,43 @@ import {AlertCreate} from '../../types/alert';
 })
 export class OvrviewMapComponent implements OnInit, AfterViewInit {
   @Input() alertLevels!: Observable<Alert[]>;
+  @ViewChild('map', { static: false }) public mapContainer!: ElementRef;
+  // @ViewChild('mydiv', { static: false }) public mydiv: ElementRef;
+
+
   mapUtil = new MapUtil();
-  public _map!: Map
+  mapElementRef: ElementRef = null!;
+  mapElem: any;
+
+  public _map!: Map;
   basins: string[] = [];
   alert_levels: string[] = [];
 
   // # alertLevels
-  ngAfterViewInit(): void {
+  ngAfterViewInit() {
     this.initMap();
   }
 
-  constructor() { 
+  constructor(@Inject(DOCUMENT) document: Document) {
+    const mapElement = document.getElementById('map');
+    if (mapElement) {
+      mapElement.innerHTML = "";
+    }
+    this.mapElem = mapElement;
   }
 
   ngOnInit(): void {
+    console.log("Doing the subscription to the basin / alert levels")
     // this.alertLevels.subscribe(val => {
     //   /// getting the data from the observable
     //   console.log(`value: ${JSON.stringify(val)}`);
     // })
     // console.log(`alert levels: ${JSON.stringify(this.alertLevels)}`);
+    this.readBasinAlertLevels();
+  }
+
+  private readBasinAlertLevels(): void {
+    console.log(`basin info: ${this.basins}`)
     this.alertLevels.subscribe((alertCreate: AlertCreate[]) => {
       /// getting the data from the observable
       for (let i = 0; i < alertCreate.length; i++) {
@@ -48,9 +67,30 @@ export class OvrviewMapComponent implements OnInit, AfterViewInit {
     });
   }
 
-  initMap(): void {
+
+  private initMap(): void {
+    // when toggling between specific alerts and overview map, the map container
+    // for the overview map was erroring out with the error: 
+    // "Map container is already initialized"  Manually setting the outerHTML
+    // seems to resolve this issue.
+    let container: any = DomUtil.get("map");
+    
+    if (JSON.stringify(container) != JSON.stringify({})) {
+      DomUtil.empty(container);
+      // this is what works
+      container.outerHTML = "";
+      container.remove();
+    }
+  
     console.log("init map");
-    this._map = this.mapUtil.getMapObj();
+    if(this._map != undefined || this._map != null){
+      console.log("removing map");
+      this._map.invalidateSize();
+      // this._map.remove();
+    }
+
+    // console.log(`map is: ${JSON.stringify(this._map)}`);
+    this._map = this.mapUtil.getMapObj(this._map);
     let legend = this.mapUtil.defineLegend(this._map);
     legend.addTo(this._map);
     let basins_fl = this.mapUtil.addBasins(this._map, this.styleMap)
