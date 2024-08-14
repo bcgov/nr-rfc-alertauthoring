@@ -21,6 +21,7 @@ import { AlertsService } from '../../services/alerts.service';
 import {BasinLvlDataService} from '../../services/basin-lvl-data.service';
 import { AlertAreaLevels, AlertCreate } from '../../types/alert';
 import { AuthzService } from '../../services/authz.service';
+import { CreateMapComponent } from '../../map/create-map/create-map.component';
 
 @Component({
   selector: 'app-create-alert',
@@ -35,6 +36,7 @@ import { AuthzService } from '../../services/authz.service';
     QuillEditorComponent,
     MatQuillModule,
     BasinAlertlvlsComponent,
+    CreateMapComponent,
     ],
   templateUrl: './create-alert.component.html',
   styleUrl: './create-alert.component.css',
