@@ -10,6 +10,7 @@ import { OidcSecurityService, OpenIdConfiguration } from 'angular-auth-oidc-clie
 
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import {AuthzService} from '../../services/authz.service';
+import { OvrviewMapComponent } from '../../map/ovrview-map/ovrview-map.component';
 
 
 @Component({
@@ -20,7 +21,8 @@ import {AuthzService} from '../../services/authz.service';
     FormsModule,
     CommonModule,
     MatTableModule,
-    MatButtonModule],
+    MatButtonModule,
+    OvrviewMapComponent],
   templateUrl: './alert-list.component.html',
   styleUrl: './alert-list.component.css'
 })
