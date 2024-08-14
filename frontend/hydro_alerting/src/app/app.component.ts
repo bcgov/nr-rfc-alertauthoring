@@ -29,10 +29,10 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
     </div>
    `,
     styles: [`h1 { color: blue; } 
-            .header-locked { position: sticky; position: -webkit-sticky; top:168px; z-index: 10000;} 
+            .header-locked { position: sticky; position: -webkit-sticky; top:140px; z-index: 10000;} 
             .content-container {
               position: absolute;
-              top: 168px; /* Adjust based on the height of your toolbar */
+              top: 140px; /* Adjust based on the height of your toolbar */
               bottom: 0;
               left: 0;
               right: 0;
