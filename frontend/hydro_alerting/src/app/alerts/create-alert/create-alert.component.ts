@@ -101,4 +101,9 @@ export class CreateAlertComponent implements OnInit {
     this.create_alert_form.get('alert_status')!.reset();
   }
 
+
+  public setAlertLevel() {
+    console.log("setting alert level...");
+  }
+
 }

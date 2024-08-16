@@ -21,10 +21,8 @@ export class ViewMapComponent implements OnInit, AfterViewInit {
   basinStyles: any = {};
 
   mapUtil = new MapUtil();
-
   mapElementRef: ElementRef = null!;
-
-  public _map!: Map
+  public _map!: Map;
 
   constructor() {
   }
