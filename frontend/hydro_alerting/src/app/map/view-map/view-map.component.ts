@@ -75,5 +75,5 @@ export class ViewMapComponent implements OnInit, AfterViewInit {
 
     this.mapUtil.addBasinPopup(this._map, basins_fl, this.basin_lvl_lu_func);
   }
-
+  
 }
