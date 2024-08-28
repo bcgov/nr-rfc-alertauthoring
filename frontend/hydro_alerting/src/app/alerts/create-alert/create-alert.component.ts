@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 // angular material specific imports
 import { MatInputModule } from '@angular/material/input';
 import { MatButton } from '@angular/material/button';
-import {MatSelectModule} from '@angular/material/select';
+import { MatSelectModule } from '@angular/material/select';
 
 
 // quill specific imports for the editor
