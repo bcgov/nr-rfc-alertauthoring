@@ -49,8 +49,9 @@ export class ViewMapComponent implements OnInit, AfterViewInit {
   }
 
   styleMap = (feature: any) : any => {
-    console.log(`feature is: ${JSON.stringify(feature.properties.Major_Basin)}`);
-    console.log(`basins are: ${JSON.stringify(this.basins)}`);
+    // read the data from the basin-lvl-data service.
+    console.log(`styleMap: feature is: ${JSON.stringify(feature.properties.Major_Basin)}`);
+    console.log(`styleMap: basins are: ${JSON.stringify(this.basins)}`);
     if (this.basins.includes(feature.properties.Major_Basin)) {
       console.log(`color is: ${this.basinStyles[feature.properties.Major_Basin]}`);
       return { color: this.basinStyles[feature.properties.Major_Basin], weight: 2 };
@@ -68,12 +69,12 @@ export class ViewMapComponent implements OnInit, AfterViewInit {
   private initializeMap() {
     console.log("init map: " + JSON.stringify(this._map) + '-' + this._map);
     this._map = this.mapUtil.getMapObj(this._map);
-    let legend = this.mapUtil.defineLegend(this._map);
+    let legend = this.mapUtil.defineLegend();
     legend.addTo(this._map);
-    let basins_fl = this.mapUtil.addBasins(this._map, this.styleMap)
+    let basins_fl = this.mapUtil.addBasins(this.styleMap)
     basins_fl.addTo(this._map);
 
     this.mapUtil.addBasinPopup(this._map, basins_fl, this.basin_lvl_lu_func);
   }
-  
+
 }

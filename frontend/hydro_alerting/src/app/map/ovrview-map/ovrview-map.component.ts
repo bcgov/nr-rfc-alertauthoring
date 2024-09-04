@@ -87,9 +87,9 @@ export class OvrviewMapComponent implements OnInit, AfterViewInit {
     }
 
     this._map = this.mapUtil.getMapObj(this._map);
-    let legend = this.mapUtil.defineLegend(this._map);
+    let legend = this.mapUtil.defineLegend();
     legend.addTo(this._map);
-    this.basins_fl = this.mapUtil.addBasins(this._map, this.styleMap)
+    this.basins_fl = this.mapUtil.addBasins(this.styleMap)
     this.basins_fl.addTo(this._map);
 
     this.mapUtil.addBasinPopup(this._map, this.basins_fl, this.basin_lvl_lu_func);

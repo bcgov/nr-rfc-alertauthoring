@@ -2,21 +2,19 @@ import { Component, EventEmitter, OnInit, Output, Input, AfterViewInit } from '@
 import { Observable } from 'rxjs';
 import { Basin } from '../../types/basin';
 import { map } from 'rxjs/operators';
-import {  FormBuilder, FormGroup, FormsModule,  ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 
-import {MatInputModule} from '@angular/material/input';
-import {MatSelectModule, MatSelectChange} from '@angular/material/select';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatButtonModule} from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule, MatSelectChange } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatButtonModule } from '@angular/material/button';
 
-import { CommonModule,  } from '@angular/common';
+import { CommonModule, } from '@angular/common';
 import { AlertAreaLevels } from '../../types/alert';
-// TODO: move functionality of basin service into the BasinLvlDataService so we 
-//       can keep track of what basins already have alerts associated with them
 import { BasinService } from '../../services/basin.service';
-import { BasinLvlDataService} from '../../services/basin-lvl-data.service';
+import { BasinLvlDataService } from '../../services/basin-lvl-data.service';
 import { AlertLvlsService } from '../../services/alert-lvls.service';
-import {AlertLevel} from '../../types/alert';
+import { AlertLevel } from '../../types/alert';
 
 @Component({
   selector: 'app-basin-alertlvl',
@@ -30,7 +28,7 @@ import {AlertLevel} from '../../types/alert';
     ReactiveFormsModule,
     CommonModule,
   ],
-  
+
   templateUrl: './basin-alertlvl.component.html',
   styleUrl: './basin-alertlvl.component.css'
 })
@@ -44,29 +42,41 @@ export class BasinAlertlvlComponent implements AfterViewInit {
   @Input() basin_name!: string;
   @Input() alert_level_name!: string;
   @Input() component_id!: number;
-  
+
   constructor(
     private formBuilder: FormBuilder,
     private basinService: BasinService,
     private alertLvlService: AlertLvlsService,
     private basinDataSvc: BasinLvlDataService,
-    ) {
-      console.log(`comp init... basin_name: ${this.basin_name}, alert_level: ${this.alert_level_name}`)
-      this.basin_alertlvl_form = this.formBuilder.group({
-        basin_name: [this.basin_name,],
-        alert_level_name: [this.alert_level_name,],
-      }); 
+  ) {
+    console.log(`comp init... basin_name: ${this.basin_name}, alert_level: ${this.alert_level_name}`)
+    this.basin_alertlvl_form = this.formBuilder.group({
+      basin_name: [this.basin_name,],
+      alert_level_name: [this.alert_level_name,],
+    });
+    console.log("allocated basins: " + this.basinDataSvc.getAllocatedBasins())
   }
 
   // ngOnInit(): void {
   ngAfterViewInit(): void {
-    console.log("after view init called basin is ", this.basin_name, ' ', this.alert_level_name)
-    this.basins = this.basinService.getBasins().pipe(map((basins) => {
-      return basins.map((basin: Basin) => {
-        return basin;
-      })
-    }));
+    console.log("after view init called basin is ", this.basin_name, ' ', this.alert_level_name);
 
+    // make sure the current basin is not in the allocated basins list
+    let allocatedBasins = this.basinDataSvc.getAllocatedBasins();
+    console.log("ngAfterViewInit allocated basins: " + allocatedBasins);
+    const index = allocatedBasins.indexOf(this.basin_name);
+    if (index > -1) { // only splice array when item is found
+      allocatedBasins.splice(index, 1); // 2nd parameter means remove one item only
+    }
+
+    this.basins = this.basinService.getBasins().pipe(map((basins) => {
+      // filter out the basins that are already allocated
+      return basins.filter((basin: Basin) => {
+        return !(this.basinDataSvc.getAllocatedBasins().includes(basin.basin_name));
+      }
+      )
+    }
+    ));
     this.alert_levels = this.alertLvlService.getAlertLvls().pipe(map((alert_lvls) => {
       return alert_lvls.map((alert_lvl: AlertLevel) => {
         return alert_lvl;
@@ -76,8 +86,14 @@ export class BasinAlertlvlComponent implements AfterViewInit {
     this.basin_alertlvl_form = this.formBuilder.group({
       basin_name: [this.basin_name,],
       alert_level_name: [this.alert_level_name,],
-    }); 
+    });
 
+  }
+
+  ngOnChanges() {
+    console.log("on changes called basin is ", this.basin_name, ' ', this.alert_level_name);
+    // add the basin to the allocated basins list
+    this.basinDataSvc.addAllocatedBasin(this.basin_name);
   }
 
   alertLvlChange(event: MatSelectChange) {
@@ -87,8 +103,7 @@ export class BasinAlertlvlComponent implements AfterViewInit {
     this.basin_alertlvl_form = this.formBuilder.group({
       basin_name: [this.basin_name,],
       alert_level_name: [this.alert_level_name,],
-    }); 
-
+    });
   }
 
   basinChange(event: MatSelectChange) {
@@ -97,8 +112,6 @@ export class BasinAlertlvlComponent implements AfterViewInit {
     // this.basin_alertlvl_form.controls['alert_level'].setValue(event.value);
     this.basinDataSvc.addBasin(event.value, this.component_id);
   }
-
-
 
   onDeleteElement() {
     // removes the dynamic basin/alertlvl component from the view
@@ -110,7 +123,7 @@ export class BasinAlertlvlComponent implements AfterViewInit {
     console.log('emitted delete event');
   }
 
-  update_component(basin_name: string, alert_level: string){
+  update_component(basin_name: string, alert_level: string) {
     // updates the component with the new data
     console.log(`update_component called, basin_name: ${basin_name}, alert_level: ${alert_level}`);
     this.basin_alertlvl_form.controls['basin_name'].setValue(basin_name);

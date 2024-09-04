@@ -18,51 +18,79 @@ export class MapUtil {
       "Flood Watch": "orange",
       "Flood Warning": "red"
     }
-    this.dropdown = `Set the Alert Level for the Basin:
-           <select id="ddlViewBy">; `;
+  }
+
+  /**
+   * injects basin name into html to create the content to be displayed in the popup
+   * 
+   * @param basin - the input basin name
+   * @returns html content to be inserted into a leaflet popup
+   */
+  public getPopupContent(basin: string): string {
+    let popupContent = `Set the Alert Level for the Basin: <b>${basin}</b> ` +
+      `<select id="ddlViewBy">; `;
     for (const alert_level_string in this.color_lookup) {
       console.log("alert level string is: " + alert_level_string + ' ' + this.color_lookup[alert_level_string]);
-      this.dropdown += `<option value="${alert_level_string}">${alert_level_string}</option>`;
+      popupContent += `<option value="${alert_level_string}">${alert_level_string}</option>`;
     }
-    this.dropdown += '</select>: <button id="saveAlertLevel">save</button>';
-    //   setTimeout(() => {
-    //     const saveButton = document.getElementById('saveAlertLevel');
-    //     console.log("added save button event listener, button..." + saveButton);
-    //     if (saveButton) {
-    //         saveButton.addEventListener('click', () => this.setAlertLevel());
-    //     }
-    // }, 0);
-
+    popupContent += '</select>: <button id="saveAlertLevel">save</button>';
+    return popupContent
   }
 
+  /**
+   * This is the method that gets called when the save button on the popup selecting
+   * the alert level for a basin is clicked on.
+   * 
+   * @param e pointer event from clicking on the save button inside the popup
+   * @param basin the basin that the alert level is being set for
+   * @param objref reference to the create-map component
+   * @param curEvent the popup leaflet event associated with the popup who's save
+   *               button was clicked on, sending us here
+   */
   public setAlertLevel(e: any, basin: string, objref: any, curEvent: any) {
-    console.log("setting alert level...");
-    console.log("event is: " + e);
-    console.log("basin: " + basin);
 
-    console.log("event target is: " + e.latlng);
-    const dropdonwValue = DomUtil.get('ddlViewBy');
-    console.log("dropdown value is: " + dropdonwValue);
-
-    let alert_level = "None";
-    if (dropdonwValue) {
-      const selectElem = dropdonwValue as HTMLSelectElement;
+    // getting the popup html element
+    const dropDownValue = DomUtil.get('ddlViewBy');
+    let alert_level = "None"; // default alert level value
+    if (dropDownValue) {
+      // if there is a popup  open, then get the alert level associated with it
+      const selectElem = dropDownValue as HTMLSelectElement;
       alert_level = selectElem.options[selectElem.selectedIndex].value;
+
+      // now that we have the alert level, close the  popup
       objref._map.closePopup();
 
+      // this needs to be refactored to use a data struct that a style method 
+      // will call, doing things this way will only result in a temporary 
+      // change of colors for the polygon
       let alert_level_color = objref.mapUtil.color_lookup[alert_level];
       console.log("alert level color: " + alert_level_color);
+      objref.styleMap(curEvent.layer.feature, objref.basinLvlDataService, this.color_lookup, objref)
+
+      console.log("feature id: " + curEvent.layer.feature.id);
+      console.log("number of features: " + curEvent.layer.length);
       curEvent.layer.setStyle({ color: alert_level_color, weight: 2 });
+
+      // ^ this should just pass the alert level and basin to the original
+      //   setStyle method.... which is going to read the objref.basinLvlDataService
+      //   and style the polygon
+
+      // propogate the basin / alert level to a new basin / alert level component
+      let comp_id = objref.basinLvlDataService.getEmptyComponentId();
+      objref.basinLvlDataService.addBasin(basin, comp_id);
+      objref.basinLvlDataService.addAlertLvl(alert_level, comp_id);
     }
-    console.log("alert level is: " + alert_level);
   }
 
-
-  getMapObj(mapObj: Map): any {
-    console.log("getting here...");
-    console.log(`zoom level: ${this.default_zoom_level}`);
-    console.log("map object is: " + mapObj);
-
+  /**
+   * The method will do the following to the map:
+   * - add a basemap
+   * - set the zoom level to zoom in on the province of BC
+   * 
+   * @param mapObj - the leaflet map object that will be configured by this method.
+   * @returns a leaflet map object that has been configured
+   */
+  public getMapObj(mapObj: Map): any {
     mapObj = map('map').setView(this.default_zoom_coords, this.default_zoom_level);
     mapObj.invalidateSize();
     let osMap = tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -74,7 +102,11 @@ export class MapUtil {
     return mapObj;
   }
 
-  defineLegend(map: Map): Control {
+  /**
+   * 
+   * @returns a leaflet control object that will be used to display the legend
+   */
+  public defineLegend(): Control {
     let legend = new Control({ position: 'bottomright' });
     legend.onAdd = (map) => {
       var div = DomUtil.create('div', 'legend');
@@ -93,18 +125,64 @@ export class MapUtil {
     return legend;
   }
 
-  addBasins(map: Map, styleFunction: any): FeatureLayer {
+  /**
+   * This method is intended for read only maps where the style of the polygons
+   * is not dynamic.  See 'addBasinsEditCreate' if styles need to be dynamic.
+   * 
+   * The style function only needs to support recieving a basin feature, which
+   * will look up if the basin has a specific style, and if so return that style.
+   * otherwise returns a default style
+   * 
+   * @param styleFunction 
+   * @returns 
+   */
+  public addBasins(styleFunction: any): FeatureLayer {
     let basins_url = "https://services6.arcgis.com/ubm4tcTYICKBpist/arcgis/rest/services/BC_Flood_Advisory_and_Warning_Notifications_(Public_View)/FeatureServer/0"
     let basins_fl = featureLayer({
       url: basins_url,
       where: "Basin_Type = 'N'",
       simplifyFactor: .75,
       precision: 2,
-      style: styleFunction
+      style: (feature) => { styleFunction(feature) }
     });
     return basins_fl;
   }
 
+  /**
+   * adds a feature layer to the map that will allow the user to edit the alert
+   * either via the map, or via the alert level selector component.
+   * 
+   * @param styleFunction - the callback style function.  It will recieve a feature
+   *                      object, and should return a style object.
+   * @param basinLvlService - the service that keeps track of the state of the basin 
+   *                       alert levels, updates to this service will update the map component
+   *                      and the alert level of the basin non spatial selector component.    
+   *                         
+   * @param objRef - a reference to the createMap component. Seeing as its used as 
+   *                 a callback it loses track of the 'this' context, so this is a
+   *                reference to the createMap component.
+   * @returns 
+   */
+  public addBasinsEditCreate(styleFunction: any, basinLvlService: any, objRef: any): FeatureLayer {
+    let basins_url = "https://services6.arcgis.com/ubm4tcTYICKBpist/arcgis/rest/services/BC_Flood_Advisory_and_Warning_Notifications_(Public_View)/FeatureServer/0"
+    let basins_fl = featureLayer({
+      url: basins_url,
+      where: "Basin_Type = 'N'",
+      simplifyFactor: .75,
+      precision: 2,
+      style: (feature) => { objRef.styleMap(feature, objRef.basinLvlService, this.color_lookup, objRef) }
+    });
+    return basins_fl;
+  }
+
+  /**
+   * used for read only maps... popup will show the basin and alert level that
+   * have already been set
+   * 
+   * @param map  - leaflet map object
+   * @param basins_fl - the esri leaflet basin feature layer
+   * @param basin_level_func - function that will return the alert level for a basin
+   */
   addBasinPopup(map: Map, basins_fl: FeatureLayer, basin_level_func: CallableFunction): void {
     basins_fl.on('click', (e: any): any => {
       // let alert_level = this.alert_levels_list[this.basins.indexOf(e.layer.feature.properties.Major_Basin)];
@@ -119,10 +197,17 @@ export class MapUtil {
         .setContent(`<p>Basin: <b>${e.layer.feature.properties.Major_Basin}</b><br>${alert_level}</p>`);
       myPopup.openOn(map);
     });
-    // myPopup.
   }
 
-
+  /**
+   * used for write / edit forms where the basin / alert-levels can be set either
+   * via the map or via the alert level selector component
+   * 
+   * @param map - reference to the leaflet map component
+   * @param basins_fl - reference to the esri leaflet feature layer for basins
+   * @param basin_level_func - the lookup function that given a basin name will return
+   *                        the alert level.
+   */
   addBasinAlertLevelSetterPopup(map: Map, basins_fl: FeatureLayer, basin_level_func: CallableFunction): void {
     // a) need to get the alert level options... could get passed into parent 
     //    component as an input, or could get from a service
