@@ -145,6 +145,7 @@ export class MapUtil {
       precision: 2,
       style: (feature) => { styleFunction(feature) }
     });
+    console.log("adding basins to map");
     return basins_fl;
   }
 
