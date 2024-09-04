@@ -11,7 +11,7 @@ import {BasinLvlDataService} from '../../services/basin-lvl-data.service';
   selector: 'app-basin-alertlvls',
   standalone: true,
   imports: [NgComponentOutlet, MatButton, CommonModule, AsyncPipe],
-  providers: [BasinLvlDataService],
+  // providers: [BasinLvlDataService],
   templateUrl: './basin-alertlvls.component.html',
   styleUrl: './basin-alertlvls.component.css'
 })
