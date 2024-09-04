@@ -16,8 +16,3 @@ export interface BasinLvlDynamicComponent {
         component_id: number;
     }
 }
-
-export interface newAlert{
-
-}
-
