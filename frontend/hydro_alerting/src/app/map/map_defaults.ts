@@ -76,9 +76,18 @@ export class MapUtil {
       //   and style the polygon
 
       // propogate the basin / alert level to a new basin / alert level component
-      let comp_id = objref.basinLvlDataService.getEmptyComponentId();
-      objref.basinLvlDataService.addBasin(basin, comp_id);
-      objref.basinLvlDataService.addAlertLvl(alert_level, comp_id);
+      let allocated = objref.basinLvlDataService.isBasinAllocated(basin);
+      console.log("is basin allocated: " + allocated);
+      if (objref.basinLvlDataService.isBasinAllocated(basin)) {
+        // the basin has already been assigned a alert level, need to find the 
+        // component for this basin and update the alert level for it.
+        let comp_id = objref.basinLvlDataService.getComponentId(basin);
+        objref.basinLvlDataService.addAlertLvl(alert_level, comp_id);
+      } else {
+        let comp_id = objref.basinLvlDataService.getEmptyComponentId();
+        objref.basinLvlDataService.addBasin(basin, comp_id);
+        objref.basinLvlDataService.addAlertLvl(alert_level, comp_id);
+      }
     }
   }
 

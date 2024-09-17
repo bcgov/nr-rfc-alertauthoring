@@ -63,7 +63,7 @@ export class BasinLvlDataService {
     this.basinStyles.set(styles);
 
     console.log(`the basin style: ${this.basinStyles()[basin_name].feature.id}`);
-    // force effect to run, only seems to run on update... 
+    // force effect to run for signal, only seems to run on update... 
     //this.basinStyles.update(x => ({ ...x, [basin_name]: style }));
     console.log(`added the basin: ${basin_name}`);
     console.log(`number of basins: ${Object.keys(this.basinStyles()).length}`);
@@ -201,9 +201,20 @@ export class BasinLvlDataService {
    * 
    * @returns all the components that have been added to the form
    */
-  getAllComponents() {
+  getAllComponents() :any[] {
     console.log(`all basin level components: ${JSON.stringify(this.componentService.components)}`);
     return this.componentService.components;
+  }
+
+  getComponentId(basin_name: string) : number | null {
+    let cur_comp_id: number | null = null;
+    for (const component of this.componentService.components) {
+      if (component.inputs.basin_name === basin_name) {
+        cur_comp_id = component.inputs.component_id;
+        return cur_comp_id;
+      }
+    }
+    return cur_comp_id;
   }
 
   /** 
@@ -306,6 +317,10 @@ export class BasinLvlDataService {
     this.allocatedBasins = this.allocatedBasins.filter((basin) => {
       return basin !== basin_name;
     });
+  }
+
+  isBasinAllocated(basin_name: string) {
+    return this.allocatedBasins.includes(basin_name);
   }
 
 }
