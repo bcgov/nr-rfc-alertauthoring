@@ -20,13 +20,26 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
     template: 
     `
     <div class="header-locked">
-    <app-header></app-header>
-    <app-navbar></app-navbar>
+        <app-header></app-header>
+        <app-navbar></app-navbar>
     </div>
-    <br><br>
-    <router-outlet></router-outlet>
+    
+    <div class="content-container">
+        <router-outlet></router-outlet>
+    </div>
    `,
-    styles: ['h1 { color: blue; } .header-locked { position: sticky; position: -webkit-sticky; top: 0; } '],
+    styles: [`h1 { color: blue; } 
+            .header-locked { position: sticky; position: -webkit-sticky; top:140px; z-index: 10000;} 
+            .content-container {
+              position: absolute;
+              top: 140px; /* Adjust based on the height of your toolbar */
+              bottom: 0;
+              left: 0;
+              right: 0;
+              overflow-y: auto; /* Enable vertical scrolling */
+              padding: 20px; /* Optional: Add padding for better appearance */
+      }
+`],
     imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, NavbarComponent, HeaderComponent]
 })
 export class AppComponent  implements OnInit{

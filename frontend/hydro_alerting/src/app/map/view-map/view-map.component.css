@@ -18,10 +18,7 @@
     border-radius: 25px;
     min-width:10px;
     max-width:10px;
-
 }
-
-
 
 .legend {
     padding: 6px 8px;
@@ -34,7 +31,6 @@
     color: white;
     background: white;
   }
-  
   
   .legend i {
     width: 18px;

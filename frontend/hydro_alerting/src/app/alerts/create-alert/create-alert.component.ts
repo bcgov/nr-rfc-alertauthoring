@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 // angular material specific imports
 import { MatInputModule } from '@angular/material/input';
 import { MatButton } from '@angular/material/button';
-import {MatSelectModule} from '@angular/material/select';
+import { MatSelectModule } from '@angular/material/select';
 
 
 // quill specific imports for the editor
@@ -21,6 +21,7 @@ import { AlertsService } from '../../services/alerts.service';
 import {BasinLvlDataService} from '../../services/basin-lvl-data.service';
 import { AlertAreaLevels, AlertCreate } from '../../types/alert';
 import { AuthzService } from '../../services/authz.service';
+import { CreateMapComponent } from '../../map/create-map/create-map.component';
 
 @Component({
   selector: 'app-create-alert',
@@ -35,6 +36,7 @@ import { AuthzService } from '../../services/authz.service';
     QuillEditorComponent,
     MatQuillModule,
     BasinAlertlvlsComponent,
+    CreateMapComponent,
     ],
   templateUrl: './create-alert.component.html',
   styleUrl: './create-alert.component.css',
@@ -97,6 +99,11 @@ export class CreateAlertComponent implements OnInit {
     this.create_alert_form.get('hydrologicalDataEditor')!.reset();
     this.create_alert_form.get('additionalInformationDataEditor')!.reset();
     this.create_alert_form.get('alert_status')!.reset();
+  }
+
+
+  public setAlertLevel() {
+    console.log("setting alert level...");
   }
 
 }

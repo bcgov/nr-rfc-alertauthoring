@@ -3,9 +3,11 @@
         <div class="keys">
             <h1> Create New Alert </h1>
         </div>
+        <div class="keys">
+            <app-create-map></app-create-map>
+        </div>
 
         <form [formGroup]="create_alert_form" class=container (ngSubmit)="onSubmitCreate()">
-
  
             <mat-form-field floatLabel='always' class="alert-elements">
                 <mat-label>Alert Description</mat-label>

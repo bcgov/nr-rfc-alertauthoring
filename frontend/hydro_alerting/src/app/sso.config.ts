@@ -14,7 +14,7 @@ export const authCodeFlowConfig: OpenIdConfiguration = {
     scope: 'openid profile email',
     silentRenew: true,
     useRefreshToken: true,
-    logLevel: LogLevel.Debug,
+    logLevel: LogLevel.Warn,
     renewTimeBeforeTokenExpiresInSeconds: 30,
     ignoreNonceAfterRefresh: true,
     autoUserInfo: false,

@@ -19,7 +19,11 @@ export class BasinService {
     let url = "/api/v1/basins/";
     // let data = this.http.get<Basin[]>(url);
     // console.log("data: " + JSON.stringify(data));
+    
+    // TODO: should check to see if the basin has not already been allocated to the \
+    //       to a different alert
     return this.http.get<Basin[]>(url);
+
   }
 
 }
