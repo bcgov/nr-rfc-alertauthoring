@@ -120,6 +120,8 @@ export class BasinAlertlvlComponent implements AfterViewInit {
     let basin_name = this.basin_alertlvl_form.value.basin_name;
     console.log(`basin_name before call: ${basin_name}`);
     this.basinDataSvc.deleteComponent(this.component_id);
+    // below is called in the delete component
+    //this.basinDataSvc.removeAllocatedBasin(basin_name);
     console.log('emitted delete event');
   }
 

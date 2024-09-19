@@ -83,7 +83,9 @@ export class CreateMapComponent implements OnInit, AfterViewInit {
   public onMapClick(e: any) {
     console.log("map click event");
     console.log("map click event current basin: " + JSON.stringify(this.current_basin));
-
+    let alert_lvl = this.basinLvlDataService.getAlertLevel(e.layer.feature.properties.Major_Basin)
+    console.log("alert lvl: " + alert_lvl);
+ 
     let curEvent = e;
     // in case the popup has not been created yet
     if (this.popup === undefined) {
@@ -92,9 +94,10 @@ export class CreateMapComponent implements OnInit, AfterViewInit {
     }
     this.popup
       .setLatLng(e.latlng)
-      .setContent(this.mapUtil.getPopupContent(e.layer.feature.properties.Major_Basin))
+      .setContent(this.mapUtil.getPopupContent(e.layer.feature.properties.Major_Basin, alert_lvl))
       .openOn(this._map);
 
+    // this is code that is called when the save button is pressed on the popup
     setTimeout(() => {
       const saveButton = document.getElementById('saveAlertLevel');
       console.log("added save button event listener, button..." + saveButton);
@@ -140,8 +143,9 @@ export class CreateMapComponent implements OnInit, AfterViewInit {
     // read the data from the basin-lvl-data service / signal.
     let styles = objRef.basinLvlDataService.basinStyles();
 
-    // set the default style
-    let style = styles['default']
+    // set the default style to be used, the None indicates that no specific 
+    // alert level has been set for the basin
+    let style = styles['None']
 
     // check if a specific style has been defined for the current basin, and 
     // if so update the style variable to reflect basin specific style
@@ -155,7 +159,7 @@ export class CreateMapComponent implements OnInit, AfterViewInit {
     // alert level selection widget can update the map (for this to work needs 
     // a reference to the 'feature' object)
     this.basinLvlDataService.addStyle(feature.properties.Major_Basin,
-      { style: { color: "blue", weight: 2 } },
+      { style: style },
       feature)
 
     console.log("returned style is: " + JSON.stringify(style));

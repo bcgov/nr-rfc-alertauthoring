@@ -16,7 +16,7 @@ export class MapUtil {
     this.color_lookup = {
       "High Streamflow Advisory": "yellow",
       "Flood Watch": "orange",
-      "Flood Warning": "red"
+      "Flood Warning": "red",
     }
   }
 
@@ -26,12 +26,24 @@ export class MapUtil {
    * @param basin - the input basin name
    * @returns html content to be inserted into a leaflet popup
    */
-  public getPopupContent(basin: string): string {
+  public getPopupContent(basin: string, initial_alert_level : string | null ='None'): string {
+    if (!initial_alert_level) {
+      initial_alert_level = 'None';
+    }
     let popupContent = `Set the Alert Level for the Basin: <b>${basin}</b> ` +
       `<select id="ddlViewBy">; `;
+    let none_selected = ''
+    if (initial_alert_level == 'None') {
+      none_selected = 'selected';
+    }
+    popupContent += `<option value="None" ${none_selected}>None</option>`;
     for (const alert_level_string in this.color_lookup) {
+      if (initial_alert_level == alert_level_string) {
+        popupContent += `<option value="${alert_level_string}" selected>${alert_level_string}</option>`;
+      } else {
+        popupContent += `<option value="${alert_level_string}">${alert_level_string}</option>`;
+      }
       console.log("alert level string is: " + alert_level_string + ' ' + this.color_lookup[alert_level_string]);
-      popupContent += `<option value="${alert_level_string}">${alert_level_string}</option>`;
     }
     popupContent += '</select>: <button id="saveAlertLevel">save</button>';
     return popupContent
@@ -60,33 +72,34 @@ export class MapUtil {
       // now that we have the alert level, close the  popup
       objref._map.closePopup();
 
-      // this needs to be refactored to use a data struct that a style method 
-      // will call, doing things this way will only result in a temporary 
-      // change of colors for the polygon
-      let alert_level_color = objref.mapUtil.color_lookup[alert_level];
-      console.log("alert level color: " + alert_level_color);
-      objref.styleMap(curEvent.layer.feature, objref.basinLvlDataService, this.color_lookup, objref)
-
-      console.log("feature id: " + curEvent.layer.feature.id);
-      console.log("number of features: " + curEvent.layer.length);
-      curEvent.layer.setStyle({ color: alert_level_color, weight: 2 });
-
-      // ^ this should just pass the alert level and basin to the original
-      //   setStyle method.... which is going to read the objref.basinLvlDataService
-      //   and style the polygon
-
-      // propogate the basin / alert level to a new basin / alert level component
-      let allocated = objref.basinLvlDataService.isBasinAllocated(basin);
-      console.log("is basin allocated: " + allocated);
-      if (objref.basinLvlDataService.isBasinAllocated(basin)) {
-        // the basin has already been assigned a alert level, need to find the 
-        // component for this basin and update the alert level for it.
+      // if the alert level has been set to None, then assign the none style 
+      // for this basin
+      if (alert_level == "None") {
         let comp_id = objref.basinLvlDataService.getComponentId(basin);
-        objref.basinLvlDataService.addAlertLvl(alert_level, comp_id);
+        if (comp_id) {
+          objref.basinLvlDataService.deleteComponent(comp_id);
+        }
       } else {
-        let comp_id = objref.basinLvlDataService.getEmptyComponentId();
-        objref.basinLvlDataService.addBasin(basin, comp_id);
-        objref.basinLvlDataService.addAlertLvl(alert_level, comp_id);
+        let alert_level_color = objref.mapUtil.color_lookup[alert_level];
+        objref.styleMap(curEvent.layer.feature, objref.basinLvlDataService, this.color_lookup, objref)
+        //curEvent.layer.setStyle({ color: alert_level_color, weight: 2 });
+        // ^ this should just pass the alert level and basin to the original
+        //   setStyle method.... which is going to read the objref.basinLvlDataService
+        //   and style the polygon
+
+        // propogate the basin / alert level to a new basin / alert level component
+        let allocated = objref.basinLvlDataService.isBasinAllocated(basin);
+        console.log("is basin allocated: " + allocated);
+        if (objref.basinLvlDataService.isBasinAllocated(basin)) {
+          // the basin has already been assigned a alert level, need to find the 
+          // component for this basin and update the alert level for it.
+          let comp_id = objref.basinLvlDataService.getComponentId(basin);
+          objref.basinLvlDataService.addAlertLvl(alert_level, comp_id);
+        } else {
+          let comp_id = objref.basinLvlDataService.getEmptyComponentId();
+          objref.basinLvlDataService.addBasin(basin, comp_id);
+          objref.basinLvlDataService.addAlertLvl(alert_level, comp_id);
+        }
       }
     }
   }

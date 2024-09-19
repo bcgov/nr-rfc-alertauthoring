@@ -15,13 +15,12 @@ export class BasinLvlDataService {
   // and components that are displayed by the basin-lvl component
   all_basin_level_component: BasinLvlDynamicComponent[] = [];
 
-  dataSubject: BehaviorSubject<any[]>;  
+  dataSubject: BehaviorSubject<any[]>;  // suspect this isn't required...
   allocatedBasins: string[] = [];
   mapUtil = new MapUtil();
 
-
-
-  default_styles = {'default': {'style': {color: '#3388ff', weight: 2, stroke: '#3388ff', 'fill-opacity': .2, fill: '#3388ff', 'stroke-opacity': 1}}};
+  // default styles, and the signal that will be used to update the map
+  default_styles = {'None': {'style': {color: '#3388ff', weight: 2, stroke: '#3388ff', 'fill-opacity': .2, fill: '#3388ff', 'stroke-opacity': 1}}};
   basinStyles: WritableSignal<BasinStyles> = signal<BasinStyles>(this.default_styles);
 
   refreshMapCallbackFunction: any|null = null;
@@ -217,6 +216,17 @@ export class BasinLvlDataService {
     return cur_comp_id;
   }
 
+  getAlertLevel(basin_name: string) : string | null {
+    let cur_alert_level: string | null = null;
+    for (const component of this.componentService.components) {
+      if (component.inputs.basin_name === basin_name) {
+        cur_alert_level = component.inputs.alert_level_name;
+        return cur_alert_level;
+      }
+    }
+    return cur_alert_level;
+  }
+
   /** 
   * 
   * @returns the id of the first component that does not have any data
@@ -280,14 +290,19 @@ export class BasinLvlDataService {
 
     // }
     // TODO: set the map back to default style
+
+    // may have to do something like this to get the changes to save
+    //     styles = structuredClone(styles);
+    // styles[basin_name] = style;
+    // styles[basin_name].feature = feature;
+    // this.basinStyles.set(styles);
+
     let styles = this.basinStyles()
     if (basin_name in styles) {
-      styles[basin_name].style = styles['default'].style;
+      styles[basin_name].style = styles['None'].style;
       this.basinStyles.set(styles);
     }
     this.updateMap(basin_name);
-    
-    
   }
 
   getAllocatedBasins() : string[] {
@@ -367,18 +382,27 @@ export class BasinLvlComponentService {
   }
 
   addComponentBlankComponent() {
-    let comp_id = this.components.length + 1;
-    //let cur_comp = JSON.parse(JSON.stringify(this.default_empty_component));
+
+    let comp_id = this.getMaxComponentId() + 1;
     let cur_comp: BasinLvlDynamicComponent =
     {
       component: BasinAlertlvlComponent,
       inputs: { basin_name: '', alert_level_name: '', component_id: comp_id }
     }
-    // let cur_comp = this.default_empty_component;
     this.components.push(cur_comp);
     console.log(`cur_comp: ${JSON.stringify(cur_comp)}`);
     console.log(`default comp: ${JSON.stringify(this.default_empty_component)}`);
     console.log(`all comps: ${JSON.stringify(this.components)}`)
+  }
+
+  private getMaxComponentId() {
+    let max_id = 0;
+    for (const component of this.components) {
+      if (component.inputs.component_id > max_id) {
+        max_id = component.inputs.component_id;
+      }
+    }
+    return max_id;
   }
 
 }
