@@ -15,7 +15,7 @@ export class BasinLvlDataService {
   // and components that are displayed by the basin-lvl component
   all_basin_level_component: BasinLvlDynamicComponent[] = [];
 
-  dataSubject: BehaviorSubject<any[]>;  // suspect this isn't required...
+  dataSubject: BehaviorSubject<any[]>;
   allocatedBasins: string[] = [];
   mapUtil = new MapUtil();
 
