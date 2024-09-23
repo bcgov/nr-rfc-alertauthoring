@@ -1,6 +1,6 @@
 # Overview
 
-This document identifies how changes to Alert data relate to Common Alerting Protocol
+This document identifies how changes to Alert data relate to Common Alerting Protocol (CAP)
 Event generation.  
 
 The diagrams in this document portray the relationship between specific changes
@@ -8,6 +8,18 @@ to alert data and how they relate to CAP Events.  Data model relationships in
 these diagrams have been simplified and or removed in order to focus on how 
 CAP events relate to Alert Events.  For more detail on the data model used to 
 capture these changes see the [database documentation](../database.md)
+
+How specifically CAP events will be raised has yet to be determined.  This doc attempts
+to identify the what conditions would precipitate triggering of different CAP events.
+The logic / code required to raise/update/cancel different CAP events is not part
+of this system.  Some ideas that have been discussed with respect to how CAP events
+would get raised include:
+
+* a web hook to another external system that would be secured using an API key
+* Create an event/message queue that a downstream system could monitor.  The alert
+  authoring system described in this document would send messages to an event queue, 
+  then a downstream "CAP" system could monitor the event queue and do what it needs
+  to do to manage the actual "CAP"s.
 
 ## DataFlows
 
