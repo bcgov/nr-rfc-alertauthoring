@@ -13,12 +13,12 @@ jobs:
   integration-tests:
     if: github.repository == 'disabling_integration_tests_for_now'
     name: Integration Tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 1
     steps:
       - uses: actions/checkout@v4
       - id: cache-npm
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-build-cache-node-modules-${{ hashFiles('**/package-lock.json') }}
@@ -39,7 +39,7 @@ jobs:
   cypress-e2e:
     if: github.repository == 'disabling_integration_tests_for_now'
     name: E2E Tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: frontend
@@ -50,7 +50,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: cache-npm
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-build-cache-node-modules-${{ hashFiles('**/package-lock.json') }}
@@ -68,7 +68,7 @@ jobs:
           working-directory: ./frontend
           browser: ${{ matrix.browser }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: cypress-screenshots
