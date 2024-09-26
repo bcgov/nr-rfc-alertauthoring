@@ -17,7 +17,7 @@ jobs:
   CodeQL:
     name: CodeQL
     if: github.event_name != 'pull_request' || !github.event.pull_request.draft
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         language: [python]
@@ -47,7 +47,7 @@ jobs:
   trivy:
     name: Trivy Security Scan
     if: github.event_name != 'pull_request' || !github.event.pull_request.draft
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -70,7 +70,7 @@ jobs:
   python:
     name: Python
     if: github.event_name != 'pull_request' || !github.event.pull_request.draft
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: backend
@@ -90,12 +90,12 @@ jobs:
           - 5432:5432
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: cache poetry install
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.local
           key: poetry-${{ hashFiles('**/pyproject.toml') }}
@@ -108,7 +108,7 @@ jobs:
           installer-parallel: true
 
       - id: cache-deps
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: .venv
           key: pydeps-${{ hashFiles('**/poetry.lock') }}
