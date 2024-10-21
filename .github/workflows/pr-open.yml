@@ -14,7 +14,7 @@ jobs:
   conventional-commits:
     if: github.event_name == 'pull_request'
     name: Conventional Commits
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: amannn/action-semantic-pull-request@v5.4.0
         env:
@@ -26,7 +26,7 @@ jobs:
     env:
       DOMAIN: apps.silver.devops.gov.bc.ca
       PREFIX: ${{ github.event.repository.name }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       pull-requests: write
     timeout-minutes: 1
@@ -55,7 +55,7 @@ jobs:
       asg: ${{ steps.deploys.outputs.asg }}
       env: ${{ steps.deploys.outputs.env }}
       tag: ${{ steps.deploys.outputs.tag }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Set Variables
         id: deploys
@@ -86,7 +86,7 @@ jobs:
   builds:
     name: Builds
     needs: [vars]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       packages: write
     strategy:
@@ -117,7 +117,7 @@ jobs:
   build-custom:
     name: Build Migrations
     needs: [vars]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       packages: write
     timeout-minutes: 10
