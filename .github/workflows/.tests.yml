@@ -13,7 +13,7 @@ jobs:
   integration-tests:
     if: github.repository == 'disabling_integration_tests_for_now'
     name: Integration Tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 1
     steps:
       - uses: actions/checkout@v4
@@ -39,7 +39,7 @@ jobs:
   cypress-e2e:
     if: github.repository == 'disabling_integration_tests_for_now'
     name: E2E Tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: frontend

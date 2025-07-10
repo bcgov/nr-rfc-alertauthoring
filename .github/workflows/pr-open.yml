@@ -14,7 +14,7 @@ jobs:
   conventional-commits:
     if: github.event_name == 'pull_request'
     name: Conventional Commits
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: amannn/action-semantic-pull-request@v5.4.0
         env:
@@ -26,12 +26,12 @@ jobs:
     env:
       DOMAIN: apps.silver.devops.gov.bc.ca
       PREFIX: ${{ github.event.repository.name }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       pull-requests: write
     timeout-minutes: 1
     steps:
-      - uses: bcgov-nr/action-pr-description-add@v1.1.0
+      - uses: bcgov-nr/action-pr-description-add@v2.0.0
         with:
           add_markdown: |
             ---
@@ -55,7 +55,7 @@ jobs:
       asg: ${{ steps.deploys.outputs.asg }}
       env: ${{ steps.deploys.outputs.env }}
       tag: ${{ steps.deploys.outputs.tag }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Set Variables
         id: deploys
@@ -86,7 +86,7 @@ jobs:
   builds:
     name: Builds
     needs: [vars]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       packages: write
     strategy:
@@ -103,7 +103,7 @@ jobs:
             build_context: ./frontend/hydro_alerting
     timeout-minutes: 10
     steps:
-      - uses: bcgov-nr/action-builder-ghcr@v2.0.1
+      - uses: bcgov-nr/action-builder-ghcr@v4.0.0
         with:
           keep_versions: 50
           package: ${{ matrix.package }}
@@ -117,12 +117,12 @@ jobs:
   build-custom:
     name: Build Migrations
     needs: [vars]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       packages: write
     timeout-minutes: 10
     steps:
-      - uses: bcgov-nr/action-builder-ghcr@v2.0.1
+      - uses: bcgov-nr/action-builder-ghcr@v4.0.0
         with:
           keep_versions: 10
           package: alembicmigrations
@@ -150,7 +150,7 @@ jobs:
   deploys:
     name: Deploys
     needs: [builds]
-    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@v0.4.0
+    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@v1.0.0
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
       oc_token: ${{ secrets.OC_TOKEN }}
