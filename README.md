@@ -1,5 +1,5 @@
 [![MIT License](https://img.shields.io/github/license/bcgov/quickstart-openshift.svg)](/LICENSE.md)
-[![Lifecycle](https://img.shields.io/badge/Lifecycle-Maturing-007EC6)](https://github.com/bcgov/repomountie/blob/master/doc/lifecycle-badges.md)
+[![Lifecycle:Dormant](https://img.shields.io/badge/Lifecycle-Dormant-ff7f2a)](https://github.com/bcgov/repomountie/blob/master/doc/lifecycle-badges.md)
 
 [![Merge](https://github.com/bcgov/nr-rfc-alertauthoring/actions/workflows/merge.yml/badge.svg)](https://github.com/bcgov/nr-rfc-alertauthoring/actions/workflows/merge.yml)
 [![Analysis](https://github.com/bcgov/nr-rfc-alertauthoring/actions/workflows/analysis.yml/badge.svg)](https://github.com/bcgov/nr-rfc-alertauthoring/actions/workflows/analysis.yml)
