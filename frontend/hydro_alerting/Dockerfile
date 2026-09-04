@@ -12,7 +12,7 @@ RUN npm ci --ignore-scripts --no-update-notifier  && \
 
 # Deploy container
 # Caddy serves static files
-FROM caddy:2.7.6-alpine
+FROM caddy:2.11.4-alpine
 RUN apk add --no-cache ca-certificates curl
 
 # Copy static files and run formatting
