@@ -16,7 +16,7 @@ jobs:
     name: Conventional Commits
     runs-on: ubuntu-22.04
     steps:
-      - uses: amannn/action-semantic-pull-request@v5.4.0
+      - uses: amannn/action-semantic-pull-request@v5.5.3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -31,7 +31,7 @@ jobs:
       pull-requests: write
     timeout-minutes: 1
     steps:
-      - uses: bcgov-nr/action-pr-description-add@v1.1.0
+      - uses: bcgov-nr/action-pr-description-add@v1.2.0
         with:
           add_markdown: |
             ---
@@ -103,7 +103,7 @@ jobs:
             build_context: ./frontend/hydro_alerting
     timeout-minutes: 10
     steps:
-      - uses: bcgov-nr/action-builder-ghcr@v2.0.1
+      - uses: bcgov-nr/action-builder-ghcr@v2.3.0
         with:
           keep_versions: 50
           package: ${{ matrix.package }}
@@ -122,7 +122,7 @@ jobs:
       packages: write
     timeout-minutes: 10
     steps:
-      - uses: bcgov-nr/action-builder-ghcr@v2.0.1
+      - uses: bcgov-nr/action-builder-ghcr@v2.3.0
         with:
           keep_versions: 10
           package: alembicmigrations
@@ -150,7 +150,7 @@ jobs:
   deploys:
     name: Deploys
     needs: [builds]
-    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@v0.4.0
+    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@v0.9.0
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
       oc_token: ${{ secrets.OC_TOKEN }}
