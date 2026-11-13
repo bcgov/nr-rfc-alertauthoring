@@ -59,7 +59,7 @@ services:
 
   backend:
     # profiles: ["python", "all"]
-    image: python:3.12
+    image: python:3.13
     container_name: backend
     entrypoint: /application/start-local.sh
     volumes: ["./backend:/application", "/application/.venv"]
